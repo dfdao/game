@@ -10,7 +10,7 @@ const artifactOptions = (
   'PlanetaryShield,PhotoidCannon,BloomFilter,BlackDomain'
 ).split(',');
 
-// yarn workspace eth hardhat:dev debug:giveArtifact "0x27fd6eec1e1f3ce4a53b40d5813119d868f7b4e3" PhotoidCannon 5
+// npm run --workspace eth hardhat:dev -- debug:giveArtifact "0x27fd6eec1e1f3ce4a53b40d5813119d868f7b4e3" PhotoidCannon 5
 task('debug:giveArtifact', 'gives the player some amount of a particular type of artifact')
   .addPositionalParam(
     'playerAddress',
@@ -74,7 +74,7 @@ async function giveArtifact(
   }
 }
 
-// yarn workspace eth hardhat:dev debug:giveOneOfEachArtifact "0x5bcf0ac4c057dcaf9b23e4dd7cb7b035a71dd0dc" 10
+// npm run --workspace eth hardhat:dev -- debug:giveOneOfEachArtifact "0x5bcf0ac4c057dcaf9b23e4dd7cb7b035a71dd0dc" 10
 task(
   'debug:giveOneOfEachArtifact',
   'gives the player one of each type of artifact, one of each rarity'

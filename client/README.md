@@ -4,8 +4,8 @@
 
 ### Installing Core Dependencies
 
-- Node (v14.x OR v16.x)
-- Yarn (Javascript Package Manager)
+- Node (v16.x)
+- Npm (v8+)
 
 #### Installing The Correct Node Version Using NVM
 
@@ -18,15 +18,13 @@ nvm install
 
 After the installation is finished, you can run `node --version` to verify that you are running v14 or v16
 
-#### Installing Yarn
+#### Installing Dependencies
 
-Refer to [Yarn's official documentation](https://classic.yarnpkg.com/en/docs/install) for the installation guide.
-
-After you have Yarn installed, run `yarn` to install the dependencies:
+After you have Node & Npm installed, run `npm ci` to install the dependencies:
 
 ### Running the client
 
-To connecting to the mainnet client, simply run `yarn start:prod`. When asked you can use your whitelist key or import your mainnet burner secret and home coordinates.
+To connecting to the mainnet client, simply run `npm start`. When asked you can use your whitelist key or import your mainnet burner secret and home coordinates.
 
 ### Plugin development
 

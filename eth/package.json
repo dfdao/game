@@ -67,7 +67,7 @@
     "node": ">=16"
   },
   "scripts": {
-    "test": "hardhat test && yarn subgraph:template:dev",
+    "test": "hardhat test && npm run subgraph:template:dev",
     "lint": "eslint .",
     "format": "prettier --write .",
     "hardhat:node": "hardhat node --hostname 0.0.0.0",
@@ -77,9 +77,9 @@
     "compile": "hardhat compile",
     "circom:prod": "hardhat circom --verbose",
     "circom:dev": "hardhat circom --deterministic --verbose",
-    "subgraph:template:dev": "yarn hardhat:dev subgraph:codegen",
-    "subgraph:template:prod": "yarn hardhat:prod subgraph:codegen",
-    "subgraph:deploy:dev": "yarn hardhat:dev subgraph:deploy --name df",
+    "subgraph:template:dev": "npm run hardhat:dev subgraph:codegen",
+    "subgraph:template:prod": "npm run hardhat:prod subgraph:codegen",
+    "subgraph:deploy:dev": "npm run hardhat:dev subgraph:deploy --name df",
     "subgraph:deploy:prod": "cd subgraph && graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/",
     "clean": "del-cli artifacts cache subgraph/build node_modules tsconfig.ref.tsbuildinfo",
     "wait:node": "wait-on tcp:8545",

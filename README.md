@@ -7,12 +7,14 @@ To run this project you will need to be on Node 14 OR Node 16.
 ## local development
 
 ### Install dependencies
-- We use `yarn` to manage packages. Run `yarn` at the top level to automatically install all dependencies from subfolders. This will also run the monorepo's `prepare` script, which compiles things like TypeScript or Solidity code.
+
+- We use `npm` to manage packages. Run `npm ci` at the top level to automatically install all dependencies from subfolders. This will also run the monorepo's `prepare` script, which compiles things like TypeScript or Solidity code.
 
 ### Running the project
-- Run `yarn workspace eth start` which starts the hardhat blockchain and deploys the game contracts.
-- Run `yarn workspace client start` to load the webclient.
-- Run `yarn watch` to start a typescript watcher to incrementally rebuild changed dependencies.
+
+- Run `npm start --workspace eth` which starts the hardhat blockchain and deploys the game contracts.
+- Run `npm start --workspace client` to load the webclient.
+- Run `npm run watch` to start a typescript watcher to incrementally rebuild changed dependencies.
 
 You can import the private key of one of the accounts `hardhat node` created and funded, which are printed when you started the node such as:
 
@@ -31,7 +33,7 @@ Production deploys **must** check in this file, but those will likely be done fr
 
 # Workspaces & Packages
 
-The Dark Forest monorepo is managed using [yarn workspaces](https://classic.yarnpkg.com/en/docs/workspaces). To add a new project to the monorepo, you must add it to the `workspaces` array inside the root `package.json`.
+The Dark Forest monorepo is managed using [npm workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces). To add a new project to the monorepo, you must add it to the `workspaces` array inside the root `package.json`.
 
 **Note:** We use globs for anything in `packages/` so you don't need to update the workspaces for a new package.
 
@@ -41,8 +43,8 @@ To add a new package, create a new directory inside the `packages/` directory. T
 
 ## circom and snarkjs
 
-If you are modifying anything SNARK-related, you may be interested in rebuilding circuits / redoing setup. Run `yarn workspace eth circom:dev` or `yarn workspace eth circom:prod` respectively to rebuild the `wasm` and `zkey` files. Then `yarn workspace eth compile` as usual will build and refresh the `Verifier.sol`.
+If you are modifying anything SNARK-related, you may be interested in rebuilding circuits / redoing setup. Run `npm run circom:dev --workspace eth` or `npm run circom:prod --workspace eth` respectively to rebuild the `wasm` and `zkey` files. Then `npm run compile --workspace eth` as usual will build and refresh the `Verifier.sol`.
 
 ## Thegraph
 
-To run a local copy of thegraph make sure docker is installed and running, `yarn workspace eth start --subgraph df` OR if you already have your contracts deployed and running run `yarn workspace eth hardhat:dev subgraph:deploy --name df` and find your local hosted explorer at `http://localhost:8000/subgraphs/name/df`
+To run a local copy of thegraph make sure docker is installed and running, `npm start --workspace eth -- --subgraph df` OR if you already have your contracts deployed and running run `npm run subgraph:deploy:dev --workspace eth` and find your local hosted explorer at `http://localhost:8000/subgraphs/name/df`

@@ -15,13 +15,5 @@ node_modules
 
 .vscode/slither-results.json
 
-# Yarn stuff
-/.yarn/*
-!/.yarn/releases
-!/.yarn/plugins
-!/.yarn/sdks
-!/.yarn/versions
-/.pnp.*
-
 # Local Netlify folder
 .netlify

@@ -13,16 +13,16 @@
   ],
   "scripts": {
     "refs:prepare": "workspaces-to-typescript-project-references --tsconfigPath tsconfig.ref.json",
-    "eth:refs": "yarn workspace eth tsc --build tsconfig.ref.json",
-    "eth:compile": "yarn workspace eth compile",
+    "eth:refs": "npm exec --workspace=eth -- tsc --build tsconfig.ref.json",
+    "eth:compile": "npm run --workspace=eth compile",
     "eth:prepare": "run-s eth:refs eth:compile",
-    "client:prepare": "yarn workspace client tsc --build tsconfig.ref.json",
+    "client:prepare": "npm exec --workspace=client -- tsc --build tsconfig.ref.json",
     "prepare": "run-s refs:prepare eth:prepare client:prepare",
     "watch": "tsc --build eth/tsconfig.ref.json client/tsconfig.ref.json -w",
-    "test": "yarn workspaces run test",
-    "lint": "yarn workspaces run lint",
-    "clean": "yarn workspaces run clean",
-    "format": "yarn workspaces run format",
+    "test": "npm run --workspaces test",
+    "lint": "npm run --workspaces lint",
+    "clean": "npm run --workspaces clean",
+    "format": "npm run --workspaces format",
     "docs": "lerna run --scope @darkforest_eth/* docs"
   },
   "devDependencies": {
