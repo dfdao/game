@@ -23,8 +23,8 @@ There are two additional subdirectories for auxiliary utility circuits:
 
 ### Installing Core Dependencies
 
-- Node (v14.x OR v16.x)
-- Yarn (Javascript Package Manager)
+- Node (v16.x)
+- Npm (v8+)
 
 #### Installing The Correct Node Version Using NVM
 
@@ -34,11 +34,9 @@ Refer to [nvm's official documentation](https://github.com/nvm-sh/nvm#installing
 
 After the installation is finished, you can run `node --version` to verify that you are running v14 or v16
 
-#### Installing Yarn & Other Dev Dependencies
+#### Installing Dependencies
 
-Refer to [Yarn's official documentation](https://classic.yarnpkg.com/en/docs/install) for the installation guide.
-
-After you have Yarn installed, run `yarn` to install dependencies.
+After you have Node & Npm installed, run `npm ci` to install dependencies.
 
 ### Local Usage
 
@@ -47,10 +45,4 @@ contract subdirectory [eth](https://github.com/darkforest-eth/eth) and [Project
 Sophon's](https://github.com/projectsophon)
 [hardhat-circom](https://github.com/projectsophon/hardhat-circom) plugin. If these two
 directories are unified as sibling directories under a common root, you can run
-`yarn circom:dev` in `eth` to compile and run the circuits on provided input files.
-
-For your convenience, a sample `input.json` and `public.json` pair is included
-for sanity test checks. `input.json` is a sample input, `public.json` is public
-parameters. `yarn dev` or `yarn prod` will create `witness.json` and
-`verification_key.json`, and print to the console verifying that the proof is
-generated and verifies properly.
+`npm run circom:dev` in `eth` to compile and run the circuits on provided input files.

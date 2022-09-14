@@ -66,7 +66,7 @@
     "start": "webpack-dev-server --mode development --hot",
     "build": "webpack --mode production",
     "clean": "del-cli dist node_modules declarations public/contracts tsconfig.ref.tsbuildinfo",
-    "docs": "typedoc && yarn format",
+    "docs": "typedoc && npm run format",
     "deploy": "netlify build && netlify deploy",
     "deploy:prod": "netlify build && netlify deploy --prod"
   },

@@ -11,8 +11,8 @@ All of our smartcontract related code are located in the `/eth` directory.
 
 ### Installing Core Dependencies
 
-- Node (v14.x OR v16.x)
-- Yarn (Javascript Package Manager)
+- Node (v16.x)
+- Npm (v8+)
 
 #### Installing The Correct Node Version Using NVM
 
@@ -25,20 +25,18 @@ nvm install
 
 After the installation is finished, you can run `node --version` to verify that you are running v14 or v16
 
-#### Installing Yarn & Other Dev Dependencies
+#### Installing Dependencies
 
-Refer to [Yarn's official documentation](https://classic.yarnpkg.com/en/docs/install) for the installation guide.
-
-After you have Yarn installed, run `yarn` to install dev dependencies:
+After you have Node & Npm installed, run `npm ci` to install dev dependencies:
 
 ### Run Locally
 
-To run the tests run `yarn test`
+To run the tests run `npm test`
 
 To deploy contracts locally, you'll need to run 2 commands:
 
-1. Start a node by running `yarn hardhat:node`
-2. Then (in another terminal) deploy contracts by running `yarn hardhat:dev deploy --whitelist false`
+1. Start a node by running `npm run hardhat:node`
+2. Then (in another terminal) deploy contracts by running `npm run hardhat:dev deploy -- --whitelist false`
 
 You can import the private key of one of the accounts `hardhat node` created and funded, which are printed when you started the node such as:
 
@@ -60,11 +58,11 @@ For TheGraph hosted service, you need to create an account on thegraph.com, and 
 in your terminal.
 
 Then put the contract addresses into the templates and codgen thegraph files
-`yarn subgraph:template:prod`
+`npm run subgraph:template:prod`
 
 Finally ask them to start the indexing
-`yarn subgraph:deploy:prod yourloginname/graphname`
+`npm run subgraph:deploy:prod -- yourloginname/graphname`
 
 ## local development
 
-To run a local copy of thegraph make sure docker is installed and then run `yarn start --subgraph df` OR if you already have your contracts deployed and running run `yarn hardhat:dev subgraph:deploy --name df` and find your local hosted explorer at `http://localhost:8000/subgraphs/name/df`
+To run a local copy of thegraph make sure docker is installed and then run `npm start -- --subgraph df` OR if you already have your contracts deployed and running run `npm run subgraph:deploy:dev` and find your local hosted explorer at `http://localhost:8000/subgraphs/name/df`

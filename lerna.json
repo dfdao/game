@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/lerna.json",
   "version": "6.7.0-dev.0",
-  "npmClient": "yarn",
+  "npmClient": "npm",
   "useWorkspaces": true,
   "command": {
     "bootstrap": {
@@ -10,7 +10,7 @@
       ]
     },
     "run": {
-      "npmClient": "yarn",
+      "npmClient": "npm",
       "stream": true,
       "concurrency": 1
     },
