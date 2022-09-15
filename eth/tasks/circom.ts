@@ -4,7 +4,6 @@ import { TASK_CIRCOM_TEMPLATE, ZkeyFastFile } from 'hardhat-circom';
 import { subtask } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import * as path from 'path';
-import { resolvePackageDir } from '../settings';
 
 subtask(TASK_CIRCOM_TEMPLATE, 'replace hardhat-circom templating with custom').setAction(
   circomTemplate
@@ -97,8 +96,7 @@ async function circomTemplate(
     finalSol = finalSol.concat(circuitSol);
   }
 
-  const circuitsWorkspace = resolvePackageDir('circuits');
-  const verifierTemplatePath = path.join(circuitsWorkspace, 'Verifier.sol.template');
+  const verifierTemplatePath = path.join(hre.packageDirs['circuits'], 'Verifier.sol.template');
   const verifier = path.join(hre.config.paths.sources, `facets/DFVerifierFacet.sol`);
 
   const template = await fs.readFile(verifierTemplatePath, 'utf8');

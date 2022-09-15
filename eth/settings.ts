@@ -6,7 +6,6 @@ import * as decoders from 'decoders';
 // HRE stuff
 import 'hardhat/types/runtime';
 import * as path from 'path';
-import resolvePackage from 'resolve-package-path';
 import { dedent } from 'ts-dedent';
 
 declare module 'hardhat/types/runtime' {
@@ -17,6 +16,7 @@ declare module 'hardhat/types/runtime' {
     packageDirs: {
       '@darkforest_eth/contracts': string;
       '@darkforest_eth/snarks': string;
+      circuits: string;
     };
 
     contracts: Contracts;
@@ -88,15 +88,6 @@ function printValidationErrors(err: Error) {
   `;
 
   console.error(chalk.red(msg));
-}
-
-// Resolve workspace package directories
-export function resolvePackageDir(pkg: string) {
-  const contractsPkg = resolvePackage(pkg, __dirname);
-  if (!contractsPkg) {
-    throw new Error(`Unable to find the ${pkg} package. Exiting...`);
-  }
-  return path.dirname(contractsPkg);
 }
 
 function tomlLoader(filename: string, content: string) {
