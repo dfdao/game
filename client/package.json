@@ -60,7 +60,6 @@
   },
   "scripts": {
     "declarations": "tsc -p tsconfig.decs.json",
-    "test": "exit 0",
     "lint": "eslint .",
     "format": "prettier --write .",
     "start": "webpack-dev-server --mode development --hot",

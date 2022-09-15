@@ -16,17 +16,15 @@
   "scripts": {
     "prepublishOnly": "npm run build && npm run docs",
     "build": "tsc -p .",
-    "test": "exit 0",
     "lint": "eslint .",
     "format": "prettier --write .",
     "docs": "typedoc && npm run format",
     "clean": "del-cli dist node_modules tsconfig.ref.tsbuildinfo"
   },
   "dependencies": {
-    "@types/gl-matrix": "^3.2.0",
     "big-integer": "^1.6.48",
     "ethers": "^5.5.1",
-    "gl-matrix": "^3.3.0",
+    "gl-matrix": "3.3.0",
     "type-fest": "^2.12.1"
   },
   "devDependencies": {
