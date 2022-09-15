@@ -19,11 +19,11 @@
     "client:prepare": "npm exec --workspace=client -- tsc --build tsconfig.ref.json",
     "prepare": "run-s refs:prepare eth:prepare client:prepare",
     "watch": "tsc --build eth/tsconfig.ref.json client/tsconfig.ref.json -w",
-    "test": "npm run --workspaces test",
-    "lint": "npm run --workspaces lint",
-    "clean": "npm run --workspaces clean",
-    "format": "npm run --workspaces format",
-    "docs": "lerna run --scope @darkforest_eth/* docs"
+    "test": "npm run --workspaces --if-present test",
+    "lint": "npm run --workspaces --if-present lint",
+    "clean": "npm run --workspaces --if-present clean",
+    "format": "npm run --workspaces --if-present format",
+    "docs": "npm run --workspaces --if-present docs"
   },
   "devDependencies": {
     "@monorepo-utils/workspaces-to-typescript-project-references": "^2.7.4",
@@ -36,7 +36,6 @@
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-react": "^7.26.1",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "lerna": "^4.0.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.3.0",
     "prettier-plugin-organize-imports": "^2.3.2",

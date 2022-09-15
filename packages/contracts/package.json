@@ -19,7 +19,6 @@
   "scripts": {
     "prepublishOnly": "npm run build && npm run docs",
     "build": "tsc -p .",
-    "test": "exit 0",
     "lint": "eslint .",
     "format": "prettier --write .",
     "docs": "typedoc --tsconfig tsconfig.docs.json && npm run format",
