@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const resolvePackage = require('resolve-package-path');
+const workspace = require('@projectsophon/workspace');
 const { EnvironmentPlugin } = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
@@ -14,11 +14,10 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 function findScopeDirectory() {
   // Just chose the most likely package to be here, it could really be anything
   const pkg = '@darkforest_eth/contracts';
-  const contractsPackageJson = resolvePackage(pkg, __dirname);
-  if (!contractsPackageJson) {
+  const contractsDirectory = workspace(pkg);
+  if (!contractsDirectory) {
     throw new Error(`Unable to find the @darkforest_eth scope. Exiting...`);
   }
-  const contractsDirectory = path.dirname(contractsPackageJson);
   const scopeDirectory = path.dirname(contractsDirectory);
 
   return scopeDirectory;

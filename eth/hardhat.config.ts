@@ -20,6 +20,7 @@ import * as subgraphUtils from './utils/subgraph';
 import * as path from 'path';
 import * as settings from './settings';
 import { decodeContracts, decodeInitializers, decodeAdminPlanets } from '@darkforest_eth/settings';
+import workspace from '@projectsophon/workspace';
 import './tasks/artifact';
 import './tasks/circom';
 import './tasks/debug';
@@ -36,10 +37,24 @@ require('dotenv').config();
 
 const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
 
+const contracts = workspace('@darkforest_eth/contracts');
+if (!contracts) {
+  throw new Error('Unable to locate `@darkforest_eth/contracts` workspace');
+}
+const snarks = workspace('@darkforest_eth/snarks');
+if (!snarks) {
+  throw new Error('Unable to locate `@darkforest_eth/snarks` workspace');
+}
+const circuits = workspace('circuits');
+if (!circuits) {
+  throw new Error('Unable to locate `circuits` workspace');
+}
+
 // Ensure we can lookup the needed workspace packages
 const packageDirs = {
-  '@darkforest_eth/contracts': settings.resolvePackageDir('@darkforest_eth/contracts'),
-  '@darkforest_eth/snarks': settings.resolvePackageDir('@darkforest_eth/snarks'),
+  '@darkforest_eth/contracts': contracts,
+  '@darkforest_eth/snarks': snarks,
+  circuits,
 };
 
 extendEnvironment((env: HardhatRuntimeEnvironment) => {
