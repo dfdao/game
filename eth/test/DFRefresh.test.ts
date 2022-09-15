@@ -1,7 +1,7 @@
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import {
-  fixtureLoader,
   increaseBlockchainTime,
   makeInitArgs,
   makeMoveArgs,
@@ -25,13 +25,13 @@ describe('DarkForestRefresh', function () {
   let world: World;
 
   async function worldFixture() {
-    const world = await fixtureLoader(defaultWorldFixture);
+    const world = await loadFixture(defaultWorldFixture);
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     return world;
   }
 
   beforeEach('load fixture', async function () {
-    world = await fixtureLoader(worldFixture);
+    world = await loadFixture(worldFixture);
   });
 
   it('should increase population over time', async function () {

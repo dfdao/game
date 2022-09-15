@@ -1,6 +1,7 @@
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { fixtureLoader, makeInitArgs } from './utils/TestUtils';
+import { makeInitArgs } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import { SPAWN_PLANET_1, SPAWN_PLANET_2 } from './utils/WorldConstants';
 const { utils } = ethers;
@@ -9,7 +10,7 @@ describe('DarkForestRewards', function () {
   let world: World;
 
   async function worldFixture() {
-    const world = await fixtureLoader(defaultWorldFixture);
+    const world = await loadFixture(defaultWorldFixture);
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     await world.user2Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_2));
     await world.contract.setTokenMintEndTime(0);
@@ -18,7 +19,7 @@ describe('DarkForestRewards', function () {
   }
 
   beforeEach('load fixture', async function () {
-    world = await fixtureLoader(worldFixture);
+    world = await loadFixture(worldFixture);
   });
 
   it('when a player submits a correctly sorted score array, it transfers XDAI to them based on their rank', async function () {

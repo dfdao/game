@@ -1,8 +1,8 @@
 import { ArtifactType } from '@darkforest_eth/types';
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import {
   conquerUnownedPlanet,
-  fixtureLoader,
   increaseBlockchainTime,
   makeInitArgs,
   makeMoveArgs,
@@ -20,7 +20,7 @@ describe('Space Ships', function () {
   let world: World;
 
   async function worldFixture() {
-    const world = await fixtureLoader(defaultWorldFixture);
+    const world = await loadFixture(defaultWorldFixture);
     let initArgs = makeInitArgs(SPAWN_PLANET_1);
     await world.user1Core.initializePlayer(...initArgs);
     await world.user1Core.giveSpaceShips(SPAWN_PLANET_1.id);
@@ -34,7 +34,7 @@ describe('Space Ships', function () {
   }
 
   beforeEach(async function () {
-    world = await fixtureLoader(worldFixture);
+    world = await loadFixture(worldFixture);
   });
 
   describe('spawning your ships', function () {
@@ -108,7 +108,7 @@ describe('Space Ships', function () {
     let world: World;
 
     async function worldFixture() {
-      const world = await fixtureLoader(defaultWorldFixture);
+      const world = await loadFixture(defaultWorldFixture);
       const initArgs = makeInitArgs(SPAWN_PLANET_2);
       await world.user2Core.initializePlayer(...initArgs);
 
@@ -118,7 +118,7 @@ describe('Space Ships', function () {
     }
 
     beforeEach(async function () {
-      world = await fixtureLoader(worldFixture);
+      world = await loadFixture(worldFixture);
     });
 
     it('reverts', async function () {

@@ -1,5 +1,6 @@
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
-import { fixtureLoader, makeInitArgs, makeRevealArgs, ZERO_ADDRESS } from './utils/TestUtils';
+import { makeInitArgs, makeRevealArgs, ZERO_ADDRESS } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import {
   ADMIN_PLANET,
@@ -18,7 +19,7 @@ describe('DarkForestInit', function () {
   let world: World;
 
   beforeEach('load fixture', async function () {
-    world = await fixtureLoader(defaultWorldFixture);
+    world = await loadFixture(defaultWorldFixture);
   });
 
   it('initializes player successfully with the correct planet value', async function () {
