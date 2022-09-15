@@ -1,7 +1,5 @@
 import { EthAddress } from '@darkforest_eth/types';
 import { generateKeys, keyHash } from '@darkforest_eth/whitelist';
-import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-waffle';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { fixtureLoader, makeInitArgs, makeWhitelistArgs } from './utils/TestUtils';

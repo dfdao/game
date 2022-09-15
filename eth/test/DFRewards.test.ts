@@ -1,5 +1,3 @@
-import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-waffle';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { fixtureLoader, makeInitArgs } from './utils/TestUtils';
