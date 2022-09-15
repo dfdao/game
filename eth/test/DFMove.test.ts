@@ -1,5 +1,5 @@
 import { ArtifactType } from '@darkforest_eth/types';
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
+import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
@@ -836,9 +836,7 @@ describe('move rate limits', function () {
 
     await world.user1Core.move(...moveArgs);
 
-    await ethers.provider.send('evm_increaseTime', [
-      from.range.toNumber() / (from.speed.toNumber() / 100) - 10,
-    ]);
+    await time.increase(from.range.toNumber() / (from.speed.toNumber() / 100) - 10);
 
     // do 5 moves after some time
 
@@ -849,7 +847,7 @@ describe('move rate limits', function () {
 
     await expect(world.user1Core.move(...moveArgs)).to.be.revertedWith('Planet is rate-limited');
 
-    await ethers.provider.send('evm_increaseTime', [20]);
+    await time.increase(20);
 
     // first move should be done
 
