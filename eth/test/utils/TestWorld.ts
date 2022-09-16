@@ -1,5 +1,5 @@
 import type { DarkForest } from '@darkforest_eth/contracts/typechain';
-import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
+import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
