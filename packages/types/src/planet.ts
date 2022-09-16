@@ -206,3 +206,23 @@ export class DFStatefulAnimation<T> extends DFAnimation {
     return this._state;
   }
 }
+
+export type PlanetTypeWeights = [number, number, number, number, number]; // relative frequencies of the 5 planet types
+export type PlanetTypeWeightsByLevel = [
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights
+];
+export type PlanetTypeWeightsBySpaceType = [
+  PlanetTypeWeightsByLevel,
+  PlanetTypeWeightsByLevel,
+  PlanetTypeWeightsByLevel,
+  PlanetTypeWeightsByLevel
+];

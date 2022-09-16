@@ -1,4 +1,9 @@
-import { ArtifactPointValues, EthAddress, UpgradeBranches } from '@darkforest_eth/types';
+import {
+  ArtifactPointValues,
+  EthAddress,
+  PlanetTypeWeightsBySpaceType,
+  UpgradeBranches,
+} from '@darkforest_eth/types';
 import { BigNumber as EthersBN } from 'ethers';
 
 export const enum ZKArgIdx {
@@ -145,26 +150,6 @@ export type ClaimArgs = [
 export type DepositArtifactArgs = [string, string]; // locationId, artifactId
 export type WithdrawArtifactArgs = [string, string]; // locationId, artifactId
 export type WhitelistArgs = [string, string]; // hashed whitelist key, recipient address
-
-export type PlanetTypeWeights = [number, number, number, number, number]; // relative frequencies of the 5 planet types
-export type PlanetTypeWeightsByLevel = [
-  PlanetTypeWeights,
-  PlanetTypeWeights,
-  PlanetTypeWeights,
-  PlanetTypeWeights,
-  PlanetTypeWeights,
-  PlanetTypeWeights,
-  PlanetTypeWeights,
-  PlanetTypeWeights,
-  PlanetTypeWeights,
-  PlanetTypeWeights
-];
-export type PlanetTypeWeightsBySpaceType = [
-  PlanetTypeWeightsByLevel,
-  PlanetTypeWeightsByLevel,
-  PlanetTypeWeightsByLevel,
-  PlanetTypeWeightsByLevel
-];
 
 export interface ContractConstants {
   ADMIN_CAN_ADD_PLANETS: boolean;

@@ -6,6 +6,7 @@ import type {
   PlanetDefaults,
   PlanetLevel,
   PlanetType,
+  PlanetTypeWeightsBySpaceType,
   SpaceType,
 } from '@darkforest_eth/types';
 import { address } from './address';
@@ -115,4 +116,61 @@ export function decodePlanetDefaults(rawDefaults: RawDefaults): PlanetDefaults {
     silverCap: rawDefaults.map((x) => x[7].toNumber() / CONTRACT_PRECISION),
     barbarianPercentage: rawDefaults.map((x) => x[8].toNumber()),
   };
+}
+
+type RawPlanetTypeWeights = Awaited<ReturnType<DarkForest['getTypeWeights']>>;
+
+export function decodePlanetTypeWeights(
+  rawWeights: RawPlanetTypeWeights
+): PlanetTypeWeightsBySpaceType {
+  return [
+    [
+      rawWeights[0][0],
+      rawWeights[0][1],
+      rawWeights[0][2],
+      rawWeights[0][3],
+      rawWeights[0][4],
+      rawWeights[0][5],
+      rawWeights[0][6],
+      rawWeights[0][7],
+      rawWeights[0][8],
+      rawWeights[0][9],
+    ],
+    [
+      rawWeights[1][0],
+      rawWeights[1][1],
+      rawWeights[1][2],
+      rawWeights[1][3],
+      rawWeights[1][4],
+      rawWeights[1][5],
+      rawWeights[1][6],
+      rawWeights[1][7],
+      rawWeights[1][8],
+      rawWeights[1][9],
+    ],
+    [
+      rawWeights[2][0],
+      rawWeights[2][1],
+      rawWeights[2][2],
+      rawWeights[2][3],
+      rawWeights[2][4],
+      rawWeights[2][5],
+      rawWeights[2][6],
+      rawWeights[2][7],
+      rawWeights[2][8],
+      rawWeights[2][9],
+    ],
+    [
+      rawWeights[3][0],
+      rawWeights[3][1],
+      rawWeights[3][2],
+      rawWeights[3][3],
+      rawWeights[3][4],
+      rawWeights[3][5],
+      rawWeights[3][6],
+      rawWeights[3][7],
+      rawWeights[3][8],
+      rawWeights[3][9],
+    ],
+  ];
 }

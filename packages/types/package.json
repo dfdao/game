@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "big-integer": "^1.6.48",
-    "ethers": "^5.5.1",
+    "ethers": "^5.7.1",
     "gl-matrix": "3.3.0",
     "type-fest": "^2.12.1"
   },

@@ -17,6 +17,7 @@ import {
   decodeArtifactPointValues,
   decodePlanet,
   decodePlanetDefaults,
+  decodePlanetTypeWeights,
   decodePlayer,
   decodeRevealedCoords,
   decodeUpgradeBranches,
@@ -51,7 +52,6 @@ import {
   ContractConstants,
   ContractEvent,
   ContractsAPIEvent,
-  PlanetTypeWeightsBySpaceType,
 } from '../../_types/darkforest/api/ContractsAPITypes';
 import { loadDiamondContract } from '../Network/Blockchain';
 import { eventLogger, EventType } from '../Network/EventLogger';
@@ -444,8 +444,9 @@ export class ContractsAPI extends EventEmitter {
 
     const upgrades = decodeUpgradeBranches(await this.makeCall(this.contract.getUpgrades));
 
-    const PLANET_TYPE_WEIGHTS: PlanetTypeWeightsBySpaceType =
-      await this.makeCall<PlanetTypeWeightsBySpaceType>(this.contract.getTypeWeights);
+    const PLANET_TYPE_WEIGHTS = decodePlanetTypeWeights(
+      await this.makeCall(this.contract.getTypeWeights)
+    );
 
     const rawPointValues = await this.makeCall(this.contract.getArtifactPointValues);
     const ARTIFACT_POINT_VALUES = decodeArtifactPointValues(rawPointValues);
