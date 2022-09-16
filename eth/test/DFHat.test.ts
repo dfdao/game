@@ -1,6 +1,7 @@
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { BN_ZERO, fixtureLoader, makeInitArgs } from './utils/TestUtils';
+import { BN_ZERO, makeInitArgs } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import { SPAWN_PLANET_1 } from './utils/WorldConstants';
 
@@ -8,13 +9,13 @@ describe('DarkForestHat', function () {
   let world: World;
 
   async function worldFixture() {
-    const world = await fixtureLoader(defaultWorldFixture);
+    const world = await loadFixture(defaultWorldFixture);
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     return world;
   }
 
   beforeEach('load fixture', async function () {
-    world = await fixtureLoader(worldFixture);
+    world = await loadFixture(worldFixture);
   });
 
   it('should buy hats', async function () {

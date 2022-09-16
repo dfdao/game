@@ -1,4 +1,5 @@
 import { ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { BigNumberish } from 'ethers';
 import hre from 'hardhat';
@@ -6,7 +7,6 @@ import { TestLocation } from './utils/TestLocation';
 import {
   conquerUnownedPlanet,
   createArtifactOnPlanet,
-  fixtureLoader,
   getArtifactsOwnedBy,
   getCurrentTime,
   getStatSum,
@@ -38,7 +38,7 @@ describe('DarkForestArtifacts', function () {
   let world: World;
 
   async function worldFixture() {
-    const world = await fixtureLoader(defaultWorldFixture);
+    const world = await loadFixture(defaultWorldFixture);
 
     // Initialize player
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
@@ -72,7 +72,7 @@ describe('DarkForestArtifacts', function () {
 
   beforeEach('load fixture', async function () {
     this.timeout(0);
-    world = await fixtureLoader(worldFixture);
+    world = await loadFixture(worldFixture);
   });
 
   async function getArtifactsOnPlanet(world: World, locationId: BigNumberish) {

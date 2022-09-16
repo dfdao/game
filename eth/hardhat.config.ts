@@ -4,7 +4,7 @@
 // organize-imports-ignore
 
 import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-waffle';
+import '@nomicfoundation/hardhat-chai-matchers';
 import 'hardhat-abi-exporter';
 import 'hardhat-diamond-abi';
 // Must be registered after hardhat-diamond-abi

@@ -1,10 +1,10 @@
 //@ts-nocheck Because we can't run these tests
 import { modPBigInt } from '@darkforest_eth/hashing';
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { BigNumber, constants, ethers } from 'ethers';
 import {
   conquerUnownedPlanet,
-  fixtureLoader,
   increaseBlockchainTime,
   makeInitArgs,
   makeRevealArgs,
@@ -28,7 +28,7 @@ describe.skip('DarkForestScoringRound3', function () {
   let world: World;
 
   async function worldFixture() {
-    const world = await fixtureLoader(defaultWorldFixture);
+    const world = await loadFixture(defaultWorldFixture);
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
 
     // Conquer initial planets
@@ -39,7 +39,7 @@ describe.skip('DarkForestScoringRound3', function () {
 
   beforeEach('load fixture', async function () {
     this.timeout(0);
-    world = await fixtureLoader(worldFixture);
+    world = await loadFixture(worldFixture);
   });
 
   it('allows player to claim self-owned planet for score (positive x/y)', async function () {

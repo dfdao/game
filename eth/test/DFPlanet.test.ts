@@ -1,8 +1,8 @@
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import {
   conquerUnownedPlanet,
   feedSilverToCap,
-  fixtureLoader,
   increaseBlockchainTime,
   makeInitArgs,
   makeMoveArgs,
@@ -40,7 +40,7 @@ describe('DarkForestPlanet', function () {
   let world: World;
 
   async function worldFixture() {
-    const world = await fixtureLoader(defaultWorldFixture);
+    const world = await loadFixture(defaultWorldFixture);
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     await world.user2Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_2));
 
@@ -106,7 +106,7 @@ describe('DarkForestPlanet', function () {
   }
 
   beforeEach('load fixture', async function () {
-    world = await fixtureLoader(worldFixture);
+    world = await loadFixture(worldFixture);
   });
 
   it('clips level in nebula and space', async function () {

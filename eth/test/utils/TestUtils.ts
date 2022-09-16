@@ -10,16 +10,14 @@ import {
 } from '@darkforest_eth/snarks';
 import { ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
 import { bigIntFromKey } from '@darkforest_eth/whitelist';
+import { mine, time } from '@nomicfoundation/hardhat-network-helpers';
 import bigInt from 'big-integer';
-import { BigNumber, BigNumberish } from 'ethers';
-import { ethers, waffle } from 'hardhat';
+import { BigNumber, BigNumberish, constants } from 'ethers';
 // @ts-ignore
 import * as snarkjs from 'snarkjs';
 import { TestLocation } from './TestLocation';
 import { World } from './TestWorld';
 import { ARTIFACT_PLANET_1, initializers, LARGE_INTERVAL } from './WorldConstants';
-
-const { constants } = ethers;
 
 const {
   PLANETHASH_KEY,
@@ -32,8 +30,6 @@ const {
 
 export const ZERO_ADDRESS = constants.AddressZero;
 export const BN_ZERO = constants.Zero;
-
-export const fixtureLoader = waffle.createFixtureLoader();
 
 export function hexToBigNumber(hex: string): BigNumber {
   return BigNumber.from(`0x${hex}`);
@@ -219,12 +215,12 @@ export function makeFindArtifactArgs(
  * interval is measured in seconds
  */
 export async function increaseBlockchainTime(interval = LARGE_INTERVAL) {
-  await ethers.provider.send('evm_increaseTime', [interval]);
-  await ethers.provider.send('evm_mine', []);
+  await time.increase(interval);
+  await mine();
 }
 
 export async function getCurrentTime() {
-  return (await ethers.provider.getBlock('latest')).timestamp;
+  return time.latest();
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

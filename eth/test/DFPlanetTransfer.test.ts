@@ -1,11 +1,7 @@
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import {
-  fixtureLoader,
-  increaseBlockchainTime,
-  makeInitArgs,
-  makeMoveArgs,
-} from './utils/TestUtils';
+import { increaseBlockchainTime, makeInitArgs, makeMoveArgs } from './utils/TestUtils';
 import { defaultWorldFixture, noPlanetTransferFixture, World } from './utils/TestWorld';
 import { LVL0_PLANET_POPCAP_BOOSTED, SPAWN_PLANET_1, SPAWN_PLANET_2 } from './utils/WorldConstants';
 
@@ -16,7 +12,7 @@ describe('DarkForestTransferPlanet', function () {
 
   describe("when transferring is disabled it doesn't work", async function () {
     before(async function () {
-      world = await fixtureLoader(noPlanetTransferFixture);
+      world = await loadFixture(noPlanetTransferFixture);
       await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     });
 
@@ -35,7 +31,7 @@ describe('DarkForestTransferPlanet', function () {
     let world: World;
 
     before(async function () {
-      world = await fixtureLoader(defaultWorldFixture);
+      world = await loadFixture(defaultWorldFixture);
       await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     });
 

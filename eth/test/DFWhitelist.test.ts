@@ -1,8 +1,9 @@
 import { EthAddress } from '@darkforest_eth/types';
 import { generateKeys, keyHash } from '@darkforest_eth/whitelist';
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { fixtureLoader, makeInitArgs, makeWhitelistArgs } from './utils/TestUtils';
+import { makeInitArgs, makeWhitelistArgs } from './utils/TestUtils';
 import { whilelistWorldFixture, World } from './utils/TestWorld';
 import { SPAWN_PLANET_1 } from './utils/WorldConstants';
 
@@ -14,14 +15,14 @@ describe('DarkForestWhitelist', function () {
   let world: World;
 
   async function worldFixture() {
-    const world = await fixtureLoader(whilelistWorldFixture);
+    const world = await loadFixture(whilelistWorldFixture);
     await world.contract.addKeys(keyHashes);
 
     return world;
   }
 
   beforeEach('load fixture', async function () {
-    world = await fixtureLoader(worldFixture);
+    world = await loadFixture(worldFixture);
   });
 
   it('allows a user to register with a valid key', async function () {
