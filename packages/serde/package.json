@@ -25,7 +25,7 @@
     "@darkforest_eth/hexgen": "6.7.0-dev.0",
     "@darkforest_eth/types": "6.7.0-dev.0",
     "big-integer": "^1.6.48",
-    "ethers": "^5.5.1"
+    "ethers": "^5.7.1"
   },
   "devDependencies": {
     "del-cli": "^4.0.1",

@@ -26,7 +26,7 @@
     "@darkforest_eth/serde": "6.7.0-dev.0",
     "@darkforest_eth/types": "6.7.0-dev.0",
     "async-mutex": "^0.3.2",
-    "ethers": "^5.5.1",
+    "ethers": "^5.7.1",
     "json-stable-stringify": "^1.0.1",
     "just-debounce": "^1.1.0",
     "lodash": "^4.17.15",
