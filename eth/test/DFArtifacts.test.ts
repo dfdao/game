@@ -317,7 +317,8 @@ describe('DarkForestArtifacts', function () {
   });
 
   it('should mint randomly', async function () {
-    this.timeout(1000 * 60);
+    // This can take upwards of 90000ms in CI
+    this.timeout(0);
 
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL3_SPACETIME_1);
 
