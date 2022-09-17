@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Library imports
-import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
+import {LibPermissions} from "../libraries/LibPermissions.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
@@ -24,7 +24,7 @@ contract DFAdminFacet is WithStorage {
     /////////////////////////////
 
     modifier onlyAdmin() {
-        LibDiamond.enforceIsContractOwner();
+        LibPermissions.enforceIsContractOwner();
         _;
     }
 

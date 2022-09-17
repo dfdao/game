@@ -2,13 +2,13 @@
 pragma solidity ^0.8.0;
 
 // Contract imports
-import {ERC721} from "@solidstate/contracts/token/ERC721/ERC721.sol";
+import {SolidStateERC721} from "@solidstate/contracts/token/ERC721/SolidStateERC721.sol";
 import {ERC721BaseStorage} from "@solidstate/contracts/token/ERC721/base/ERC721BaseStorage.sol";
 import {DFVerifierFacet} from "./DFVerifierFacet.sol";
 import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
 
 // Library Imports
-import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
+import {LibPermissions} from "../libraries/LibPermissions.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 import {LibPlanet} from "../libraries/LibPlanet.sol";
@@ -19,7 +19,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 // Type imports
 import {Artifact, ArtifactType, DFTCreateArtifactArgs, DFPFindArtifactArgs} from "../DFTypes.sol";
 
-contract DFArtifactFacet is WithStorage, ERC721 {
+contract DFArtifactFacet is WithStorage, SolidStateERC721 {
     using ERC721BaseStorage for ERC721BaseStorage.Layout;
 
     event PlanetProspected(address player, uint256 loc);
@@ -32,7 +32,7 @@ contract DFArtifactFacet is WithStorage, ERC721 {
     modifier onlyWhitelisted() {
         require(
             DFWhitelistFacet(address(this)).isWhitelisted(msg.sender) ||
-                msg.sender == LibDiamond.contractOwner(),
+                msg.sender == LibPermissions.contractOwner(),
             "Player is not whitelisted"
         );
         _;
@@ -50,7 +50,7 @@ contract DFArtifactFacet is WithStorage, ERC721 {
 
     modifier onlyAdminOrCore() {
         require(
-            msg.sender == gs().diamondAddress || msg.sender == LibDiamond.contractOwner(),
+            msg.sender == gs().diamondAddress || msg.sender == LibPermissions.contractOwner(),
             "Only the Core or Admin addresses can fiddle with artifacts."
         );
         _;
@@ -58,7 +58,7 @@ contract DFArtifactFacet is WithStorage, ERC721 {
 
     modifier onlyAdmin() {
         require(
-            msg.sender == LibDiamond.contractOwner(),
+            msg.sender == LibPermissions.contractOwner(),
             "Only Admin address can perform this action."
         );
         _;

@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import {DFArtifactFacet} from "./DFArtifactFacet.sol";
 
 // Library imports
-import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
+import {LibPermissions} from "../libraries/LibPermissions.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 
 // Storage imports
@@ -21,7 +21,7 @@ contract DFGetterFacet is WithStorage {
     // - tokens (it's a contract)
 
     function adminAddress() public view returns (address) {
-        return LibDiamond.contractOwner();
+        return LibPermissions.contractOwner();
     }
 
     function paused() public view returns (bool) {

@@ -91,15 +91,15 @@ export function isIncluded(contractName: string, signature: string): boolean {
 }
 
 interface FacetCut {
-  facetAddress: string;
+  target: string;
   action: FacetCutAction;
-  functionSelectors: string[];
+  selectors: string[];
 }
 
 // A facet stored in the smart contract doesn't have an `action` property
 interface Facet {
-  facetAddress: string;
-  functionSelectors: string[];
+  target: string;
+  selectors: string[];
 }
 
 interface HasInterface {
@@ -171,23 +171,23 @@ export class DiamondChanges {
 
       if (diff.add.length > 0) {
         facetCuts.push({
-          facetAddress: contract.address,
+          target: contract.address,
           action: FacetCutAction.Add,
-          functionSelectors: diff.add,
+          selectors: diff.add,
         });
       }
       if (diff.replace.length > 0) {
         facetCuts.push({
-          facetAddress: contract.address,
+          target: contract.address,
           action: FacetCutAction.Replace,
-          functionSelectors: diff.replace,
+          selectors: diff.replace,
         });
       }
     } else {
       facetCuts.push({
-        facetAddress: contract.address,
+        target: contract.address,
         action: FacetCutAction.Add,
-        functionSelectors: this.getSelectors(contractName, contract),
+        selectors: this.getSelectors(contractName, contract),
       });
     }
 
@@ -208,13 +208,13 @@ export class DiamondChanges {
     if (!this.previous) {
       throw new Error('You must construct DiamondChanges with previous cuts to find removals');
     }
-    const functionSelectors = cuts.flatMap((cut) => cut.functionSelectors);
+    const functionSelectors = cuts.flatMap((cut) => cut.selectors);
 
     const seenSelectors = new Set(functionSelectors);
 
     const toRemove = [] as string[];
-    for (const { functionSelectors } of this.previous) {
-      for (const selector of functionSelectors) {
+    for (const { selectors } of this.previous) {
+      for (const selector of selectors) {
         // TODO: Do we need to check `isIncluded`? I don't want to deal with contract names
         if (!seenSelectors.has(selector) && !this.isDiamondSpecSelector(selector)) {
           toRemove.push(selector);
@@ -227,9 +227,9 @@ export class DiamondChanges {
 
     if (toRemove.length) {
       removeCuts.push({
-        facetAddress: constants.AddressZero,
+        target: constants.AddressZero,
         action: FacetCutAction.Remove,
-        functionSelectors: toRemove,
+        selectors: toRemove,
       });
     }
 
@@ -331,8 +331,8 @@ export class DiamondChanges {
     for (const signature of signatures) {
       if (isIncluded(contractName, signature)) {
         const selector = contract.interface.getSighash(signature);
-        const selectorExists = previous.some(({ functionSelectors }) => {
-          return functionSelectors.some((val) => selector === val);
+        const selectorExists = previous.some(({ selectors }) => {
+          return selectors.some((val) => selector === val);
         });
         if (selectorExists) {
           this.changes.replaced.push([contractName, signature]);

@@ -7,7 +7,7 @@ import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
 
 // Library imports
 import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
-import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
+import {LibPermissions} from "../libraries/LibPermissions.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 import {LibPlanet} from "../libraries/LibPlanet.sol";
@@ -36,7 +36,7 @@ contract DFCoreFacet is WithStorage {
     modifier onlyWhitelisted() {
         require(
             DFWhitelistFacet(address(this)).isWhitelisted(msg.sender) ||
-                msg.sender == LibDiamond.contractOwner(),
+                msg.sender == LibPermissions.contractOwner(),
             "Player is not whitelisted"
         );
         _;
@@ -110,7 +110,7 @@ contract DFCoreFacet is WithStorage {
             _input[1],
             _input[2],
             _input[3],
-            msg.sender != LibDiamond.contractOwner()
+            msg.sender != LibPermissions.contractOwner()
         );
         emit LocationRevealed(msg.sender, _input[0], _input[2], _input[3]);
     }

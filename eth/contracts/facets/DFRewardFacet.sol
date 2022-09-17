@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.0;
 
-import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
+import {LibPermissions} from "../libraries/LibPermissions.sol";
 
 import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
 
@@ -13,7 +13,7 @@ contract DFRewardFacet is WithStorage {
     modifier onlyWhitelisted() {
         require(
             DFWhitelistFacet(address(this)).isWhitelisted(msg.sender) ||
-                msg.sender == LibDiamond.contractOwner(),
+                msg.sender == LibPermissions.contractOwner(),
             "Player is not whitelisted"
         );
         _;

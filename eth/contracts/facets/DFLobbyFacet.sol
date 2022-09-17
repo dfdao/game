@@ -2,12 +2,12 @@
 pragma solidity ^0.8.0;
 
 // Contract imports
-import {Diamond} from "../vendor/Diamond.sol";
+import {DFDiamond} from "../DFDiamond.sol";
 
 // Interface imports
-import {IDiamondCut} from "../vendor/interfaces/IDiamondCut.sol";
-import {IDiamondLoupe} from "../vendor/interfaces/IDiamondLoupe.sol";
-import {IERC173} from "../vendor/interfaces/IERC173.sol";
+import {IERC173} from "@solidstate/contracts/access/IERC173.sol";
+import {IDiamondReadable} from "@solidstate/contracts/proxy/diamond/readable/IDiamondReadable.sol";
+import {IDiamondWritable} from "@solidstate/contracts/proxy/diamond/writable/IDiamondWritable.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
@@ -15,29 +15,37 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 contract DFLobbyFacet is WithStorage {
     event LobbyCreated(address ownerAddress, address lobbyAddress);
 
+    /**
+     * @notice create new diamond with facets from parent diamond
+     *  and optionally execute arbitrary initialization function
+     * @param initAddress optional target of initialization delegatecall
+     * @param initData optional initialization function call data
+     */
     function createLobby(address initAddress, bytes calldata initData) public {
         address diamondAddress = gs().diamondAddress;
-        address diamondCutAddress = IDiamondLoupe(diamondAddress).facetAddress(
-            IDiamondCut.diamondCut.selector
+        address diamondCutAddress = IDiamondReadable(diamondAddress).facetAddress(
+            IDiamondWritable.diamondCut.selector
         );
-        Diamond lobby = new Diamond(diamondAddress, diamondCutAddress);
+        DFDiamond lobby = new DFDiamond();
 
-        IDiamondLoupe.Facet[] memory facets = IDiamondLoupe(diamondAddress).facets();
+        IDiamondReadable.Facet[] memory facets = IDiamondReadable(diamondAddress).facets();
 
-        IDiamondCut.FacetCut[] memory facetCut = new IDiamondCut.FacetCut[](facets.length - 1);
+        IDiamondWritable.FacetCut[] memory facetCut = new IDiamondWritable.FacetCut[](
+            facets.length - 1
+        );
         uint256 cutIdx = 0;
         for (uint256 i = 0; i < facets.length; i++) {
-            if (facets[i].facetAddress != diamondCutAddress) {
-                facetCut[cutIdx] = IDiamondCut.FacetCut({
-                    facetAddress: facets[i].facetAddress,
-                    action: IDiamondCut.FacetCutAction.Add,
-                    functionSelectors: facets[i].functionSelectors
+            if (facets[i].target != diamondCutAddress) {
+                facetCut[cutIdx] = IDiamondWritable.FacetCut({
+                    target: facets[i].target,
+                    action: IDiamondWritable.FacetCutAction.ADD,
+                    selectors: facets[i].selectors
                 });
                 cutIdx++;
             }
         }
 
-        IDiamondCut(address(lobby)).diamondCut(facetCut, initAddress, initData);
+        IDiamondWritable(address(lobby)).diamondCut(facetCut, initAddress, initData);
 
         IERC173(address(lobby)).transferOwnership(msg.sender);
 

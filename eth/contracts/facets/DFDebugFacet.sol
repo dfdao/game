@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Library imports
-import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
+import {LibPermissions} from "../libraries/LibPermissions.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
@@ -10,7 +10,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 // Functions used in tests/development for easily modifying game state
 contract DFDebugFacet is WithStorage {
     modifier onlyAdmin() {
-        LibDiamond.enforceIsContractOwner();
+        LibPermissions.enforceIsContractOwner();
         _;
     }
 
