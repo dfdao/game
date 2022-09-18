@@ -317,7 +317,8 @@ describe('DarkForestArtifacts', function () {
   });
 
   it('should mint randomly', async function () {
-    this.timeout(1000 * 60);
+    // This can take upwards of 90000ms in CI
+    this.timeout(0);
 
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL3_SPACETIME_1);
 
@@ -571,6 +572,9 @@ describe('DarkForestArtifacts', function () {
 
   describe('wormhole', function () {
     it('should increase movement speed, in both directions', async function () {
+      // This can take an upwards of 32000ms
+      this.timeout(0);
+
       const from = SPAWN_PLANET_1;
       const to = LVL0_PLANET;
       await conquerUnownedPlanet(world, world.user1Core, from, LVL3_UNOWNED_NEBULA);
