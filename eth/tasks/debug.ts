@@ -55,7 +55,10 @@ async function giveArtifact(
   hre: HardhatRuntimeEnvironment
 ) {
   const chosenArtifactType = artifactOptions.indexOf(artifactType) + 1;
-  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  const contract = await hre.ethers.getContractAt(
+    'DarkForest',
+    hre.settings.contracts.CONTRACT_ADDRESS
+  );
 
   for (let i = 0; i < amount; i++) {
     // see contracts/types/ActionTypes.sol - CreateArtifactArgs

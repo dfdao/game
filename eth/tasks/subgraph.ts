@@ -40,7 +40,7 @@ task(TASK_SUBGRAPH_CODEGEN, 'generate subgraph files before graph deploy').setAc
 );
 
 async function subgraphCodegen(_args: HardhatArguments, hre: HardhatRuntimeEnvironment) {
-  const { CONTRACT_ADDRESS, START_BLOCK } = hre.contracts;
+  const { CONTRACT_ADDRESS, START_BLOCK } = hre.settings.contracts;
 
   // hardcoded for now, will be able to set with plugin
   const subgraphPath = path.join(hre.config.paths.root, 'subgraph');

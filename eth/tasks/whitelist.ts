@@ -11,7 +11,10 @@ task('whitelist:changeDrip', 'change the faucet amount for whitelisted players')
 async function changeDrip(args: { value: number }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  const contract = await hre.ethers.getContractAt(
+    'DarkForest',
+    hre.settings.contracts.CONTRACT_ADDRESS
+  );
 
   const txReceipt = await contract.changeDrip(hre.ethers.utils.parseEther(args.value.toString()));
   await txReceipt.wait();
@@ -33,7 +36,10 @@ async function whitelistDisable(args: { filePath: string }, hre: HardhatRuntimeE
   const keyFileContents = fs.readFileSync(args.filePath).toString();
   const keys = keyFileContents.split('\n').filter((k) => k.length > 0);
 
-  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  const contract = await hre.ethers.getContractAt(
+    'DarkForest',
+    hre.settings.contracts.CONTRACT_ADDRESS
+  );
 
   while (keys.length > 0) {
     const subset = keys.splice(0, Math.min(keys.length, 400));
@@ -57,7 +63,10 @@ async function whitelistGenerate(
 
   const nKeys = args.amount;
 
-  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  const contract = await hre.ethers.getContractAt(
+    'DarkForest',
+    hre.settings.contracts.CONTRACT_ADDRESS
+  );
 
   const filepath = path.resolve(args.output);
 
@@ -119,7 +128,10 @@ subtask('whitelist:existsAddress', 'determine if an address is whitelisted')
 async function whitelistExistsAddress(args: { address: string }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  const contract = await hre.ethers.getContractAt(
+    'DarkForest',
+    hre.settings.contracts.CONTRACT_ADDRESS
+  );
 
   const isAddress = hre.ethers.utils.isAddress(args.address);
   if (!isAddress) {
@@ -141,7 +153,10 @@ subtask('whitelist:existsKeyHash', 'determine if a whitelist key is valid')
 async function whitelistExistsKeyHash(args: { key: string }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  const contract = await hre.ethers.getContractAt(
+    'DarkForest',
+    hre.settings.contracts.CONTRACT_ADDRESS
+  );
 
   const hash = keyHash(args.key);
   const isValid = await contract.isKeyHashValid(hash);
@@ -164,7 +179,10 @@ task('whitelist:register', 'add address(es) to whitelist')
 async function whitelistRegister(args: { address: string }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  const contract = await hre.ethers.getContractAt(
+    'DarkForest',
+    hre.settings.contracts.CONTRACT_ADDRESS
+  );
 
   for (const address of args.address.split(',')) {
     const isAddress = hre.ethers.utils.isAddress(address);
@@ -202,7 +220,10 @@ async function whitelistSetRelayerReward(
   hre: HardhatRuntimeEnvironment
 ) {
   await hre.run('utils:assertChainId');
-  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  const contract = await hre.ethers.getContractAt(
+    'DarkForest',
+    hre.settings.contracts.CONTRACT_ADDRESS
+  );
 
   const enabled = await contract.relayerRewardsEnabled();
   console.log(`Relayer rewards are currently: ${enabled ? 'ENABLED' : 'DISABLED'}`);

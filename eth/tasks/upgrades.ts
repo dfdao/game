@@ -26,7 +26,10 @@ async function upgrade({}, hre: HardhatRuntimeEnvironment) {
   // need to force a compile for tasks
   await hre.run('compile');
 
-  const diamond = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  const diamond = await hre.ethers.getContractAt(
+    'DarkForest',
+    hre.settings.contracts.CONTRACT_ADDRESS
+  );
 
   const previousFacets = await diamond.facets();
 
