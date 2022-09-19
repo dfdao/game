@@ -25,7 +25,7 @@ export interface Player {
 }
 
 export interface InitializeWorldArgs {
-  initializers: HardhatRuntimeEnvironment['initializers'];
+  initializers: HardhatRuntimeEnvironment['settings']['darkforest']['initializers'];
   whitelistEnabled: boolean;
 }
 

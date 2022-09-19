@@ -11,15 +11,21 @@ import 'hardhat-diamond-abi';
 import '@typechain/hardhat';
 import 'hardhat-circom';
 import 'hardhat-contract-sizer';
+import 'hardhat-settings';
 import '@solidstate/hardhat-4byte-uploader';
 import { extendEnvironment, HardhatUserConfig } from 'hardhat/config';
-import { lazyObject } from 'hardhat/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import * as diamondUtils from './utils/diamond';
 import * as subgraphUtils from './utils/subgraph';
 import * as path from 'path';
-import * as settings from './settings';
-import { decodeContracts, decodeInitializers, decodeAdminPlanets } from '@darkforest_eth/settings';
+import {
+  decodeContracts,
+  decodeInitializers,
+  decodeAdminPlanets,
+  AdminPlanets,
+  Contracts,
+  Initializers,
+} from '@darkforest_eth/settings';
 import workspace from '@projectsophon/workspace';
 import './tasks/artifact';
 import './tasks/circom';
@@ -32,6 +38,30 @@ import './tasks/upgrades';
 import './tasks/utils';
 import './tasks/wallet';
 import './tasks/whitelist';
+
+declare module 'hardhat/types' {
+  interface HardhatSettings {
+    contracts: Contracts;
+
+    darkforest: {
+      initializers: Initializers;
+      adminPlanets: AdminPlanets;
+    };
+  }
+}
+
+declare module 'hardhat/types/runtime' {
+  interface HardhatRuntimeEnvironment {
+    DEPLOYER_MNEMONIC: string | undefined;
+    ADMIN_PUBLIC_ADDRESS: string | undefined;
+
+    packageDirs: {
+      '@darkforest_eth/contracts': string;
+      '@darkforest_eth/snarks': string;
+      circuits: string;
+    };
+  }
+}
 
 require('dotenv').config();
 
@@ -63,21 +93,6 @@ extendEnvironment((env: HardhatRuntimeEnvironment) => {
   env.ADMIN_PUBLIC_ADDRESS = ADMIN_PUBLIC_ADDRESS;
 
   env.packageDirs = packageDirs;
-
-  env.contracts = lazyObject(() => {
-    const contracts = require('@darkforest_eth/contracts');
-    return settings.parse(decodeContracts, contracts);
-  });
-
-  env.initializers = lazyObject(() => {
-    const { initializers = {} } = settings.load(env.network.name);
-    return settings.parse(decodeInitializers, initializers);
-  });
-
-  env.adminPlanets = lazyObject(() => {
-    const { planets = [] } = settings.load(env.network.name);
-    return settings.parse(decodeAdminPlanets, planets);
-  });
 });
 
 // The xdai config, but it isn't added to networks unless we have a DEPLOYER_MNEMONIC
@@ -245,6 +260,23 @@ const config: HardhatUserConfig = {
       },
     },
   ],
+  settings: {
+    contracts: {
+      path: path.join(packageDirs['@darkforest_eth/contracts'], 'index.js'),
+      lazy: true,
+      decode: decodeContracts,
+    },
+    darkforest: {
+      lazy: false,
+      decode(input) {
+        // TODO: We probably want initializers & adminPlanet to come from separate settings files
+        return {
+          initializers: decodeInitializers(input.initializers),
+          adminPlanets: decodeAdminPlanets(input.adminPlanets || []),
+        };
+      },
+    },
+  },
 };
 
 export default config;

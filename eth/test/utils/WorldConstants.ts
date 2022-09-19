@@ -1,5 +1,4 @@
 import { decodeInitializers } from '@darkforest_eth/settings';
-import * as settings from '../../settings';
 import { TestLocation } from './TestLocation';
 
 const defaultInitializerValues = {
@@ -109,16 +108,16 @@ const defaultInitializerValues = {
 };
 
 // This builds a fake HRE-like object used to initialize the test contracts
-export const initializers = settings.parse(decodeInitializers, defaultInitializerValues);
+export const initializers = decodeInitializers(defaultInitializerValues);
 
 // This builds a fake HRE-like object used to initialize the test contracts
-export const noPlanetTransferInitializers = settings.parse(decodeInitializers, {
+export const noPlanetTransferInitializers = decodeInitializers({
   ...defaultInitializerValues,
   PLANET_TRANSFER_ENABLED: false,
 });
 
 // This builds a fake HRE-like object used to initialize the test contracts
-export const target4Initializers = settings.parse(decodeInitializers, {
+export const target4Initializers = decodeInitializers({
   ...defaultInitializerValues,
   WORLD_RADIUS_LOCKED: false,
   WORLD_RADIUS_MIN: 1,

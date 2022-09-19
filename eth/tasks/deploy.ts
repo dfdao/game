@@ -3,7 +3,6 @@ import { task, types } from 'hardhat/config';
 import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
 import * as path from 'path';
 import { dedent } from 'ts-dedent';
-import * as settings from '../settings';
 import { DiamondChanges } from '../utils/diamond';
 import { tscompile } from '../utils/tscompile';
 
@@ -32,9 +31,6 @@ async function deploy(
     whitelistEnabled = args.whitelist;
   }
 
-  // Ensure we have required keys in our initializers
-  settings.required(hre.initializers, ['PLANETHASH_KEY', 'SPACETYPE_KEY', 'BIOMEBASE_KEY']);
-
   // need to force a compile for tasks
   await hre.run('compile');
 
@@ -56,7 +52,11 @@ async function deploy(
   }
 
   const [diamond, diamondInit, initReceipt] = await deployAndCut(
-    { ownerAddress: deployer.address, whitelistEnabled, initializers: hre.initializers },
+    {
+      ownerAddress: deployer.address,
+      whitelistEnabled,
+      initializers: hre.settings.darkforest.initializers,
+    },
     hre
   );
 
@@ -207,7 +207,7 @@ export async function deployAndCut(
   }: {
     ownerAddress: string;
     whitelistEnabled: boolean;
-    initializers: HardhatRuntimeEnvironment['initializers'];
+    initializers: HardhatRuntimeEnvironment['settings']['darkforest']['initializers'];
   },
   hre: HardhatRuntimeEnvironment
 ) {

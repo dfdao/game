@@ -9,10 +9,13 @@ Tasks are defined inside files this directory, and imported into the `hardhat.co
 When writing a task that interacts with deployed contracts, the following helper should be used to load a type-safe contract:
 
 ```ts
-const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+const contract = await hre.ethers.getContractAt(
+  'DarkForest',
+  hre.settings.contracts.CONTRACT_ADDRESS
+);
 ```
 
-During compile, we generate a `DarkForest` ABI which combines all functions from our contracts into a single ABI. Then, TypeChain creates TypeScript helpers to ensure the `hre.ethers.getContractAt('DarkForest', ...)` function returns the `DarkForest` contract. The `hre.contracts.CONTRACT_ADDRESS` variable will be the appropriate deployed contract address, as loaded from the `@darkforest_eth/contracts` package.
+During compile, we generate a `DarkForest` ABI which combines all functions from our contracts into a single ABI. Then, TypeChain creates TypeScript helpers to ensure the `hre.ethers.getContractAt('DarkForest', ...)` function returns the `DarkForest` contract. The `hre.settings.contracts.CONTRACT_ADDRESS` variable will be the appropriate deployed contract address, as loaded from the `@darkforest_eth/contracts` package.
 
 Other contracts could be loaded with `hre.ethers.getContractAt()`, but that shouldn't be necessary since all public functions will be available through the `DarkForest` Diamond ABI.
 
