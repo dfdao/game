@@ -68,10 +68,6 @@ task(TASK_SUBGRAPH_DEPLOY, 'deploy subgraph')
   .setAction(subgraphDeploy);
 
 async function subgraphDeploy(args: { name: string }, hre: HardhatRuntimeEnvironment) {
-  // The subgraph local docker crashes if we don't set automine true
-  await hre.network.provider.send('evm_setAutomine', [true]);
-  await hre.network.provider.send('evm_setIntervalMining', [0]);
-
   await hre.run(TASK_SUBGRAPH_CODEGEN, args);
   const docker = new Docker();
 

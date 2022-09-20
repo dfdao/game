@@ -63,11 +63,6 @@ export async function initializeWorld({
 }: InitializeWorldArgs): Promise<World> {
   const [deployer, user1, user2] = await hre.ethers.getSigners();
 
-  // The tests assume that things get mined right away
-  // TODO(#912): This means the tests are wildly fragile and probably need to be rewritten
-  await hre.network.provider.send('evm_setAutomine', [true]);
-  await hre.network.provider.send('evm_setIntervalMining', [0]);
-
   const [diamond, _initReceipt] = await deployAndCut(
     { ownerAddress: deployer.address, whitelistEnabled, initializers },
     hre
