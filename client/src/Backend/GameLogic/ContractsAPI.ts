@@ -180,7 +180,10 @@ export class ContractsAPI extends EventEmitter {
     this.emit(ContractsAPIEvent.TxProcessing, tx);
   }
 
-  private async afterTransaction(_txRequest: Transaction, txDiagnosticInfo: unknown) {
+  private async afterTransaction(
+    _txRequest: Transaction,
+    txDiagnosticInfo: Record<string, unknown>
+  ) {
     eventLogger.logEvent(EventType.Transaction, txDiagnosticInfo);
   }
 
