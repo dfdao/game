@@ -17,6 +17,7 @@ export function tscompile(input: string): CompiledOuput {
     sourceMap: true,
     inlineSources: true,
     target: ts.ScriptTarget.ES2020,
+    module: ts.ModuleKind.CommonJS,
   };
   const inputFileName = 'index.ts';
   const sourceFile = ts.createSourceFile(inputFileName, input, ts.ScriptTarget.ES2020);
