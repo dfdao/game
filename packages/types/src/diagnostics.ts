@@ -1,6 +1,6 @@
 import type { GasPrices } from './gas_prices';
 
-export interface Diagnostics {
+export type Diagnostics = {
   visiblePlanets: number;
   visibleChunks: number;
   fps: number;
@@ -15,7 +15,7 @@ export interface Diagnostics {
   rpcUrl: string;
   width?: number;
   height?: number;
-}
+};
 
 /**
  * Various parts of our codebase need to be able to self-report diagnostics. To enable them to do
