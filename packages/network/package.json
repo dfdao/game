@@ -1,6 +1,6 @@
 {
   "name": "@dfdao/network",
-  "version": "6.7.0-dev.0",
+  "version": "100.0.0-dev.0",
   "license": "MIT",
   "author": "0xPARC <ivan@0xPARC.org>",
   "engines": {
@@ -20,11 +20,11 @@
     "clean": "del-cli dist node_modules tsconfig.ref.tsbuildinfo"
   },
   "dependencies": {
-    "@dfdao/constants": "6.7.0-dev.0",
-    "@dfdao/contracts": "6.7.0-dev.0",
-    "@dfdao/events": "6.7.0-dev.0",
-    "@dfdao/serde": "6.7.0-dev.0",
-    "@dfdao/types": "6.7.0-dev.0",
+    "@dfdao/constants": "100.0.0-dev.0",
+    "@dfdao/contracts": "100.0.0-dev.0",
+    "@dfdao/events": "100.0.0-dev.0",
+    "@dfdao/serde": "100.0.0-dev.0",
+    "@dfdao/types": "100.0.0-dev.0",
     "async-mutex": "^0.3.2",
     "ethers": "^5.7.1",
     "json-stable-stringify": "^1.0.1",

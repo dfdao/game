@@ -1,6 +1,6 @@
 {
   "name": "@dfdao/hexgen",
-  "version": "6.7.0-dev.0",
+  "version": "100.0.0-dev.0",
   "license": "MIT",
   "author": "0xPARC <ivan@0xPARC.org>",
   "engines": {
@@ -20,7 +20,7 @@
     "clean": "del-cli dist node_modules tsconfig.ref.tsbuildinfo"
   },
   "dependencies": {
-    "@dfdao/types": "6.7.0-dev.0",
+    "@dfdao/types": "100.0.0-dev.0",
     "big-integer": "^1.6.48"
   },
   "devDependencies": {
