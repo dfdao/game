@@ -1,3 +1,4 @@
+import { generateKeys, keyHash, keysPerTx } from '@darkforest_eth/whitelist';
 import * as fs from 'fs';
 import { subtask, task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
@@ -59,8 +60,6 @@ async function whitelistGenerate(
   hre: HardhatRuntimeEnvironment
 ) {
   await hre.run('utils:assertChainId');
-
-  const { generateKeys, keyHash, keysPerTx } = await import('@darkforest_eth/whitelist');
 
   const nKeys = args.amount;
 
@@ -153,8 +152,6 @@ subtask('whitelist:existsKeyHash', 'determine if a whitelist key is valid')
 
 async function whitelistExistsKeyHash(args: { key: string }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
-
-  const { keyHash } = await import('@darkforest_eth/whitelist');
 
   const contract = await hre.ethers.getContractAt(
     'DarkForest',

@@ -1,4 +1,10 @@
-import type { RevealSnarkContractCallArgs, SnarkJSProofAndSignals } from '@darkforest_eth/snarks';
+import { fakeHash, mimcHash, modPBigInt, perlin } from '@darkforest_eth/hashing';
+import {
+  buildContractCallArgs,
+  fakeProof,
+  RevealSnarkContractCallArgs,
+  SnarkJSProofAndSignals,
+} from '@darkforest_eth/snarks';
 import { revealSnarkWasmPath, revealSnarkZkeyPath } from '@darkforest_eth/snarks/node';
 import { BigNumber } from 'ethers';
 import { task, types } from 'hardhat/config';
@@ -211,8 +217,6 @@ async function findCheaters({}, hre: HardhatRuntimeEnvironment) {
 async function createPlanets({}, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const { fakeHash, mimcHash, perlin } = await import('@darkforest_eth/hashing');
-
   const contract = await hre.ethers.getContractAt(
     'DarkForest',
     hre.settings.contracts.CONTRACT_ADDRESS
@@ -281,9 +285,6 @@ async function makeRevealProof(
   zkChecksDisabled: boolean,
   planetRarity: number
 ): Promise<RevealSnarkContractCallArgs> {
-  const { fakeHash, modPBigInt, perlin } = await import('@darkforest_eth/hashing');
-  const { buildContractCallArgs, fakeProof } = await import('@darkforest_eth/snarks');
-
   if (zkChecksDisabled) {
     const location = fakeHash(planetRarity)(x, y).toString();
     const perlinValue = perlin(
