@@ -1,4 +1,4 @@
-import { AttribProps, AttribType } from '@darkforest_eth/types';
+import { AttribProps, AttribType } from '@dfdao/types';
 import { glsl } from '../EngineUtils';
 import { ProgramUtils } from '../WebGL/ProgramUtils';
 

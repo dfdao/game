@@ -1,5 +1,5 @@
-import { DEFAULT_MAX_CALL_RETRIES } from '@darkforest_eth/constants';
-import { DiagnosticUpdater } from '@darkforest_eth/types';
+import { DEFAULT_MAX_CALL_RETRIES } from '@dfdao/constants';
+import { DiagnosticUpdater } from '@dfdao/types';
 import { ContractFunction } from 'ethers';
 import retry, { AbortError } from 'p-retry';
 import { Queue, ThrottledConcurrentQueue } from './ThrottledConcurrentQueue';

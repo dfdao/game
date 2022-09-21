@@ -1,4 +1,4 @@
-import { decodeInitializers } from '@darkforest_eth/settings';
+import { decodeInitializers } from '@dfdao/settings';
 import { TestLocation } from './TestLocation';
 
 const defaultInitializerValues = {

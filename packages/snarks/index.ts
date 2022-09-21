@@ -11,16 +11,16 @@
  * [`yarn`](https://classic.yarnpkg.com/lang/en/) by running:
  *
  * ```bash
- * npm install --save @darkforest_eth/snarks
+ * npm install --save @dfdao/snarks
  * ```
  * ```bash
- * yarn add @darkforest_eth/snarks
+ * yarn add @dfdao/snarks
  * ```
  *
  * When using this in a plugin, you might want to load it with [skypack](https://www.skypack.dev)
  *
  * ```js
- * import * as snarks from 'http://cdn.skypack.dev/@darkforest_eth/snarks'
+ * import * as snarks from 'http://cdn.skypack.dev/@dfdao/snarks'
  * ```
  *
  * @packageDocumentation

@@ -5,7 +5,7 @@ import {
   RendererType,
   RGBVec,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import autoBind from 'auto-bind';
 import { EngineUtils } from '../EngineUtils';
 import { BeltProps, BELT_PROGRAM_DEFINITION, propsFromIdx } from '../Programs/BeltProgram';

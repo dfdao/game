@@ -8,16 +8,16 @@
  * [`yarn`](https://classic.yarnpkg.com/lang/en/) by running:
  *
  * ```bash
- * npm install --save @darkforest_eth/constants
+ * npm install --save @dfdao/constants
  * ```
  * ```bash
- * yarn add @darkforest_eth/constants
+ * yarn add @dfdao/constants
  * ```
  *
  * When using this in a plugin, you might want to load it with [skypack](https://www.skypack.dev)
  *
  * ```js
- * import * as constants from 'http://cdn.skypack.dev/@darkforest_eth/constants'
+ * import * as constants from 'http://cdn.skypack.dev/@dfdao/constants'
  * ```
  *
  * @packageDocumentation
@@ -31,7 +31,7 @@ import {
   GasPrices,
   LocationId,
   PlanetLevel,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import bigInt, { BigInteger } from 'big-integer';
 
 /**

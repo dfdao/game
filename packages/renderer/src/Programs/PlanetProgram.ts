@@ -1,5 +1,5 @@
-import { isLocatable } from '@darkforest_eth/gamelogic';
-import { AttribType, Biome, Planet, UniformType } from '@darkforest_eth/types';
+import { isLocatable } from '@dfdao/gamelogic';
+import { AttribType, Biome, Planet, UniformType } from '@dfdao/types';
 import { glsl } from '../EngineUtils';
 import { ShaderMixins } from '../WebGL/ShaderMixins';
 

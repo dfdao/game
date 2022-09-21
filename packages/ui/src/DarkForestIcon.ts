@@ -1,4 +1,4 @@
-import { Abstract } from '@darkforest_eth/types';
+import { Abstract } from '@dfdao/types';
 import { css, LitElement, nothing, svg, unsafeCSS } from 'lit';
 import * as dfstyles from './styles';
 

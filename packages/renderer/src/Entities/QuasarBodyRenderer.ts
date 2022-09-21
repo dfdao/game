@@ -1,11 +1,11 @@
-import { getPlanetCosmetic } from '@darkforest_eth/procedural';
+import { getPlanetCosmetic } from '@dfdao/procedural';
 import {
   CanvasCoords,
   Planet,
   QuasarBodyRendererType,
   RendererType,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { EngineUtils } from '../EngineUtils';
 import { QUASARBODY_PROGRAM_DEFINITION } from '../Programs/QuasarBodyProgram';
 import { GameGLManager } from '../WebGL/GameGLManager';

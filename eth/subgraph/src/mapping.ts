@@ -1,5 +1,5 @@
 /* eslint-disable eqeqeq */
-import { CONTRACT_ADDRESS } from '@darkforest_eth/contracts';
+import { CONTRACT_ADDRESS } from '@dfdao/contracts';
 import { Address, BigInt, ethereum, log } from '@graphprotocol/graph-ts';
 import {
   AdminPlanetCreated,

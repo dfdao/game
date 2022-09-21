@@ -1,4 +1,4 @@
-import { isEmojiFlagMessage } from '@darkforest_eth/gamelogic';
+import { isEmojiFlagMessage } from '@dfdao/gamelogic';
 import {
   Artifact,
   CanvasCoords,
@@ -9,7 +9,7 @@ import {
   PlanetRenderInfo,
   TextAlign,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { engineConsts } from './EngineConsts';
 import { hatFromType } from './Hats';
 import { Renderer } from './Renderer';

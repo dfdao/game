@@ -1,4 +1,4 @@
-import type { EthAddress } from '@darkforest_eth/types';
+import type { EthAddress } from '@dfdao/types';
 import bigInt from 'big-integer';
 
 /**

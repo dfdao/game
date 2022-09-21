@@ -1,6 +1,6 @@
-import { DEFAULT_MAX_CALL_RETRIES } from '@darkforest_eth/constants';
-import { address } from '@darkforest_eth/serde';
-import { AutoGasSetting, EthAddress, GasPrices, SignedMessage } from '@darkforest_eth/types';
+import { DEFAULT_MAX_CALL_RETRIES } from '@dfdao/constants';
+import { address } from '@dfdao/serde';
+import { AutoGasSetting, EthAddress, GasPrices, SignedMessage } from '@dfdao/types';
 import { BigNumber, Contract, ContractInterface, providers, utils, Wallet } from 'ethers';
 import stringify from 'json-stable-stringify';
 import retry from 'p-retry';

@@ -1,4 +1,4 @@
-import { DarkForestSlider, DarkForestSliderHandle } from '@darkforest_eth/ui';
+import { DarkForestSlider, DarkForestSliderHandle } from '@dfdao/ui';
 import { createComponent } from '@lit-labs/react';
 import React from 'react';
 

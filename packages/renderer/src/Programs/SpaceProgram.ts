@@ -1,5 +1,5 @@
-import { MAX_PERLIN_VALUE } from '@darkforest_eth/hashing';
-import { AttribType, UniformType } from '@darkforest_eth/types';
+import { MAX_PERLIN_VALUE } from '@dfdao/hashing';
+import { AttribType, UniformType } from '@dfdao/types';
 import { glsl } from '../EngineUtils';
 import { ShaderMixins } from '../WebGL/ShaderMixins';
 

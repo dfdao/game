@@ -1,5 +1,5 @@
-import { EthAddress } from '@darkforest_eth/types';
-import { generateKeys, keyHash } from '@darkforest_eth/whitelist';
+import { EthAddress } from '@dfdao/types';
+import { generateKeys, keyHash } from '@dfdao/whitelist';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';

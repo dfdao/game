@@ -1,13 +1,13 @@
-import { DEFAULT_GAS_PRICES, GAS_PRICES_INTERVAL_MS } from '@darkforest_eth/constants';
-import { Monomitter, monomitter } from '@darkforest_eth/events';
-import { address } from '@darkforest_eth/serde';
+import { DEFAULT_GAS_PRICES, GAS_PRICES_INTERVAL_MS } from '@dfdao/constants';
+import { Monomitter, monomitter } from '@dfdao/events';
+import { address } from '@dfdao/serde';
 import {
   AutoGasSetting,
   DiagnosticUpdater,
   EthAddress,
   GasPrices,
   SignedMessage,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { BigNumber, Contract, EventFilter, providers, Wallet } from 'ethers';
 import stringify from 'json-stable-stringify';
 import debounce from 'just-debounce';

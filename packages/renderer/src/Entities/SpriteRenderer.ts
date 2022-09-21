@@ -1,4 +1,4 @@
-import { isUnconfirmedMoveTx } from '@darkforest_eth/serde';
+import { isUnconfirmedMoveTx } from '@dfdao/serde';
 import {
   Artifact,
   ArtifactRarity,
@@ -10,7 +10,7 @@ import {
   RGBVec,
   SpriteRendererType,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { engineConsts } from '../EngineConsts';
 import { EngineUtils } from '../EngineUtils';
 import { SPRITE_PROGRAM_DEFINITION } from '../Programs/SpriteProgram';

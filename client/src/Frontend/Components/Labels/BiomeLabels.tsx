@@ -1,5 +1,5 @@
-import { isAncient, isLocatable } from '@darkforest_eth/gamelogic';
-import { Artifact, Biome, BiomeNames, LocatablePlanet, Planet } from '@darkforest_eth/types';
+import { isAncient, isLocatable } from '@dfdao/gamelogic';
+import { Artifact, Biome, BiomeNames, LocatablePlanet, Planet } from '@dfdao/types';
 import React from 'react';
 import styled from 'styled-components';
 import { BiomeTextColors } from '../../Styles/Colors';

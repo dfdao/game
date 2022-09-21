@@ -1,4 +1,4 @@
-import { EthAddress } from '@darkforest_eth/types';
+import { EthAddress } from '@dfdao/types';
 import _ from 'lodash';
 import React, { useEffect, useReducer, useState } from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';

@@ -1,11 +1,11 @@
-import { EMPTY_ADDRESS } from '@darkforest_eth/constants';
+import { EMPTY_ADDRESS } from '@dfdao/constants';
 import {
   EmojiFlagBody,
   LocatablePlanet,
   Planet,
   PlanetMessage,
   PlanetMessageType,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 
 export const getPlanetRank = (planet: Planet | undefined): number => {
   if (!planet) return 0;

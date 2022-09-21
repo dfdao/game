@@ -1,4 +1,4 @@
-import { ArtifactRarity, ArtifactRarityNames } from '@darkforest_eth/types';
+import { ArtifactRarity, ArtifactRarityNames } from '@dfdao/types';
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 import { RarityColors } from '../../Styles/Colors';

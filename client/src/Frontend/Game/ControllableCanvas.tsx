@@ -1,5 +1,5 @@
-import { Renderer } from '@darkforest_eth/renderer';
-import { CursorState, ModalManagerEvent, Setting } from '@darkforest_eth/types';
+import { Renderer } from '@dfdao/renderer';
+import { CursorState, ModalManagerEvent, Setting } from '@dfdao/types';
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { useUIManager } from '../Utils/AppHooks';

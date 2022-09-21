@@ -1,4 +1,4 @@
-import { Setting } from '@darkforest_eth/types';
+import { Setting } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TutorialManager, {

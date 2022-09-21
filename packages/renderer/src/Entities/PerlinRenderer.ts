@@ -5,7 +5,7 @@ import {
   Rectangle,
   RendererType,
   Vec3,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { EngineUtils } from '../EngineUtils';
 import { PERLIN_PROGRAM_DEFINITION } from '../Programs/PerlinProgram';
 import { AttribManager } from '../WebGL/AttribManager';

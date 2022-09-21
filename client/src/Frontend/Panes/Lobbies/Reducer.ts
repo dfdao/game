@@ -1,4 +1,4 @@
-import { Initializers } from '@darkforest_eth/settings';
+import { Initializers } from '@dfdao/settings';
 
 export const SAFE_UPPER_BOUNDS = Number.MAX_SAFE_INTEGER - 1;
 

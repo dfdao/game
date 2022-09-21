@@ -1,6 +1,6 @@
-import type { DarkForest } from '@darkforest_eth/contracts/typechain';
-import type { Artifact, ArtifactId, ArtifactPointValues, VoyageId } from '@darkforest_eth/types';
-import { ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
+import type { DarkForest } from '@dfdao/contracts/typechain';
+import type { Artifact, ArtifactId, ArtifactPointValues, VoyageId } from '@dfdao/types';
+import { ArtifactRarity, ArtifactType, Biome } from '@dfdao/types';
 import bigInt from 'big-integer';
 import type { BigNumber as EthersBN } from 'ethers';
 import { address } from './address';
@@ -69,7 +69,7 @@ export type RawArtifactPointValues = Awaited<ReturnType<DarkForest['getArtifactP
 /**
  * Converts the raw typechain result of a call to
  * `DarkForest.getArtifactPointValues` to an `ArtifactPointValues`
- * typescript typed object (see @darkforest_eth/types).
+ * typescript typed object (see @dfdao/types).
  */
 export function decodeArtifactPointValues(
   rawPointValues: RawArtifactPointValues
@@ -88,7 +88,7 @@ export type RawArtifactWithMetadata = Awaited<ReturnType<DarkForest['getArtifact
 
 /**
  * Converts the raw typechain result of `ArtifactTypes.ArtifactWithMetadata`
- * struct to an `Artifact` typescript typed object (see @darkforest_eth/types).
+ * struct to an `Artifact` typescript typed object (see @dfdao/types).
  *
  * @param rawArtifactWithMetadata Raw data of an `ArtifactWithMetadata` struct,
  * returned from a blockchain call (assumed to be typed with typechain).

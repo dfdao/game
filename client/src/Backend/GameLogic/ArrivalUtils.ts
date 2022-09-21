@@ -1,5 +1,5 @@
-import { CONTRACT_PRECISION } from '@darkforest_eth/constants';
-import { hasOwner, isActivated, isEmojiFlagMessage } from '@darkforest_eth/gamelogic';
+import { CONTRACT_PRECISION } from '@dfdao/constants';
+import { hasOwner, isActivated, isEmojiFlagMessage } from '@dfdao/gamelogic';
 import {
   ArrivalType,
   Artifact,
@@ -10,7 +10,7 @@ import {
   PlanetType,
   QueuedArrival,
   Upgrade,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import _ from 'lodash';
 import { ContractConstants } from '../../_types/darkforest/api/ContractsAPITypes';
 

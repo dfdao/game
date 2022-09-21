@@ -1,9 +1,4 @@
-import {
-  LocationId,
-  RendererType,
-  RenderZIndex,
-  WormholeRendererType,
-} from '@darkforest_eth/types';
+import { LocationId, RendererType, RenderZIndex, WormholeRendererType } from '@dfdao/types';
 import { engineConsts } from '../EngineConsts';
 import { Renderer } from '../Renderer';
 import { GameGLManager } from '../WebGL/GameGLManager';

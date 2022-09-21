@@ -17,7 +17,7 @@ import {
   UnconfirmedUpgrade,
   UnconfirmedWithdrawArtifact,
   UnconfirmedWithdrawSilver,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 
 // @todo:
 // - these `isUnconfirmedX` should be named something that matches the naming convention of the

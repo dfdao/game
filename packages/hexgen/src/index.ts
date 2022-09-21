@@ -9,21 +9,21 @@
  * [`yarn`](https://classic.yarnpkg.com/lang/en/) by running:
  *
  * ```bash
- * npm install --save @darkforest_eth/hexgen
+ * npm install --save @dfdao/hexgen
  * ```
  * ```bash
- * yarn add @darkforest_eth/hexgen
+ * yarn add @dfdao/hexgen
  * ```
  *
  * When using this in a plugin, you might want to load it with [skypack](https://www.skypack.dev)
  *
  * ```js
- * import * as hexgen from 'http://cdn.skypack.dev/@darkforest_eth/hexgen'
+ * import * as hexgen from 'http://cdn.skypack.dev/@dfdao/hexgen'
  * ```
  *
  * @packageDocumentation
  */
-import type { LocationId, Planet, PlanetBonus } from '@darkforest_eth/types';
+import type { LocationId, Planet, PlanetBonus } from '@dfdao/types';
 import bigInt from 'big-integer';
 
 /**

@@ -1,5 +1,5 @@
-import { isLocatable } from '@darkforest_eth/gamelogic';
-import { isUnconfirmedMoveTx } from '@darkforest_eth/serde';
+import { isLocatable } from '@dfdao/gamelogic';
+import { isUnconfirmedMoveTx } from '@dfdao/serde';
 import {
   Planet,
   RendererType,
@@ -7,7 +7,7 @@ import {
   RGBVec,
   UIRendererType,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { engineConsts } from './EngineConsts';
 import { Renderer } from './Renderer';
 import { GameGLManager } from './WebGL/GameGLManager';

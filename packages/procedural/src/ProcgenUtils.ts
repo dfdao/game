@@ -1,12 +1,7 @@
-import {
-  EMPTY_ADDRESS,
-  HAT_SIZES,
-  MAX_PLANET_LEVEL,
-  MIN_PLANET_LEVEL,
-} from '@darkforest_eth/constants';
-import { getPlanetRank, isLocatable } from '@darkforest_eth/gamelogic';
-import { seededRandom } from '@darkforest_eth/hashing';
-import { hashToInt } from '@darkforest_eth/serde';
+import { EMPTY_ADDRESS, HAT_SIZES, MAX_PLANET_LEVEL, MIN_PLANET_LEVEL } from '@dfdao/constants';
+import { getPlanetRank, isLocatable } from '@dfdao/gamelogic';
+import { seededRandom } from '@dfdao/hashing';
+import { hashToInt } from '@dfdao/serde';
 import {
   ArtifactId,
   Biome,
@@ -20,7 +15,7 @@ import {
   RGBVec,
   RuinsInfo,
   UpgradeBranchName,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import Noise from './Noise';
 import {
   blurb2grammar,

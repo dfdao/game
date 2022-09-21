@@ -51,7 +51,7 @@ import {
   WorldLocation,
   Wormhole,
   WormholeRendererType,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import autoBind from 'auto-bind';
 import { AsteroidRenderer } from './Entities/AsteroidRenderer';
 import { BackgroundRenderer } from './Entities/BackgroundRenderer';

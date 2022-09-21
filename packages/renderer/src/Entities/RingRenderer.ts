@@ -6,7 +6,7 @@ import {
   RGBVec,
   RingRendererType,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { EngineUtils } from '../EngineUtils';
 import { propsFromIdx, RingProps, RING_PROGRAM_DEFINITION } from '../Programs/RingProgram';
 import { GameGLManager } from '../WebGL/GameGLManager';

@@ -1,4 +1,4 @@
-import { PerlinConfig } from '@darkforest_eth/types';
+import { PerlinConfig } from '@dfdao/types';
 import BigInt, { BigInteger } from 'big-integer';
 import { Fraction, IFraction } from './fractions/bigFraction';
 import { perlinRandHash } from './mimc';

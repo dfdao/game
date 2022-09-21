@@ -1,5 +1,5 @@
-import { hslToRgb } from '@darkforest_eth/procedural';
-import { RGBAVec, RGBVec } from '@darkforest_eth/types';
+import { hslToRgb } from '@dfdao/procedural';
+import { RGBAVec, RGBVec } from '@dfdao/types';
 
 export const engineConsts = {
   fontStyle: '64px monospace',

@@ -1,5 +1,5 @@
-import { getPlanetCosmetic } from '@darkforest_eth/procedural';
-import { Planet, PlanetRendererType, RendererType, WorldCoords } from '@darkforest_eth/types';
+import { getPlanetCosmetic } from '@dfdao/procedural';
+import { Planet, PlanetRendererType, RendererType, WorldCoords } from '@dfdao/types';
 import { mat4 } from 'gl-matrix';
 import { engineConsts } from '../EngineConsts';
 import { EngineUtils } from '../EngineUtils';

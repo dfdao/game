@@ -1,6 +1,6 @@
-import { EMPTY_ADDRESS } from '@darkforest_eth/constants';
-import { formatNumber, hasOwner } from '@darkforest_eth/gamelogic';
-import { getOwnerColorVec } from '@darkforest_eth/procedural';
+import { EMPTY_ADDRESS } from '@dfdao/constants';
+import { formatNumber, hasOwner } from '@dfdao/gamelogic';
+import { getOwnerColorVec } from '@dfdao/procedural';
 import {
   LocationId,
   Planet,
@@ -11,7 +11,7 @@ import {
   TextAlign,
   TextAnchor,
   VoyageRendererType,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { engineConsts } from '../EngineConsts';
 import { Renderer } from '../Renderer';
 import { GameGLManager } from '../WebGL/GameGLManager';

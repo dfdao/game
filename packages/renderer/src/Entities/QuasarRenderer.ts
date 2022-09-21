@@ -1,4 +1,4 @@
-import { Planet, QuasarRendererType, RendererType, WorldCoords } from '@darkforest_eth/types';
+import { Planet, QuasarRendererType, RendererType, WorldCoords } from '@dfdao/types';
 import { EngineUtils } from '../EngineUtils';
 import { Renderer } from '../Renderer';
 import { GameGLManager } from '../WebGL/GameGLManager';

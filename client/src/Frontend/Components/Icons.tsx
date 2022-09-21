@@ -1,6 +1,6 @@
 // should be able to be treated as a text element
-import { Planet, UpgradeBranchName } from '@darkforest_eth/types';
-import { DarkForestIcon, IconType } from '@darkforest_eth/ui';
+import { Planet, UpgradeBranchName } from '@dfdao/types';
+import { DarkForestIcon, IconType } from '@dfdao/ui';
 import { createComponent } from '@lit-labs/react';
 import React from 'react';
 import { getPlanetRank, isFullRank } from '../../Backend/Utils/Utils';
@@ -16,7 +16,7 @@ export const Icon = createComponent(React, DarkForestIcon.tagName, DarkForestIco
 });
 
 // Re-export the IconType abstract type & the "enum" object for easier access
-export { IconType } from '@darkforest_eth/ui';
+export { IconType } from '@dfdao/ui';
 
 // Utilities for calculating an Icon from some context.
 // I think these should be made into utilities that return the `IconType`

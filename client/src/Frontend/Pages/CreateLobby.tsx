@@ -1,8 +1,8 @@
-import { INIT_ADDRESS } from '@darkforest_eth/contracts';
-import initContractAbiUrl from '@darkforest_eth/contracts/abis/DFInitialize.json?url';
-import { EthConnection } from '@darkforest_eth/network';
-import { address } from '@darkforest_eth/serde';
-import { ArtifactRarity, EthAddress, UnconfirmedCreateLobby } from '@darkforest_eth/types';
+import { INIT_ADDRESS } from '@dfdao/contracts';
+import initContractAbiUrl from '@dfdao/contracts/abis/DFInitialize.json?url';
+import { EthConnection } from '@dfdao/network';
+import { address } from '@dfdao/serde';
+import { ArtifactRarity, EthAddress, UnconfirmedCreateLobby } from '@dfdao/types';
 import { Contract } from 'ethers';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';

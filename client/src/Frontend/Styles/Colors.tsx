@@ -1,4 +1,4 @@
-import { ArtifactRarity, Biome } from '@darkforest_eth/types';
+import { ArtifactRarity, Biome } from '@dfdao/types';
 import dfstyles from './dfstyles';
 
 /* tsx file so that we get color previews in VScode! */

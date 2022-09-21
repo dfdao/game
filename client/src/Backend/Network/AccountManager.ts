@@ -1,5 +1,5 @@
-import { address } from '@darkforest_eth/serde';
-import { EthAddress } from '@darkforest_eth/types';
+import { address } from '@dfdao/serde';
+import { EthAddress } from '@dfdao/types';
 import { utils } from 'ethers';
 import stringify from 'json-stable-stringify';
 

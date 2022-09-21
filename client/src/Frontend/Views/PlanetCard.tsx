@@ -1,6 +1,6 @@
-import { isLocatable } from '@darkforest_eth/gamelogic';
-import { getPlanetName } from '@darkforest_eth/procedural';
-import { Planet, TooltipName } from '@darkforest_eth/types';
+import { isLocatable } from '@dfdao/gamelogic';
+import { getPlanetName } from '@dfdao/procedural';
+import { Planet, TooltipName } from '@dfdao/types';
 import React from 'react';
 import styled from 'styled-components';
 import { Wrapper } from '../../Backend/Utils/Wrapper';

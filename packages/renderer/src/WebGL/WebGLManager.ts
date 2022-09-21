@@ -1,4 +1,4 @@
-import { RGBAVec } from '@darkforest_eth/types';
+import { RGBAVec } from '@dfdao/types';
 import autoBind from 'auto-bind';
 import { mat4 } from 'gl-matrix';
 

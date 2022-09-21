@@ -6,7 +6,7 @@ import {
   RenderZIndex,
   RGBVec,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { EngineUtils } from '../EngineUtils';
 import { RECT_PROGRAM_DEFINITION } from '../Programs/RectProgram';
 import { GameGLManager } from '../WebGL/GameGLManager';

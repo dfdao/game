@@ -149,7 +149,7 @@ async function saveDeploy(
 ) {
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
-  // Save the addresses of the deployed contracts to the `@darkforest_eth/contracts` package
+  // Save the addresses of the deployed contracts to the `@dfdao/contracts` package
   const tsContents = dedent`
   /**
    * This package contains deployed contract addresses, ABIs, and Typechain types
@@ -161,16 +161,16 @@ async function saveDeploy(
    * [\`yarn\`](https://classic.yarnpkg.com/lang/en/) by running:
    *
    * \`\`\`bash
-   * npm install --save @darkforest_eth/contracts
+   * npm install --save @dfdao/contracts
    * \`\`\`
    * \`\`\`bash
-   * yarn add @darkforest_eth/contracts
+   * yarn add @dfdao/contracts
    * \`\`\`
    *
    * When using this in a plugin, you might want to load it with [skypack](https://www.skypack.dev)
    *
    * \`\`\`js
-   * import * as contracts from 'http://cdn.skypack.dev/@darkforest_eth/contracts'
+   * import * as contracts from 'http://cdn.skypack.dev/@dfdao/contracts'
    * \`\`\`
    *
    * ## Typechain
@@ -208,17 +208,11 @@ async function saveDeploy(
 
   const { jsContents, jsmapContents, dtsContents, dtsmapContents } = tscompile(tsContents);
 
-  const contractsFileTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.ts');
-  const contractsFileJS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.js');
-  const contractsFileJSMap = path.join(
-    hre.packageDirs['@darkforest_eth/contracts'],
-    'index.js.map'
-  );
-  const contractsFileDTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.d.ts');
-  const contractsFileDTSMap = path.join(
-    hre.packageDirs['@darkforest_eth/contracts'],
-    'index.d.ts.map'
-  );
+  const contractsFileTS = path.join(hre.packageDirs['@dfdao/contracts'], 'index.ts');
+  const contractsFileJS = path.join(hre.packageDirs['@dfdao/contracts'], 'index.js');
+  const contractsFileJSMap = path.join(hre.packageDirs['@dfdao/contracts'], 'index.js.map');
+  const contractsFileDTS = path.join(hre.packageDirs['@dfdao/contracts'], 'index.d.ts');
+  const contractsFileDTSMap = path.join(hre.packageDirs['@dfdao/contracts'], 'index.d.ts.map');
 
   fs.writeFileSync(contractsFileTS, tsContents);
   fs.writeFileSync(contractsFileJS, jsContents);

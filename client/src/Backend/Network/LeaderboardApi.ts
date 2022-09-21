@@ -1,4 +1,4 @@
-import { Leaderboard } from '@darkforest_eth/types';
+import { Leaderboard } from '@dfdao/types';
 
 export async function loadLeaderboard(): Promise<Leaderboard> {
   if (!import.meta.env.DF_WEBSERVER_URL) {

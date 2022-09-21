@@ -1,4 +1,4 @@
-import type { Abstract, LocationId, Rectangle } from '@darkforest_eth/types';
+import type { Abstract, LocationId, Rectangle } from '@dfdao/types';
 
 /**
  * one of "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
