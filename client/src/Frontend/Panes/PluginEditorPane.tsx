@@ -1,5 +1,6 @@
 import { PluginId } from '@darkforest_eth/types';
 import * as Prism from 'prismjs';
+import 'prismjs/themes/prism-dark.css';
 import * as React from 'react';
 import { useState } from 'react';
 import Editor from 'react-simple-code-editor';
@@ -10,7 +11,6 @@ import { Btn } from '../Components/Btn';
 import { Spacer } from '../Components/CoreUI';
 import { DarkForestTextInput, TextInput } from '../Components/Input';
 import dfstyles from '../Styles/dfstyles';
-require('prismjs/themes/prism-dark.css');
 
 /**
  * Make sure the editor scrolls, and is always the same size.

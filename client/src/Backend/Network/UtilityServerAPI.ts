@@ -16,14 +16,14 @@ export const enum EmailResponse {
 }
 
 export const submitInterestedEmail = async (email: string): Promise<EmailResponse> => {
-  if (!process.env.DF_WEBSERVER_URL) {
+  if (!import.meta.env.DF_WEBSERVER_URL) {
     return EmailResponse.ServerError;
   }
 
   if (!EmailValidator.validate(email)) {
     return EmailResponse.Invalid;
   }
-  const { success } = await fetch(`${process.env.DF_WEBSERVER_URL}/email/interested`, {
+  const { success } = await fetch(`${import.meta.env.DF_WEBSERVER_URL}/email/interested`, {
     method: 'POST',
     body: JSON.stringify({ email }),
     headers: {
@@ -35,14 +35,14 @@ export const submitInterestedEmail = async (email: string): Promise<EmailRespons
 };
 
 export const submitUnsubscribeEmail = async (email: string): Promise<EmailResponse> => {
-  if (!process.env.DF_WEBSERVER_URL) {
+  if (!import.meta.env.DF_WEBSERVER_URL) {
     return EmailResponse.ServerError;
   }
 
   if (!EmailValidator.validate(email)) {
     return EmailResponse.Invalid;
   }
-  const { success } = await fetch(`${process.env.DF_WEBSERVER_URL}/email/unsubscribe`, {
+  const { success } = await fetch(`${import.meta.env.DF_WEBSERVER_URL}/email/unsubscribe`, {
     method: 'POST',
     body: JSON.stringify({ email }),
     headers: {
@@ -56,7 +56,7 @@ export const submitUnsubscribeEmail = async (email: string): Promise<EmailRespon
 export const submitPlayerEmail = async (
   request?: SignedMessage<{ email: string }>
 ): Promise<EmailResponse> => {
-  if (!process.env.DF_WEBSERVER_URL) {
+  if (!import.meta.env.DF_WEBSERVER_URL) {
     return EmailResponse.ServerError;
   }
 
@@ -64,7 +64,7 @@ export const submitPlayerEmail = async (
     return EmailResponse.Invalid;
   }
 
-  const { success } = await fetch(`${process.env.DF_WEBSERVER_URL}/email/playing`, {
+  const { success } = await fetch(`${import.meta.env.DF_WEBSERVER_URL}/email/playing`, {
     method: 'POST',
     body: JSON.stringify(request),
     headers: {
@@ -110,7 +110,7 @@ export async function callRegisterAndWaitForConfirmation(
   address: EthAddress,
   terminal: React.MutableRefObject<TerminalHandle | undefined>
 ): Promise<RegisterConfirmationResponse> {
-  if (!process.env.DF_WEBSERVER_URL) {
+  if (!import.meta.env.DF_WEBSERVER_URL) {
     return { errorMessage: 'Cannot connect to server.', canRetry: false };
   }
 
@@ -146,16 +146,19 @@ export async function callRegisterAndWaitForConfirmation(
 export const whitelistStatus = async (
   address: EthAddress
 ): Promise<WhitelistStatusResponse | null> => {
-  if (!process.env.DF_WEBSERVER_URL) {
+  if (!import.meta.env.DF_WEBSERVER_URL) {
     return null;
   }
 
-  return await fetch(`${process.env.DF_WEBSERVER_URL}/whitelist/address/${address}/isWhitelisted`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }).then((x) => x.json());
+  return await fetch(
+    `${import.meta.env.DF_WEBSERVER_URL}/whitelist/address/${address}/isWhitelisted`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  ).then((x) => x.json());
 };
 
 /**
@@ -166,12 +169,12 @@ export const submitWhitelistKey = async (
   key: string,
   address: EthAddress
 ): Promise<RegisterResponse | null> => {
-  if (!process.env.DF_WEBSERVER_URL) {
+  if (!import.meta.env.DF_WEBSERVER_URL) {
     return null;
   }
 
   try {
-    return await fetch(`${process.env.DF_WEBSERVER_URL}/whitelist/register`, {
+    return await fetch(`${import.meta.env.DF_WEBSERVER_URL}/whitelist/register`, {
       method: 'POST',
       body: JSON.stringify({
         key,
@@ -188,17 +191,17 @@ export const submitWhitelistKey = async (
 };
 
 export const requestDevFaucet = async (address: EthAddress): Promise<boolean> => {
-  if (!process.env.DF_WEBSERVER_URL) {
+  if (!import.meta.env.DF_WEBSERVER_URL) {
     return false;
   }
 
   // TODO: Provide own env variable for this feature
-  if (process.env.NODE_ENV === 'production') {
+  if (import.meta.env.PROD) {
     return false;
   }
 
   try {
-    const { success } = await fetch(`${process.env.DF_WEBSERVER_URL}/whitelist/faucet`, {
+    const { success } = await fetch(`${import.meta.env.DF_WEBSERVER_URL}/whitelist/faucet`, {
       method: 'POST',
       body: JSON.stringify({
         address,
@@ -229,7 +232,7 @@ export const tryGetAllTwitters = async (): Promise<AddressTwitterMap> => {
 export const getAllTwitters = async (): Promise<AddressTwitterMap> => {
   try {
     const twitterMap: AddressTwitterMap = await fetch(
-      `${process.env.DF_WEBSERVER_URL}/twitter/all-twitters`
+      `${import.meta.env.DF_WEBSERVER_URL}/twitter/all-twitters`
     ).then((x) => x.json());
     return twitterMap;
   } catch (e) {
@@ -241,7 +244,7 @@ export const verifyTwitterHandle = async (
   verifyMessage: SignedMessage<{ twitter: string }>
 ): Promise<boolean> => {
   try {
-    const res = await fetch(`${process.env.DF_WEBSERVER_URL}/twitter/verify-twitter`, {
+    const res = await fetch(`${import.meta.env.DF_WEBSERVER_URL}/twitter/verify-twitter`, {
       method: 'POST',
       body: JSON.stringify({
         verifyMessage,
@@ -262,7 +265,7 @@ export const disconnectTwitter = async (
   disconnectMessage: SignedMessage<{ twitter: string }>
 ): Promise<boolean> => {
   try {
-    const res = await fetch(`${process.env.DF_WEBSERVER_URL}/twitter/disconnect`, {
+    const res = await fetch(`${import.meta.env.DF_WEBSERVER_URL}/twitter/disconnect`, {
       method: 'POST',
       body: JSON.stringify({
         disconnectMessage,

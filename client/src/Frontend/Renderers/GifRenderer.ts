@@ -11,11 +11,11 @@ import { ArtifactFileColor, artifactFileName, setForceAncient } from '@darkfores
 import { mockArtifactWithRarity } from '@darkforest_eth/procedural';
 import { SpriteRenderer, WebGLManager } from '@darkforest_eth/renderer';
 import { Artifact, ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
+// @ts-ignore
+import FileSaver from 'file-saver';
 import { mat4 } from 'gl-matrix';
 import JSZip from 'jszip';
 import { GIF_ARTIFACT_COLOR } from '../Pages/GifMaker';
-
-const FileSaver = require('file-saver');
 
 declare global {
   interface Window {

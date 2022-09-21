@@ -12,14 +12,14 @@ import {
   RevealSnarkInput,
   SnarkJSProofAndSignals,
 } from '@darkforest_eth/snarks';
-import biomebaseCircuitPath from '@darkforest_eth/snarks/biomebase.wasm';
-import biomebaseZkeyPath from '@darkforest_eth/snarks/biomebase.zkey';
-import initCircuitPath from '@darkforest_eth/snarks/init.wasm';
-import initZkeyPath from '@darkforest_eth/snarks/init.zkey';
-import moveCircuitPath from '@darkforest_eth/snarks/move.wasm';
-import moveZkeyPath from '@darkforest_eth/snarks/move.zkey';
-import revealCircuitPath from '@darkforest_eth/snarks/reveal.wasm';
-import revealZkeyPath from '@darkforest_eth/snarks/reveal.zkey';
+import biomebaseCircuitPath from '@darkforest_eth/snarks/biomebase.wasm?url';
+import biomebaseZkeyPath from '@darkforest_eth/snarks/biomebase.zkey?url';
+import initCircuitPath from '@darkforest_eth/snarks/init.wasm?url';
+import initZkeyPath from '@darkforest_eth/snarks/init.zkey?url';
+import moveCircuitPath from '@darkforest_eth/snarks/move.wasm?url';
+import moveZkeyPath from '@darkforest_eth/snarks/move.zkey?url';
+import revealCircuitPath from '@darkforest_eth/snarks/reveal.wasm?url';
+import revealZkeyPath from '@darkforest_eth/snarks/reveal.zkey?url';
 import { PerlinConfig } from '@darkforest_eth/types';
 import * as bigInt from 'big-integer';
 import { BigInteger } from 'big-integer';

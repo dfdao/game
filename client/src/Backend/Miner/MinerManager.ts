@@ -5,6 +5,7 @@ import _ from 'lodash';
 import { ChunkStore } from '../../_types/darkforest/api/ChunkStoreTypes';
 import { HashConfig, MinerWorkerMessage } from '../../_types/global/GlobalTypes';
 import { getChunkKey } from './ChunkUtils';
+import DefaultWorker from './miner.worker.ts?worker';
 import { MiningPattern } from './MiningPatterns';
 
 export const enum MinerManagerEvent {
@@ -14,7 +15,7 @@ export const enum MinerManagerEvent {
 export type workerFactory = () => Worker;
 
 function defaultWorker() {
-  return new Worker(new URL('./miner.worker.ts', import.meta.url));
+  return new DefaultWorker();
 }
 
 export class HomePlanetMinerChunkStore implements ChunkStore {
