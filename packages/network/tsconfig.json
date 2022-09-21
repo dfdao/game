@@ -2,8 +2,7 @@
   "include": ["src/**/*.ts"],
   "compilerOptions": {
     "target": "es2019",
-    "module": "ESNext",
-    "moduleResolution": "node",
+    "module": "CommonJS",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

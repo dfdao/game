@@ -1,3 +1,4 @@
+import { all } from '@projectsophon/workspace';
 import react from '@vitejs/plugin-react';
 import esbuild from 'esbuild';
 import fs from 'fs/promises';
@@ -6,6 +7,7 @@ import { defineConfig, loadEnv } from 'vite';
 export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const tsconfigRaw = await fs.readFile('./tsconfig.json', 'utf-8');
+  const privateWorkspaces = ['circuits', 'client', 'eth'];
 
   return {
     // TODO: Rework this in the future - it is only here to have the old webpack parity
@@ -36,5 +38,8 @@ export default defineConfig(async ({ mode }) => {
     },
     envPrefix: 'DF_',
     clearScreen: false,
+    optimizeDeps: {
+      include: Array.from(all().keys()).filter((name) => !privateWorkspaces.includes(name)),
+    },
   };
 });

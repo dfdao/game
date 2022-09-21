@@ -5,9 +5,8 @@ import {
   SnarkJSProofAndSignals,
   WhitelistSnarkContractCallArgs,
   WhitelistSnarkInput,
-  whitelistSnarkWasmPath,
-  whitelistSnarkZkeyPath,
 } from '@darkforest_eth/snarks';
+import { whitelistSnarkWasmPath, whitelistSnarkZkeyPath } from '@darkforest_eth/snarks/node';
 import { ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
 import { bigIntFromKey } from '@darkforest_eth/whitelist';
 import { mine, time } from '@nomicfoundation/hardhat-network-helpers';
