@@ -70,7 +70,7 @@ export const UNMINED_PROGRAM_DEFINITION = {
 
     in vec4 ${v.color};
     in vec2 ${v.rectPos};
-    
+
     uniform vec3 ${u.viewportCenter};
     uniform float ${u.time};
 

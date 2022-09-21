@@ -109,12 +109,12 @@ export const CIRCLE_PROGRAM_DEFINITION = {
       // keep a band of stroke +- epsilon
       bool hasStroke = ${v.stroke} > 0.0;
       bool outer = dist > rad - ${v.stroke} - ${v.eps};
-      
+
       if (hasStroke) {
         if (!outer) discard;
         // anti-aliasing
         float inRatio = (dist - (rad - ${v.stroke} - ${v.eps})) / ${v.eps};
-        if (inRatio < 1.) color.a *= inRatio; // flip direction 
+        if (inRatio < 1.) color.a *= inRatio; // flip direction
       }
 
       /* get angle for both angle + dash checks */

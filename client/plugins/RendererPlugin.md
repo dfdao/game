@@ -185,7 +185,7 @@ const program = {
         out float v_energy_cap;
         void main() {
             // converting from canvas coordinates too clip space
-            gl_Position = u_matrix * vec4(a_position.xy, 0.0, 1.0); 
+            gl_Position = u_matrix * vec4(a_position.xy, 0.0, 1.0);
             //setting the varrying variables for use in the fragment shader
             v_energy = a_energy.x;
             v_energy_cap = a_energy.y;
@@ -206,9 +206,9 @@ const program = {
             float dist = length(v_rectPos);
 
             // if it's outside the circle
-            if (dist > 1.0) discard; 
+            if (dist > 1.0) discard;
 
-            //determine the color of the pixel using rgb values 
+            //determine the color of the pixel using rgb values
             //[red,green,blue,opacity] the range of the numbers is from 0 to 1
             outColor = vec4(1,1.0/v_energy_cap*v_energy,0,1);
         }
@@ -415,7 +415,7 @@ const program = {
         out float v_energy_cap;
         void main() {
             // converting from canvas coordinates too clip space
-            gl_Position = u_matrix * vec4(a_position.xy, 0.0, 1.0); 
+            gl_Position = u_matrix * vec4(a_position.xy, 0.0, 1.0);
             //setting the varrying variables for use in the fragment shader
             v_energy = a_energy.x;
             v_energy_cap = a_energy.y;
@@ -436,9 +436,9 @@ const program = {
             float dist = length(v_rectPos);
 
             // if it's outside the circle
-            if (dist > 1.0) discard; 
+            if (dist > 1.0) discard;
 
-            //determine the color of the pixel using rgb values 
+            //determine the color of the pixel using rgb values
             //[red,green,blue,opacity] the range of the numbers is from 0 to 1
             outColor = vec4(1,1.0/v_energy_cap*v_energy,0,1);
         }

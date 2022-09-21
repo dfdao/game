@@ -180,7 +180,7 @@ export const PERLIN_PROGRAM_DEFINITION = {
       float py = (y - gridY) / scale;
 
       // 0 to 1 within each chunk
-      vec2 pos = vec2(px, py); 
+      vec2 pos = vec2(px, py);
 
       vec2 botLeftDiff = pos - vec2(0., 0.);
       vec2 botRightDiff = pos - vec2(1., 0.);
@@ -197,9 +197,9 @@ export const PERLIN_PROGRAM_DEFINITION = {
       float topLeftW = pos.x * (1. - pos.y);
       float topRightW = (1. - pos.x) * (1. - pos.y);
 
-      float res = botLeft * topRightW + 
-                  botRight * topLeftW + 
-                  topLeft * botRightW + 
+      float res = botLeft * topRightW +
+                  botRight * topLeftW +
+                  topLeft * botRightW +
                   topRight * botLeftW;
 
       return res;
