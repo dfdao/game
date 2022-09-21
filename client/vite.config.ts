@@ -1,4 +1,6 @@
 import { all } from '@projectsophon/workspace';
+import commonjs from '@rollup/plugin-commonjs';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 import react from '@vitejs/plugin-react';
 import esbuild from 'esbuild';
 import fs from 'fs/promises';
@@ -35,6 +37,11 @@ export default defineConfig(async ({ mode }) => {
     server: {
       host: 'localhost',
       port: 8081,
+    },
+    build: {
+      rollupOptions: {
+        plugins: [commonjs(), nodeResolve()],
+      },
     },
     envPrefix: 'DF_',
     clearScreen: false,
