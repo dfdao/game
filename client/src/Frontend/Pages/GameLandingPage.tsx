@@ -89,8 +89,6 @@ export function GameLandingPage({ match, location }: RouteComponentProps<{ contr
       });
   }, []);
 
-  const isProd = process.env.NODE_ENV === 'production';
-
   const advanceStateFromNone = useCallback(
     async (terminal: React.MutableRefObject<TerminalHandle | undefined>) => {
       const issues = await unsupportedFeatures();
@@ -444,7 +442,7 @@ export function GameLandingPage({ match, location }: RouteComponentProps<{ contr
           terminal.current?.println('');
           terminal.current?.println(`Welcome, player ${playerAddress}.`);
           // TODO: Provide own env variable for this feature
-          if (!isProd) {
+          if (import.meta.env.DEV) {
             // in development, automatically get some ether from faucet
             const balance = weiToEth(await ethConnection?.loadBalance(playerAddress));
             if (balance === 0) {
@@ -464,7 +462,7 @@ export function GameLandingPage({ match, location }: RouteComponentProps<{ contr
         setStep(TerminalPromptStep.TERMINATED);
       }
     },
-    [ethConnection, isProd, contractAddress]
+    [ethConnection, import.meta.env.DEV, contractAddress]
   );
 
   const advanceStateFromAskHasWhitelistKey = useCallback(

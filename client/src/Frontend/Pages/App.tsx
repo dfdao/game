@@ -19,8 +19,6 @@ import { TxConfirmPopup } from './TxConfirmPopup';
 import UnsubscribePage from './UnsubscribePage';
 import { ValhallaPage } from './ValhallaPage';
 
-const isProd = process.env.NODE_ENV === 'production';
-
 const defaultAddress = address(CONTRACT_ADDRESS);
 
 function App() {
@@ -45,9 +43,9 @@ function App() {
             />
             <Route path='/unsubscribe' component={UnsubscribePage} />
             <Route path='/valhalla' component={ValhallaPage} />
-            {!isProd && <Route path='/images' component={TestArtifactImages} />}
-            {!isProd && <Route path='/gifs' component={GifMaker} />}
-            {!isProd && <Route path='/bg' component={LandingPageBackground} />}
+            {import.meta.env.DEV && <Route path='/images' component={TestArtifactImages} />}
+            {import.meta.env.DEV && <Route path='/gifs' component={GifMaker} />}
+            {import.meta.env.DEV && <Route path='/bg' component={LandingPageBackground} />}
             <Route path='*' component={NotFoundPage} />
           </Switch>
         </Router>

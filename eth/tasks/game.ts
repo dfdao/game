@@ -3,10 +3,9 @@ import {
   buildContractCallArgs,
   fakeProof,
   RevealSnarkContractCallArgs,
-  revealSnarkWasmPath,
-  revealSnarkZkeyPath,
   SnarkJSProofAndSignals,
 } from '@darkforest_eth/snarks';
+import { revealSnarkWasmPath, revealSnarkZkeyPath } from '@darkforest_eth/snarks/node';
 import { BigNumber } from 'ethers';
 import { task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';

@@ -26,7 +26,7 @@ import {
   Contracts,
   Initializers,
 } from '@darkforest_eth/settings';
-import workspace from '@projectsophon/workspace';
+import { workspace } from '@projectsophon/workspace';
 import './tasks/artifact';
 import './tasks/circom';
 import './tasks/debug';

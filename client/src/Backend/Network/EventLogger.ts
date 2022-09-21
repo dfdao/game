@@ -9,11 +9,11 @@ export class EventLogger {
   }
 
   logEvent(eventType: EventType, event: Record<string, unknown>) {
-    if (!process.env.DF_WEBSERVER_URL) {
+    if (!import.meta.env.DF_WEBSERVER_URL) {
       return;
     }
 
-    fetch(`${process.env.DF_WEBSERVER_URL}/event`, {
+    fetch(`${import.meta.env.DF_WEBSERVER_URL}/event`, {
       method: 'POST',
       body: JSON.stringify(EventLogger.augmentEvent(event, eventType)),
       headers: {

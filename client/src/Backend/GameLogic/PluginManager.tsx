@@ -202,10 +202,7 @@ export class PluginManager {
     });
     const moduleUrl = URL.createObjectURL(moduleFile);
     try {
-      // The `webpackIgnore` "magic comment" is almost undocumented, but it makes
-      // webpack skip over this dynamic `import` call so it won't be transformed into
-      // a weird _webpack_require_dynamic_ call
-      const { default: Plugin } = await import(/* webpackIgnore: true */ moduleUrl);
+      const { default: Plugin } = await import(/* @vite-ignore */ moduleUrl);
       if (this.pluginProcesses[id] === undefined) {
         // instantiate the plugin and attach it to the process list
         this.pluginProcesses[id] = new Plugin();

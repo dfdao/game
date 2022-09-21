@@ -27,11 +27,11 @@ export const ALL_AUTO_GAS_SETTINGS = [
 ];
 
 function onlyInProduction(): string {
-  return process.env.NODE_ENV === 'production' ? 'true' : 'false';
+  return import.meta.env.PROD ? 'true' : 'false';
 }
 
 function onlyInDevelopment(): string {
-  return process.env.NODE_ENV !== 'production' ? 'true' : 'false';
+  return import.meta.env.DEV ? 'true' : 'false';
 }
 
 const defaultSettings: Record<Setting, string> = {

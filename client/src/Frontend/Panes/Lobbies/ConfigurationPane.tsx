@@ -153,10 +153,9 @@ function ConfigurationNavigation({
     );
   });
 
-  const url =
-    process.env.NODE_ENV === 'production'
-      ? `${window.DEPLOY_URL}/play/${lobbyAddress}`
-      : `${window.location.origin}/play/${lobbyAddress}`;
+  const url = import.meta.env.PROD
+    ? `${window.DEPLOY_URL}/play/${lobbyAddress}`
+    : `${window.location.origin}/play/${lobbyAddress}`;
 
   let lobbyContent;
   if (status === 'created' && lobbyAddress) {

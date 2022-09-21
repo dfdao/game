@@ -1,6 +1,5 @@
 import { INIT_ADDRESS } from '@darkforest_eth/contracts';
-// This is loaded as URL paths by a webpack loader
-import initContractAbiUrl from '@darkforest_eth/contracts/abis/DFInitialize.json';
+import initContractAbiUrl from '@darkforest_eth/contracts/abis/DFInitialize.json?url';
 import { EthConnection } from '@darkforest_eth/network';
 import { address } from '@darkforest_eth/serde';
 import { ArtifactRarity, EthAddress, UnconfirmedCreateLobby } from '@darkforest_eth/types';
@@ -184,12 +183,12 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
   if (errorState) {
     switch (errorState.type) {
       case 'contractLoad':
-        return <CadetWormhole imgUrl='/public/img/wrong-text.png' />;
+        return <CadetWormhole imgUrl='/img/wrong-text.png' />;
       case 'invalidAddress':
       case 'invalidContract':
-        return <CadetWormhole imgUrl='/public/img/no-contract-text.png' />;
+        return <CadetWormhole imgUrl='/img/no-contract-text.png' />;
       case 'invalidCreate':
-        return <CadetWormhole imgUrl='/public/img/wrong-text.png' />;
+        return <CadetWormhole imgUrl='/img/wrong-text.png' />;
       default:
         // https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking
         const _exhaustive: never = errorState;
