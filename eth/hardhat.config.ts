@@ -152,9 +152,11 @@ const config: HardhatUserConfig = {
         },
       ],
       blockGasLimit: 16777215,
+      // These defaults are used for testing, subgraph, and initial deploy into localhost node.
+      // Automine is disabled and interval mining is enabled after deploy so the game runs accurately.
       mining: {
-        auto: false,
-        interval: 1000,
+        auto: true,
+        interval: 0,
       },
     },
   },

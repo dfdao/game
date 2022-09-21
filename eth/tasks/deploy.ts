@@ -1,3 +1,5 @@
+import { time } from '@nomicfoundation/hardhat-network-helpers';
+import delay from 'delay';
 import * as fs from 'fs';
 import { task, types } from 'hardhat/config';
 import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
@@ -21,7 +23,9 @@ async function deploy(
   args: { whitelist?: boolean; fund: number; subgraph?: string },
   hre: HardhatRuntimeEnvironment
 ) {
-  const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
+  const isLocalhost = hre.network.name === 'localhost';
+  const isHardhat = hre.network.name === 'hardhat';
+  const isDev = isLocalhost || isHardhat;
 
   let whitelistEnabled: boolean;
   if (typeof args.whitelist === 'undefined') {
@@ -90,9 +94,33 @@ async function deploy(
     console.log(`transfered diamond ownership to ${hre.ADMIN_PUBLIC_ADDRESS}`);
   }
 
-  if (args.subgraph) {
-    await hre.run('subgraph:deploy', { name: args.subgraph });
-    console.log('deployed subgraph');
+  if (isLocalhost) {
+    // The subgraph local docker crashes if we aren't in automine mode
+    // so don't switch to interval mining if the `--subgraph` flag was passed
+    if (args.subgraph) {
+      await hre.run('subgraph:deploy', { name: args.subgraph });
+      console.log('deployed subgraph');
+    } else {
+      // Disable automining because it produces timestamps ahead of the wall clock
+      await hre.network.provider.send('evm_setAutomine', [false]);
+
+      // Chain time operates on seconds
+      const now = Math.floor(Date.now() / 1000);
+
+      const blockTime = await time.latest();
+
+      // Hardhat crashes if you try to set block timestamp to a previous time,
+      // so we need to wait and catch up to the wall clock
+      if (now <= blockTime) {
+        const waitTime = blockTime - now + 1; // One extra second
+        console.log(`Waiting ${waitTime} seconds for clock time to catch up to block time`);
+        await delay(waitTime * 1000);
+      }
+
+      await time.setNextBlockTimestamp(new Date());
+
+      await hre.network.provider.send('evm_setIntervalMining', [1000]);
+    }
   }
 
   const whitelistBalance = await hre.ethers.provider.getBalance(diamond.address);
