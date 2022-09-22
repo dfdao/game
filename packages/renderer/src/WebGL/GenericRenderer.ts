@@ -1,4 +1,4 @@
-import { AttribProps, DrawMode, UniformProps, UniformType, Vec3 } from '@darkforest_eth/types';
+import { AttribProps, DrawMode, UniformProps, UniformType, Vec3 } from '@dfdao/types';
 import { mat3, mat4 } from 'gl-matrix';
 import { AttribManager } from './AttribManager';
 import { ProgramUtils } from './ProgramUtils';

@@ -1,4 +1,4 @@
-import { ModalId } from '@darkforest_eth/types';
+import { ModalId } from '@dfdao/types';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { Btn } from '../Components/Btn';

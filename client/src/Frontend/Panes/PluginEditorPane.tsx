@@ -1,4 +1,4 @@
-import { PluginId } from '@darkforest_eth/types';
+import { PluginId } from '@dfdao/types';
 import * as Prism from 'prismjs';
 import 'prismjs/themes/prism-dark.css';
 import * as React from 'react';

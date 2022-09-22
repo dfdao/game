@@ -4,7 +4,7 @@ import {
   RenderZIndex,
   RGBVec,
   UnminedRendererType,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { EngineUtils } from '../EngineUtils';
 import { UNMINED_PROGRAM_DEFINITION } from '../Programs/UnminedProgram';
 import { GameGLManager } from '../WebGL/GameGLManager';

@@ -1,4 +1,4 @@
-import { getPlanetCosmetic } from '@darkforest_eth/procedural';
+import { getPlanetCosmetic } from '@dfdao/procedural';
 import {
   CanvasCoords,
   Planet,
@@ -6,7 +6,7 @@ import {
   SpacetimeRipRendererType,
   SpaceType,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { EngineUtils } from '../EngineUtils';
 import { SPACETIMERIP_PROGRAM_DEFINITION } from '../Programs/SpacetimeRipProgram';
 import { GameGLManager } from '../WebGL/GameGLManager';

@@ -1,6 +1,6 @@
-import { Monomitter } from '@darkforest_eth/events';
-import { weiToEth } from '@darkforest_eth/network';
-import { EthAddress, ModalName, TooltipName } from '@darkforest_eth/types';
+import { Monomitter } from '@dfdao/events';
+import { weiToEth } from '@dfdao/network';
+import { EthAddress, ModalName, TooltipName } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { CaptureZonesGeneratedEvent } from '../../Backend/GameLogic/CaptureZoneGenerator';

@@ -4,7 +4,7 @@ import {
   PlanetMessageResponse,
   PostMessageRequest,
   SignedMessage,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 
 export async function getMessagesOnPlanets(
   request: PlanetMessageRequest

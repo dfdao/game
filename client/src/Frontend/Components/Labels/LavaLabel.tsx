@@ -1,4 +1,4 @@
-import { Biome, BiomeNames } from '@darkforest_eth/types';
+import { Biome, BiomeNames } from '@dfdao/types';
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 import { BiomeTextColors } from '../../Styles/Colors';

@@ -3,7 +3,7 @@ import {
   DarkForestColorInput,
   DarkForestNumberInput,
   DarkForestTextInput,
-} from '@darkforest_eth/ui';
+} from '@dfdao/ui';
 import { createComponent } from '@lit-labs/react';
 import React from 'react';
 

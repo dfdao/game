@@ -1,4 +1,4 @@
-import { AttribType, UniformType } from '@darkforest_eth/types';
+import { AttribType, UniformType } from '@dfdao/types';
 import { glsl } from '../EngineUtils';
 import { ShaderMixins } from '../WebGL/ShaderMixins';
 

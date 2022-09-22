@@ -1,4 +1,4 @@
-import { AttribType, UniformType } from '@darkforest_eth/types';
+import { AttribType, UniformType } from '@dfdao/types';
 import { glsl } from '../EngineUtils';
 import { ShaderMixins } from '../WebGL/ShaderMixins';
 
@@ -143,8 +143,8 @@ export const SPRITE_PROGRAM_DEFINITION = {
         bool isBlack = texel.r < 0.05 && texel.g < 0.05 && texel.b < 0.05;
         bool isWhite = texel.r > 0.95 && texel.g > 0.95 && texel.b > 0.95;
 
-        if (isBlack) { } 
-        else if (isWhite) { } 
+        if (isBlack) { }
+        else if (isWhite) { }
         else {
           texel.rgb = ((texel.rgb - 0.35) * max(3., 0.)) + 0.35;
           texel.rgb *= 0.5 * rand + 0.6;

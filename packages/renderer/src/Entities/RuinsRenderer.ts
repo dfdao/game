@@ -1,4 +1,4 @@
-import { getPlanetCosmetic } from '@darkforest_eth/procedural';
+import { getPlanetCosmetic } from '@dfdao/procedural';
 import {
   CanvasCoords,
   Planet,
@@ -7,7 +7,7 @@ import {
   RGBVec,
   RuinsRendererType,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { EngineUtils } from '../EngineUtils';
 import { RUINS_PROGRAM_DEFINITION } from '../Programs/RuinsProgram';
 import { GameGLManager } from '../WebGL/GameGLManager';

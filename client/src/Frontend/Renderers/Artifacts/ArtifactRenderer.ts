@@ -1,6 +1,6 @@
-import { MAX_BIOME, MIN_BIOME } from '@darkforest_eth/constants';
-import { SpriteRenderer, WebGLManager } from '@darkforest_eth/renderer';
-import { Artifact, ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
+import { MAX_BIOME, MIN_BIOME } from '@dfdao/constants';
+import { SpriteRenderer, WebGLManager } from '@dfdao/renderer';
+import { Artifact, ArtifactRarity, ArtifactType, Biome } from '@dfdao/types';
 import autoBind from 'auto-bind';
 import { ARTIFACT_ROW_H } from '../../Styles/dfstyles';
 

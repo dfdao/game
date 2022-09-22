@@ -1,5 +1,5 @@
-import { Fraction, getRandomGradientAt, rand } from '@darkforest_eth/hashing';
-import { Abstract, PerlinConfig, Rectangle, WorldCoords } from '@darkforest_eth/types';
+import { Fraction, getRandomGradientAt, rand } from '@dfdao/hashing';
+import { Abstract, PerlinConfig, Rectangle, WorldCoords } from '@dfdao/types';
 
 /* types */
 type Vector = { x: number; y: number };

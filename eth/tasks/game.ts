@@ -1,11 +1,11 @@
-import { fakeHash, mimcHash, modPBigInt, perlin } from '@darkforest_eth/hashing';
+import { fakeHash, mimcHash, modPBigInt, perlin } from '@dfdao/hashing';
 import {
   buildContractCallArgs,
   fakeProof,
   RevealSnarkContractCallArgs,
   SnarkJSProofAndSignals,
-} from '@darkforest_eth/snarks';
-import { revealSnarkWasmPath, revealSnarkZkeyPath } from '@darkforest_eth/snarks/node';
+} from '@dfdao/snarks';
+import { revealSnarkWasmPath, revealSnarkZkeyPath } from '@dfdao/snarks/node';
 import { BigNumber } from 'ethers';
 import { task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';

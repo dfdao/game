@@ -1,4 +1,4 @@
-import { Setting } from '@darkforest_eth/types';
+import { Setting } from '@dfdao/types';
 import React from 'react';
 import { useUIManager } from '../Utils/AppHooks';
 import { useBooleanSetting } from '../Utils/SettingsHooks';

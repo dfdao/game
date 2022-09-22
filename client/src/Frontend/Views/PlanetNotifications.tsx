@@ -1,5 +1,5 @@
-import { isLocatable } from '@darkforest_eth/gamelogic';
-import { EthAddress, Planet } from '@darkforest_eth/types';
+import { isLocatable } from '@dfdao/gamelogic';
+import { EthAddress, Planet } from '@dfdao/types';
 import React from 'react';
 import styled from 'styled-components';
 import { GameObjects } from '../../Backend/GameLogic/GameObjects';

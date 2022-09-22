@@ -3,10 +3,10 @@ import {
   SnarkJSProofAndSignals,
   WhitelistSnarkContractCallArgs,
   WhitelistSnarkInput,
-} from '@darkforest_eth/snarks';
-import whitelistCircuitPath from '@darkforest_eth/snarks/whitelist.wasm?url';
-import whitelistZkeyPath from '@darkforest_eth/snarks/whitelist.zkey?url';
-import { EthAddress } from '@darkforest_eth/types';
+} from '@dfdao/snarks';
+import whitelistCircuitPath from '@dfdao/snarks/whitelist.wasm?url';
+import whitelistZkeyPath from '@dfdao/snarks/whitelist.zkey?url';
+import { EthAddress } from '@dfdao/types';
 import bigInt, { BigInteger } from 'big-integer';
 import { TerminalTextStyle } from '../../Frontend/Utils/TerminalTypes';
 import { TerminalHandle } from '../../Frontend/Views/Terminal';

@@ -25,7 +25,7 @@ import {
   AdminPlanets,
   Contracts,
   Initializers,
-} from '@darkforest_eth/settings';
+} from '@dfdao/settings';
 import { workspace } from '@projectsophon/workspace';
 import './tasks/artifact';
 import './tasks/circom';
@@ -56,8 +56,8 @@ declare module 'hardhat/types/runtime' {
     ADMIN_PUBLIC_ADDRESS: string | undefined;
 
     packageDirs: {
-      '@darkforest_eth/contracts': string;
-      '@darkforest_eth/snarks': string;
+      '@dfdao/contracts': string;
+      '@dfdao/snarks': string;
       circuits: string;
     };
   }
@@ -67,13 +67,13 @@ require('dotenv').config();
 
 const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
 
-const contracts = workspace('@darkforest_eth/contracts');
+const contracts = workspace('@dfdao/contracts');
 if (!contracts) {
-  throw new Error('Unable to locate `@darkforest_eth/contracts` workspace');
+  throw new Error('Unable to locate `@dfdao/contracts` workspace');
 }
-const snarks = workspace('@darkforest_eth/snarks');
+const snarks = workspace('@dfdao/snarks');
 if (!snarks) {
-  throw new Error('Unable to locate `@darkforest_eth/snarks` workspace');
+  throw new Error('Unable to locate `@dfdao/snarks` workspace');
 }
 const circuits = workspace('circuits');
 if (!circuits) {
@@ -82,8 +82,8 @@ if (!circuits) {
 
 // Ensure we can lookup the needed workspace packages
 const packageDirs = {
-  '@darkforest_eth/contracts': contracts,
-  '@darkforest_eth/snarks': snarks,
+  '@dfdao/contracts': contracts,
+  '@dfdao/snarks': snarks,
   circuits,
 };
 
@@ -176,7 +176,7 @@ const config: HardhatUserConfig = {
   },
   circom: {
     inputBasePath: '../circuits/',
-    outputBasePath: packageDirs['@darkforest_eth/snarks'],
+    outputBasePath: packageDirs['@dfdao/snarks'],
     ptau: 'powersOfTau28_hez_final_15.ptau',
     circuits: [
       {
@@ -212,7 +212,7 @@ const config: HardhatUserConfig = {
     ],
   },
   typechain: {
-    outDir: path.join(packageDirs['@darkforest_eth/contracts'], 'typechain'),
+    outDir: path.join(packageDirs['@dfdao/contracts'], 'typechain'),
     target: 'ethers-v5',
   },
   diamondAbi: {
@@ -237,8 +237,8 @@ const config: HardhatUserConfig = {
   },
   abiExporter: [
     {
-      // This plugin will copy the ABI from the DarkForest artifact into our `@darkforest_eth/contracts` package as `abis/DarkForest.json`
-      path: path.join(packageDirs['@darkforest_eth/contracts'], 'abis'),
+      // This plugin will copy the ABI from the DarkForest artifact into our `@dfdao/contracts` package as `abis/DarkForest.json`
+      path: path.join(packageDirs['@dfdao/contracts'], 'abis'),
       runOnCompile: true,
       // We don't want additional directories created, so we just return the contractName
       rename(_sourceName, contractName) {
@@ -248,7 +248,7 @@ const config: HardhatUserConfig = {
       only: [':DarkForest$', ':DFInitialize$'],
     },
     {
-      path: path.join(packageDirs['@darkforest_eth/contracts'], 'abis'),
+      path: path.join(packageDirs['@dfdao/contracts'], 'abis'),
       runOnCompile: true,
       // This is a "stripped" version for the subgraph, so we append `_stripped`
       rename(_sourceName, contractName) {
@@ -264,7 +264,7 @@ const config: HardhatUserConfig = {
   ],
   settings: {
     contracts: {
-      path: path.join(packageDirs['@darkforest_eth/contracts'], 'index.js'),
+      path: path.join(packageDirs['@dfdao/contracts'], 'index.js'),
       lazy: true,
       decode: decodeContracts,
     },

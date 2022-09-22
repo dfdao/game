@@ -4,6 +4,7 @@
  * These are blank renderers as they have no functionality.
  * The result of using these renderers is the same as disabling the renderer.
  */
+// organize-imports-ignore
 import {
   engineConsts,
   EngineUtils,
@@ -11,7 +12,7 @@ import {
   GenericRenderer,
   glsl,
 //@ts-ignore
-} from 'https://cdn.skypack.dev/@darkforest_eth/renderer';
+} from 'https://cdn.skypack.dev/@dfdao/renderer';
 import {
   AsteroidRendererType,
   AttribType,
@@ -56,7 +57,7 @@ import {
   WorldCoords,
   WormholeRendererType,
 //@ts-ignore
-} from 'https://cdn.skypack.dev/@darkforest_eth/types';
+} from 'https://cdn.skypack.dev/@dfdao/types';
 //@ts-ignore
 import { html, render } from 'https://unpkg.com/htm/preact/standalone.module.js';
 

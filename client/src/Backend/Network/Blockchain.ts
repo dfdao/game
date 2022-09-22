@@ -1,5 +1,5 @@
-import diamondContractAbiUrl from '@darkforest_eth/contracts/abis/DarkForest.json?url';
-import { createContract, createEthConnection, EthConnection } from '@darkforest_eth/network';
+import diamondContractAbiUrl from '@dfdao/contracts/abis/DarkForest.json?url';
+import { createContract, createEthConnection, EthConnection } from '@dfdao/network';
 import type { Contract, providers, Wallet } from 'ethers';
 
 /**

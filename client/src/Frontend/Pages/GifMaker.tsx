@@ -1,4 +1,4 @@
-import { ArtifactFileColor } from '@darkforest_eth/gamelogic';
+import { ArtifactFileColor } from '@dfdao/gamelogic';
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { GifRenderer } from '../Renderers/GifRenderer';

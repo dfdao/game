@@ -1,4 +1,4 @@
-import { AutoGasSetting, NetworkEvent } from '@darkforest_eth/types';
+import { AutoGasSetting, NetworkEvent } from '@dfdao/types';
 
 /**
  * Returns whether or not the given event is an instance of {@link NetworkEvent}. Not super

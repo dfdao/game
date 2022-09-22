@@ -1,4 +1,4 @@
-import { AttribType, UniformType } from '@darkforest_eth/types';
+import { AttribType, UniformType } from '@dfdao/types';
 import { glsl } from '../EngineUtils';
 import { ShaderMixins } from '../WebGL/ShaderMixins';
 
@@ -70,7 +70,7 @@ export const UNMINED_PROGRAM_DEFINITION = {
 
     in vec4 ${v.color};
     in vec2 ${v.rectPos};
-    
+
     uniform vec3 ${u.viewportCenter};
     uniform float ${u.time};
 

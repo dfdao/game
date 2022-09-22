@@ -1,5 +1,5 @@
-import { RECOMMENDED_MODAL_WIDTH } from '@darkforest_eth/constants';
-import { SpaceType } from '@darkforest_eth/types';
+import { RECOMMENDED_MODAL_WIDTH } from '@dfdao/constants';
+import { SpaceType } from '@dfdao/types';
 import color from 'color';
 import { css } from 'styled-components';
 

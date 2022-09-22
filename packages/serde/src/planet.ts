@@ -1,6 +1,6 @@
-import { CONTRACT_PRECISION } from '@darkforest_eth/constants';
-import type { DarkForest } from '@darkforest_eth/contracts/typechain';
-import { bonusFromHex } from '@darkforest_eth/hexgen';
+import { CONTRACT_PRECISION } from '@dfdao/constants';
+import type { DarkForest } from '@dfdao/contracts/typechain';
+import { bonusFromHex } from '@dfdao/hexgen';
 import type {
   Planet,
   PlanetDefaults,
@@ -8,7 +8,7 @@ import type {
   PlanetType,
   PlanetTypeWeightsBySpaceType,
   SpaceType,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { address } from './address';
 import { locationIdFromDecStr } from './location';
 
@@ -16,7 +16,7 @@ export type RawPlanet = Awaited<ReturnType<DarkForest['planets']>>;
 
 /**
  * Converts data obtained from a contract call (typed with Typechain) into a
- * `Planet` that can be used by the client (see @darkforest_eth/types). Note
+ * `Planet` that can be used by the client (see @dfdao/types). Note
  * that some `Planet` fields (1) store client data that the blockchain is not
  * aware of, such as `unconfirmedDepartures`, (2) store derived data that is
  * calculated later by the client, such as `silverSpent` and `bonus`, or (3)
@@ -100,7 +100,7 @@ type RawDefaults = Awaited<ReturnType<DarkForest['getDefaultStats']>>;
 /**
  * Converts the raw typechain result of a call which fetches a
  * `PlanetTypes.PlanetDefaultStats[]` array of structs, and converts it into
- * an object with type `PlanetDefaults` (see @darkforest_eth/types).
+ * an object with type `PlanetDefaults` (see @dfdao/types).
  *
  * @param rawDefaults result of a ethers.js contract call which returns a raw
  * `PlanetTypes.PlanetDefaultStats` struct, typed with typechain.

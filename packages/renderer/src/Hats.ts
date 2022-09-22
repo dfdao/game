@@ -1,4 +1,4 @@
-import { HatType } from '@darkforest_eth/types';
+import { HatType } from '@dfdao/types';
 
 export type Hat = {
   topLayer: Array<string>;

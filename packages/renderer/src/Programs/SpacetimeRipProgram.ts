@@ -1,4 +1,4 @@
-import { AttribType, UniformType } from '@darkforest_eth/types';
+import { AttribType, UniformType } from '@dfdao/types';
 import { glsl } from '../EngineUtils';
 import { ShaderMixins } from '../WebGL/ShaderMixins';
 
@@ -72,7 +72,7 @@ export const SPACETIMERIP_PROGRAM_DEFINITION = {
 
     in vec4 ${a.inColor1};
     in vec4 ${a.inColor2};
-    in vec4 ${a.inColor3};  
+    in vec4 ${a.inColor3};
 
     uniform mat4 ${u.matrix};
 
@@ -81,12 +81,12 @@ export const SPACETIMERIP_PROGRAM_DEFINITION = {
 
     out vec4 ${v.inColor1};
     out vec4 ${v.inColor2};
-    out vec4 ${v.inColor3};  
+    out vec4 ${v.inColor3};
 
     void main() {
       gl_Position = ${u.matrix} * ${a.position};
 
-      
+
       ${v.color} = ${a.color};
       ${v.inColor1} = ${a.inColor1};
       ${v.inColor2} = ${a.inColor2};
@@ -105,7 +105,7 @@ export const SPACETIMERIP_PROGRAM_DEFINITION = {
 
     in vec4 ${v.inColor1};
     in vec4 ${v.inColor2};
-    in vec4 ${v.inColor3};  
+    in vec4 ${v.inColor3};
 
     uniform float ${u.time};
 
@@ -166,7 +166,7 @@ export const SPACETIMERIP_PROGRAM_DEFINITION = {
       vec4 nInG = 2.3 * vec4(pos + 1.2 * nOffset, 0.5 * ${u.time}, 0.) + vec4(17.);
       float nG = snoise(nInG) + 0.5 * snoise(2. * nInG);
 
-      vec4 nInB = 2.6 * vec4(pos + 1.3 * nOffset, 0.5 * ${u.time}, 0.) + vec4(34.); 
+      vec4 nInB = 2.6 * vec4(pos + 1.3 * nOffset, 0.5 * ${u.time}, 0.) + vec4(34.);
       float nB = snoise(nInB) + 0.5 * snoise(2. * nInB);
 
       vec4 blended = vec4(${v.inColor1} * nR + ${v.inColor2} * nG + ${v.inColor3} * nB);
@@ -186,7 +186,7 @@ export const SPACETIMERIP_PROGRAM_DEFINITION = {
       float blendA = (r - holeR) / eps;
       vec4 blendFg = vec4(warpColor.rgb, blendA);
       vec4 blendBg = holeColor;
-      
+
       vec4 blendColor = blend(blendFg, blendBg);
 
       /* calculate final color */

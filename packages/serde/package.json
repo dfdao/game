@@ -1,5 +1,5 @@
 {
-  "name": "@darkforest_eth/serde",
+  "name": "@dfdao/serde",
   "version": "6.7.0-dev.0",
   "license": "MIT",
   "author": "0xPARC <ivan@0xPARC.org>",
@@ -20,10 +20,10 @@
     "clean": "del-cli dist node_modules tsconfig.ref.tsbuildinfo"
   },
   "dependencies": {
-    "@darkforest_eth/constants": "6.7.0-dev.0",
-    "@darkforest_eth/contracts": "6.7.0-dev.0",
-    "@darkforest_eth/hexgen": "6.7.0-dev.0",
-    "@darkforest_eth/types": "6.7.0-dev.0",
+    "@dfdao/constants": "6.7.0-dev.0",
+    "@dfdao/contracts": "6.7.0-dev.0",
+    "@dfdao/hexgen": "6.7.0-dev.0",
+    "@dfdao/types": "6.7.0-dev.0",
     "big-integer": "^1.6.48",
     "ethers": "^5.7.1"
   },

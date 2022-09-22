@@ -3,7 +3,7 @@ import {
   EthAddress,
   PlanetTypeWeightsBySpaceType,
   UpgradeBranches,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { BigNumber as EthersBN } from 'ethers';
 
 export const enum ZKArgIdx {

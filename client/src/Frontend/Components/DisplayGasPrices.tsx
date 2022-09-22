@@ -1,4 +1,4 @@
-import { GasPrices } from '@darkforest_eth/types';
+import { GasPrices } from '@dfdao/types';
 import React from 'react';
 
 export function DisplayGasPrices({ gasPrices }: { gasPrices?: GasPrices }) {

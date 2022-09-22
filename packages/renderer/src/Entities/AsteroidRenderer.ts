@@ -1,4 +1,4 @@
-import { getPlanetCosmetic } from '@darkforest_eth/procedural';
+import { getPlanetCosmetic } from '@dfdao/procedural';
 import {
   AsteroidRendererType,
   CanvasCoords,
@@ -7,7 +7,7 @@ import {
   Planet,
   RendererType,
   RGBVec,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { EngineUtils } from '../EngineUtils';
 import { ASTEROID_PROGRAM_DEFINITION } from '../Programs/AsteroidProgram';
 import { GameGLManager } from '../WebGL/GameGLManager';

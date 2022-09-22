@@ -1,4 +1,4 @@
-import { CaptureZoneRendererType, RendererType } from '@darkforest_eth/types';
+import { CaptureZoneRendererType, RendererType } from '@dfdao/types';
 import { Renderer, RendererGameContext } from '../Renderer';
 import { GameGLManager } from '../WebGL/GameGLManager';
 

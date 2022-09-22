@@ -1,5 +1,5 @@
-import { EthConnection, isPurchase, weiToEth } from '@darkforest_eth/network';
-import { EthAddress, Setting, TransactionId, TxIntent } from '@darkforest_eth/types';
+import { EthConnection, isPurchase, weiToEth } from '@dfdao/network';
+import { EthAddress, Setting, TransactionId, TxIntent } from '@dfdao/types';
 import { BigNumber as EthersBN, providers } from 'ethers';
 import { getBooleanSetting } from '../Utils/SettingsHooks';
 

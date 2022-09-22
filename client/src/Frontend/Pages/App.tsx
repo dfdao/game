@@ -1,5 +1,5 @@
-import { CONTRACT_ADDRESS } from '@darkforest_eth/contracts';
-import { address } from '@darkforest_eth/serde';
+import { CONTRACT_ADDRESS } from '@dfdao/contracts';
+import { address } from '@dfdao/serde';
 import React from 'react';
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
 import { createGlobalStyle } from 'styled-components';
@@ -25,7 +25,7 @@ function App() {
   return (
     <>
       <GlobalStyle />
-      {/* Provides theming for WebComponents from the `@darkforest_eth/ui` package */}
+      {/* Provides theming for WebComponents from the `@dfdao/ui` package */}
       <Theme color='dark' scale='medium'>
         <Router>
           <Switch>
