@@ -244,7 +244,7 @@ export async function deployAndCut(
 
   const libraries = await deployLibraries({}, hre);
 
-  const diamond = await deployDiamond(hre);
+  const diamond = await deployDiamond({}, hre);
 
   const diamondInit = await deployDiamondInit({}, libraries, hre);
 
@@ -484,7 +484,7 @@ export async function deployCaptureFacet(
   return contract;
 }
 
-async function deployDiamond(hre: HardhatRuntimeEnvironment) {
+async function deployDiamond({}, hre: HardhatRuntimeEnvironment) {
   const factory = await hre.ethers.getContractFactory('DFDiamond');
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();

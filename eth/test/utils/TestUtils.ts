@@ -11,7 +11,7 @@ import { ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
 import { bigIntFromKey } from '@darkforest_eth/whitelist';
 import { mine, time } from '@nomicfoundation/hardhat-network-helpers';
 import bigInt from 'big-integer';
-import { BigNumber, BigNumberish, constants, utils } from 'ethers';
+import { BigNumber, BigNumberish, constants } from 'ethers';
 // @ts-ignore
 import * as snarkjs from 'snarkjs';
 import { TestLocation } from './TestLocation';
@@ -220,17 +220,6 @@ export async function increaseBlockchainTime(interval = LARGE_INTERVAL) {
 
 export async function getCurrentTime() {
   return time.latest();
-}
-
-// From: https://ethereum.stackexchange.com/questions/113329/is-there-a-way-to-get-an-interface-id-of-a-solidity-interface-using-ethersjs
-// Not used in tests, but leaving because might be useful in the future
-export function getInterfaceID(contractInterface: utils.Interface) {
-  let interfaceID: BigNumber = constants.Zero;
-  const functions: string[] = Object.keys(contractInterface.functions);
-  for (let i = 0; i < functions.length; i++) {
-    interfaceID = interfaceID.xor(contractInterface.getSighash(functions[i]));
-  }
-  return interfaceID;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

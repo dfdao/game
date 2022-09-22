@@ -19,7 +19,6 @@ pragma solidity ^0.8.0;
 // of the diamond. Add parameters to the init function if you need to.
 
 // Interface imports
-import {ERC165Storage} from "@solidstate/contracts/introspection/ERC165Storage.sol";
 import {IERC721} from "@solidstate/contracts/token/ERC721/IERC721.sol";
 import {IERC721Metadata} from "@solidstate/contracts/token/ERC721/metadata/IERC721Metadata.sol";
 import {IERC721Enumerable} from "@solidstate/contracts/token/ERC721/enumerable/IERC721Enumerable.sol";
@@ -104,7 +103,6 @@ struct InitArgs {
 
 contract DFInitialize is WithStorage {
     using ERC721MetadataStorage for ERC721MetadataStorage.Layout;
-    using ERC165Storage for ERC165Storage.Layout;
 
     // You can add parameters to this function in order to pass in
     // data to set initialize state variables
