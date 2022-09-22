@@ -43,11 +43,7 @@
     "import/no-extraneous-dependencies": [
       "error",
       {
-        "devDependencies": [
-          "**/client/vite.config.ts",
-          "**/eth/**/*.ts",
-          "**/webserver/test/*.test.ts"
-        ],
+        "devDependencies": ["**/client/vite.config.ts", "**/client/**/*.test.ts", "**/eth/**/*.ts"],
         "optionalDependencies": false,
         "peerDependencies": false,
         "bundledDependencies": false
