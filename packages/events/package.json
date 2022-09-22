@@ -1,6 +1,6 @@
 {
   "name": "@dfdao/events",
-  "version": "6.7.0-dev.0",
+  "version": "100.0.0-dev.0",
   "license": "MIT",
   "author": "0xPARC <ivan@0xPARC.org>",
   "engines": {
