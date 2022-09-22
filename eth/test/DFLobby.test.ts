@@ -1,4 +1,4 @@
-import { DarkForest } from '@darkforest_eth/contracts/typechain';
+import { DarkForest } from '@dfdao/contracts/typechain';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
