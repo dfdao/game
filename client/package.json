@@ -67,7 +67,9 @@
     "clean": "del-cli dist node_modules declarations public/contracts tsconfig.ref.tsbuildinfo",
     "docs": "typedoc && npm run format",
     "deploy": "netlify build && netlify deploy",
-    "deploy:prod": "netlify build && netlify deploy --prod"
+    "deploy:prod": "netlify build && netlify deploy --prod",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage"
   },
   "browserslist": {
     "production": [
@@ -103,11 +105,13 @@
     "del-cli": "^4.0.1",
     "esbuild": "0.15.8",
     "eslint": "^8.23.1",
+    "jsdom": "^20.0.0",
     "netlify-cli": "^3.8.5",
     "prettier": "^2.7.1",
     "typedoc": "^0.23.15",
     "typedoc-plugin-markdown": "3.13.x",
     "typescript": "4.7.x",
-    "vite": "^3.1.3"
+    "vite": "^3.1.3",
+    "vitest": "^0.23.4"
   }
 }
