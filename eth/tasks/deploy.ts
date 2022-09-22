@@ -229,7 +229,6 @@ async function saveDeploy(
 
 export async function deployAndCut(
   {
-    ownerAddress,
     whitelistEnabled,
     initializers,
   }: {
@@ -245,28 +244,7 @@ export async function deployAndCut(
 
   const libraries = await deployLibraries({}, hre);
 
-  // Diamond Spec facets
-  // Note: These won't be updated during an upgrade without manual intervention
-  const diamondCutFacet = await deployDiamondCutFacet({}, libraries, hre);
-  const diamondLoupeFacet = await deployDiamondLoupeFacet({}, libraries, hre);
-  const ownershipFacet = await deployOwnershipFacet({}, libraries, hre);
-
-  // The `cuts` to perform for Diamond Spec facets
-  const diamondSpecFacetCuts = [
-    // Note: The `diamondCut` is omitted because it is cut upon deployment
-    ...changes.getFacetCuts('DiamondLoupeFacet', diamondLoupeFacet),
-    ...changes.getFacetCuts('OwnershipFacet', ownershipFacet),
-  ];
-
-  const diamond = await deployDiamond(
-    {
-      ownerAddress,
-      // The `diamondCutFacet` is cut upon deployment
-      diamondCutAddress: diamondCutFacet.address,
-    },
-    libraries,
-    hre
-  );
+  const diamond = await deployDiamond({}, hre);
 
   const diamondInit = await deployDiamondInit({}, libraries, hre);
 
@@ -305,7 +283,7 @@ export async function deployAndCut(
     darkForestFacetCuts.push(...changes.getFacetCuts('DFDebugFacet', debugFacet));
   }
 
-  const toCut = [...diamondSpecFacetCuts, ...darkForestFacetCuts];
+  const toCut = [...darkForestFacetCuts];
 
   const diamondCut = await hre.ethers.getContractAt('DarkForest', diamond.address);
 
@@ -506,33 +484,19 @@ export async function deployCaptureFacet(
   return contract;
 }
 
-async function deployDiamondCutFacet({}, libraries: Libraries, hre: HardhatRuntimeEnvironment) {
-  const factory = await hre.ethers.getContractFactory('DiamondCutFacet');
+async function deployDiamond({}, hre: HardhatRuntimeEnvironment) {
+  const factory = await hre.ethers.getContractFactory('DFDiamond');
   const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DiamondCutFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-async function deployDiamond(
-  {
-    ownerAddress,
-    diamondCutAddress,
-  }: {
-    ownerAddress: string;
-    diamondCutAddress: string;
-  },
-  {}: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  const factory = await hre.ethers.getContractFactory('Diamond');
-  const contract = await factory.deploy(ownerAddress, diamondCutAddress);
   await contract.deployTransaction.wait();
   console.log(`Diamond deployed to: ${contract.address}`);
   return contract;
 }
 
-async function deployDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRuntimeEnvironment) {
+export async function deployDiamondInit(
+  {},
+  { LibGameUtils }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
   // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
   // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
   const factory = await hre.ethers.getContractFactory('DFInitialize', {
@@ -541,22 +505,6 @@ async function deployDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRu
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log(`DFInitialize deployed to: ${contract.address}`);
-  return contract;
-}
-
-async function deployDiamondLoupeFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
-  const factory = await hre.ethers.getContractFactory('DiamondLoupeFacet');
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DiamondLoupeFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-async function deployOwnershipFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
-  const factory = await hre.ethers.getContractFactory('OwnershipFacet');
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`OwnershipFacet deployed to: ${contract.address}`);
   return contract;
 }
 

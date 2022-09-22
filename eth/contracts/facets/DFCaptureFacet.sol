@@ -7,7 +7,7 @@ import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
 
 // Library imports
 import {LibPlanet} from "../libraries/LibPlanet.sol";
-import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
+import {LibPermissions} from "../libraries/LibPermissions.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
@@ -28,7 +28,7 @@ contract DFCaptureFacet is WithStorage {
     modifier onlyWhitelisted() {
         require(
             DFWhitelistFacet(address(this)).isWhitelisted(msg.sender) ||
-                msg.sender == LibDiamond.contractOwner(),
+                msg.sender == LibPermissions.contractOwner(),
             "Player is not whitelisted"
         );
         _;

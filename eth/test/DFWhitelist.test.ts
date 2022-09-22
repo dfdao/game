@@ -69,7 +69,7 @@ describe('DarkForestWhitelist', function () {
 
   it('should reject change admin if not admin', async function () {
     await expect(world.user2Core.transferOwnership(world.user1.address)).to.be.revertedWith(
-      'LibDiamond: Must be contract owner'
+      'Ownable: sender must be owner'
     );
   });
 

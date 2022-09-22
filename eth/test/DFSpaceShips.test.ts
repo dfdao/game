@@ -58,6 +58,8 @@ describe('Space Ships', function () {
   });
 
   describe('using the Titan', async function () {
+    this.timeout(0);
+
     it('pauses energy regeneration on planets', async function () {
       const titan = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
         (a) => a.artifact.artifactType === ArtifactType.ShipTitan
