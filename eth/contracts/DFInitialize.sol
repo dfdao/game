@@ -19,9 +19,6 @@ pragma solidity ^0.8.0;
 // of the diamond. Add parameters to the init function if you need to.
 
 // Interface imports
-import {IERC721} from "@solidstate/contracts/token/ERC721/IERC721.sol";
-import {IERC721Metadata} from "@solidstate/contracts/token/ERC721/metadata/IERC721Metadata.sol";
-import {IERC721Enumerable} from "@solidstate/contracts/token/ERC721/enumerable/IERC721Enumerable.sol";
 
 // Inherited storage
 import {ERC721MetadataStorage} from "@solidstate/contracts/token/ERC721/metadata/ERC721MetadataStorage.sol";
