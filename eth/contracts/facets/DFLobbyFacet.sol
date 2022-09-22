@@ -23,19 +23,32 @@ contract DFLobbyFacet is WithStorage {
      */
     function createLobby(address initAddress, bytes calldata initData) public {
         address diamondAddress = gs().diamondAddress;
-        address diamondCutAddress = IDiamondReadable(diamondAddress).facetAddress(
-            IDiamondWritable.diamondCut.selector
-        );
         DFDiamond lobby = new DFDiamond();
 
         IDiamondReadable.Facet[] memory facets = IDiamondReadable(diamondAddress).facets();
 
+        // Memory arrays can't be dynamic, so count how many built-in cuts the diamond provides
+        // then use that length to make the correctly sized facetCut array below
+        // This is also hardened against the Diamond doing multiple cuts for selectors it provides
+        uint256 builtinLength = 0;
+        for (uint256 i = 0; i < facets.length; i++) {
+            if (facets[i].target == diamondAddress) {
+                builtinLength++;
+            }
+        }
+
+        // TODO: Do we need this?
+        require(
+            builtinLength <= facets.length,
+            "Built-in facets cannot be greater than total cuts"
+        );
+
         IDiamondWritable.FacetCut[] memory facetCut = new IDiamondWritable.FacetCut[](
-            facets.length - 1
+            facets.length - builtinLength
         );
         uint256 cutIdx = 0;
         for (uint256 i = 0; i < facets.length; i++) {
-            if (facets[i].target != diamondCutAddress) {
+            if (facets[i].target != diamondAddress) {
                 facetCut[cutIdx] = IDiamondWritable.FacetCut({
                     target: facets[i].target,
                     action: IDiamondWritable.FacetCutAction.ADD,
