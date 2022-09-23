@@ -1,19 +1,17 @@
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
-import { defaultWorldFixture, World } from './utils/TestWorld';
+import { DFToken, DFToken__factory } from '@dfdao/contracts/typechain';
+import { ethers } from 'hardhat';
 
-describe('ERC1155', function () {
-  let world: World;
+const tokenURI = 'ERC1155Metadata.tokenURI';
 
-  async function worldFixture() {
-    const world = await loadFixture(defaultWorldFixture);
-    return world;
-  }
+describe('SolidStateERC1155', function () {
+  let token: DFToken;
 
-  beforeEach('load fixture', async function () {
-    world = await loadFixture(worldFixture);
+  beforeEach(async function () {
+    const [deployer] = await ethers.getSigners();
+    token = await new DFToken__factory(deployer).deploy();
   });
-  it('has correct functions', async function () {
-    // world.contract.mint();
-    console.log(world.contract.address);
+
+  it('mints', async function () {
+    console.log('not yet!');
   });
 });
