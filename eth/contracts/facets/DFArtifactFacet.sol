@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 // Contract imports
 import {SolidStateERC721} from "@solidstate/contracts/token/ERC721/SolidStateERC721.sol";
 import {ERC721BaseStorage} from "@solidstate/contracts/token/ERC721/base/ERC721BaseStorage.sol";
+import {SolidStateERC1155} from "@solidstate/contracts/token/ERC1155/SolidStateERC1155.sol";
 import {DFVerifierFacet} from "./DFVerifierFacet.sol";
 import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
 
@@ -19,7 +20,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 // Type imports
 import {Artifact, ArtifactType, DFTCreateArtifactArgs, DFPFindArtifactArgs} from "../DFTypes.sol";
 
-contract DFArtifactFacet is WithStorage, SolidStateERC721 {
+contract DFArtifactFacet is WithStorage, SolidStateERC721, SolidStateERC1155 {
     using ERC721BaseStorage for ERC721BaseStorage.Layout;
 
     event PlanetProspected(address player, uint256 loc);
