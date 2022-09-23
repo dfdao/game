@@ -1,5 +1,5 @@
-import { isUnconfirmedUpgradeTx } from '@darkforest_eth/serde';
-import { LocationId, Planet, PlanetType, UpgradeBranchName } from '@darkforest_eth/types';
+import { isUnconfirmedUpgradeTx } from '@dfdao/serde';
+import { LocationId, Planet, PlanetType, UpgradeBranchName } from '@dfdao/types';
 import React from 'react';
 import styled from 'styled-components';
 import {

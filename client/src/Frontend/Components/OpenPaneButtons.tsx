@@ -1,4 +1,4 @@
-import { LocationId } from '@darkforest_eth/types';
+import { LocationId } from '@dfdao/types';
 import React, { useCallback } from 'react';
 import { BroadcastPane, BroadcastPaneHelpContent } from '../Panes/BroadcastPane';
 import { HatPane } from '../Panes/HatPane';

@@ -1,4 +1,4 @@
-import { Rectangle } from '@darkforest_eth/types';
+import { Rectangle } from '@dfdao/types';
 import { Dispatch, SetStateAction } from 'react';
 import GameManager from '../../Backend/GameLogic/GameManager';
 import GameUIManager from '../../Backend/GameLogic/GameUIManager';

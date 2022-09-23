@@ -20,7 +20,7 @@ Renderers have two main methods:
 
 - Flush: Flush is called every frame in the game. When called, the entities in the queue should be rendered onto the game canvas and the queue cleared.
 
-For the game to recognize if the class is a renderer, it has to follow one of the renderer interfaces that can be found in `@darkforest_eth/types`
+For the game to recognize if the class is a renderer, it has to follow one of the renderer interfaces that can be found in `@dfdao/types`
 
 For instance `MineRendererType` is an interface for mine renderers. Mine renderers are used to draw Asteroid Fields which is a type of planet (not to be confused with Asteroids).
 
@@ -70,10 +70,10 @@ When you replace a renderer in the game, the renderer is then put on our renderi
 
 We will run through the creation of a renderer that will replace the renderer for Asteroid Fields.
 
-To create a renderer it has to follow one of the renderer interfaces that can be found in ​​`@darkforest_eth/types`. For the Asteroid Fields, we will be using the `MineRendererType`.
+To create a renderer it has to follow one of the renderer interfaces that can be found in ​​`@dfdao/types`. For the Asteroid Fields, we will be using the `MineRendererType`.
 
 ```javascript
-import { RendererType } from 'https://cdn.skypack.dev/@darkforest_eth/types';
+import { RendererType } from 'https://cdn.skypack.dev/@dfdao/types';
 
 class GenericMineRenderer {
   constructor() {
@@ -99,7 +99,7 @@ After:
 If you noticed in the queue function, the coordinate of the planet and the size of planet is relative to the game world. However when drawn on the canvas, the size and location of planet change based on the position of the players camera. We provide developers a way to easily transform between coordinate systems via the viewport class. You can get the viewport from the global ui class. `ui.getViewport()`. An example of the use of the viewport can be seen in the code of the `queueMine` function below.
 
 ```javascript
-import { RendererType } from 'https://cdn.skypack.dev/@darkforest_eth/types';
+import { RendererType } from 'https://cdn.skypack.dev/@dfdao/types';
 
 class GenericMineRenderer {
   constructor() {
@@ -123,7 +123,7 @@ These are the 2 functions used above.
 - `worldToCanvasCoords` will translate from game world coordinates to canvas coordinates. In the code above we are translating the location of the Asteroid Field to its location relative to the canvas.
 - `worldToCanvasDist` will translate a distance relative to the game world to the pixel distance on the canvas.
 
-After implementing the above code you should be ready to start implementing code that will draw on the game canvas.  
+After implementing the above code you should be ready to start implementing code that will draw on the game canvas.
 To do this you will need to be able to access the `WebGLRenderingContext`.
 
 ## WebGL Code
@@ -155,12 +155,8 @@ The code below contains all of the objects that we will explore to demonstrate W
 ## Fragment and Vertex Shaders
 
 ```javascript
-import { glsl } from 'https://cdn.skypack.dev/@darkforest_eth/renderer';
-import {
-  RendererProgram,
-  AttribeType,
-  UniformType,
-} from 'https://cdn.skypack.dev/@darkforest_eth/types';
+import { glsl } from 'https://cdn.skypack.dev/@dfdao/renderer';
+import { RendererProgram, AttribeType, UniformType } from 'https://cdn.skypack.dev/@dfdao/types';
 const program = {
   uniforms: {
     matrix: { name: 'u_matrix', type: UniformType.Mat4 },
@@ -189,7 +185,7 @@ const program = {
         out float v_energy_cap;
         void main() {
             // converting from canvas coordinates too clip space
-            gl_Position = u_matrix * vec4(a_position.xy, 0.0, 1.0); 
+            gl_Position = u_matrix * vec4(a_position.xy, 0.0, 1.0);
             //setting the varrying variables for use in the fragment shader
             v_energy = a_energy.x;
             v_energy_cap = a_energy.y;
@@ -210,9 +206,9 @@ const program = {
             float dist = length(v_rectPos);
 
             // if it's outside the circle
-            if (dist > 1.0) discard; 
+            if (dist > 1.0) discard;
 
-            //determine the color of the pixel using rgb values 
+            //determine the color of the pixel using rgb values
             //[red,green,blue,opacity] the range of the numbers is from 0 to 1
             outColor = vec4(1,1.0/v_energy_cap*v_energy,0,1);
         }
@@ -244,9 +240,9 @@ The fragment shader is called for every pixel in the square. The `outColor` is t
 ## Renderer Code
 
 ```javascript
-import { EngineUtils, GenericRenderer, glsl } from 'https://cdn.skypack.dev/@darkforest_eth/renderer';
+import { EngineUtils, GenericRenderer, glsl } from 'https://cdn.skypack.dev/@dfdao/renderer';
 import { AttribType, RendererType, UniformType,
-} from 'https://cdn.skypack.dev/@darkforest_eth/types';
+} from 'https://cdn.skypack.dev/@dfdao/types';
 class GenericMineRenderer extends GenericRenderer {
     constructor(gl, vp) {
         super(gl, program);
@@ -351,16 +347,8 @@ For each vertex we are importing the information about the planet's energy to th
 The final code for the renderer looks like this:
 
 ```javascript
-import {
-  EngineUtils,
-  GenericRenderer,
-  glsl,
-} from 'https://cdn.skypack.dev/@darkforest_eth/renderer';
-import {
-  AttribType,
-  RendererType,
-  UniformType,
-} from 'https://cdn.skypack.dev/@darkforest_eth/types';
+import { EngineUtils, GenericRenderer, glsl } from 'https://cdn.skypack.dev/@dfdao/renderer';
+import { AttribType, RendererType, UniformType } from 'https://cdn.skypack.dev/@dfdao/types';
 
 class GenericMineRenderer extends GenericRenderer {
   constructor(gl, vp) {
@@ -427,7 +415,7 @@ const program = {
         out float v_energy_cap;
         void main() {
             // converting from canvas coordinates too clip space
-            gl_Position = u_matrix * vec4(a_position.xy, 0.0, 1.0); 
+            gl_Position = u_matrix * vec4(a_position.xy, 0.0, 1.0);
             //setting the varrying variables for use in the fragment shader
             v_energy = a_energy.x;
             v_energy_cap = a_energy.y;
@@ -448,9 +436,9 @@ const program = {
             float dist = length(v_rectPos);
 
             // if it's outside the circle
-            if (dist > 1.0) discard; 
+            if (dist > 1.0) discard;
 
-            //determine the color of the pixel using rgb values 
+            //determine the color of the pixel using rgb values
             //[red,green,blue,opacity] the range of the numbers is from 0 to 1
             outColor = vec4(1,1.0/v_energy_cap*v_energy,0,1);
         }

@@ -10,16 +10,16 @@
  * [`yarn`](https://classic.yarnpkg.com/lang/en/) by running:
  *
  * ```bash
- * npm install --save @darkforest_eth/hashing
+ * npm install --save @dfdao/hashing
  * ```
  * ```bash
- * yarn add @darkforest_eth/hashing
+ * yarn add @dfdao/hashing
  * ```
  *
  * When using this in a plugin, you might want to load it with [skypack](https://www.skypack.dev)
  *
  * ```js
- * import * as hashing from 'http://cdn.skypack.dev/@darkforest_eth/hashing'
+ * import * as hashing from 'http://cdn.skypack.dev/@dfdao/hashing'
  * ```
  *
  * @packageDocumentation

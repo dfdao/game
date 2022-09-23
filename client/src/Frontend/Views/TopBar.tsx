@@ -1,6 +1,6 @@
-import { Monomitter } from '@darkforest_eth/events';
-import { weiToEth } from '@darkforest_eth/network';
-import { EthAddress, ModalName, TooltipName } from '@darkforest_eth/types';
+import { Monomitter } from '@dfdao/events';
+import { weiToEth } from '@dfdao/network';
+import { EthAddress, ModalName, TooltipName } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { CaptureZonesGeneratedEvent } from '../../Backend/GameLogic/CaptureZoneGenerator';
@@ -200,7 +200,7 @@ export function TopBar({ twitterVerifyHook }: { twitterVerifyHook: Hook<boolean>
         >
           <Sub>({weiToEth(balance).toFixed(2)} xDAI)</Sub>
         </TooltipTrigger>
-        {process.env.DF_WEBSERVER_URL && (
+        {import.meta.env.DF_WEBSERVER_URL && (
           <>
             <TooltipTrigger
               name={TooltipName.Empty}

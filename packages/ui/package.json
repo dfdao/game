@@ -1,6 +1,6 @@
 {
-  "name": "@darkforest_eth/ui",
-  "version": "6.7.0-dev.0",
+  "name": "@dfdao/ui",
+  "version": "100.0.0-dev.0",
   "license": "MIT",
   "author": "0xPARC <ivan@0xPARC.org>",
   "engines": {
@@ -20,8 +20,8 @@
     "clean": "del-cli dist node_modules tsconfig.ref.tsbuildinfo"
   },
   "dependencies": {
-    "@darkforest_eth/constants": "6.7.0-dev.0",
-    "@darkforest_eth/types": "6.7.0-dev.0",
+    "@dfdao/constants": "100.0.0-dev.0",
+    "@dfdao/types": "100.0.0-dev.0",
     "@spectrum-web-components/slider": "^0.12.3",
     "@spectrum-web-components/theme": "^0.9.3",
     "color": "^3.0.2",
@@ -30,11 +30,11 @@
   "devDependencies": {
     "@types/color": "^3.0.2",
     "del-cli": "^4.0.1",
-    "eslint": "^7.30.0",
-    "prettier": "^2.3.0",
-    "typedoc": "^0.22.8",
-    "typedoc-plugin-markdown": "3.11.x",
-    "typescript": "4.5.x"
+    "eslint": "^8.23.1",
+    "prettier": "^2.7.1",
+    "typedoc": "^0.23.15",
+    "typedoc-plugin-markdown": "3.13.x",
+    "typescript": "4.7.x"
   },
   "publishConfig": {
     "access": "public"

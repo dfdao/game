@@ -27,7 +27,7 @@ import {
   UnminedRendererType,
   VoyageRendererType,
   WormholeRendererType,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 
 export function isPlanetRenderer(renderer: BaseRenderer): renderer is PlanetRendererType {
   return renderer.rendererType === RendererType.Planet;

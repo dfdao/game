@@ -79,16 +79,16 @@ var ArtifactType;
 2. When we provide 3rd party developers with packages, we want them to be able to work with our data model like any other JS values. For example, we want this code to work:
 
 ```js
-import { PlanetLevel } from '@darkforest_eth/types';
+import { PlanetLevel } from '@dfdao/types';
 Object.values(PlanetLevel) === [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 ```
 
 For these reasons, the `enum` keyword from TypeScript is disallowed across the project. The one allowance of this rule is that any non-distributed package may use the `const enum` syntax because the code gets inlined at build time, such that `const enum Foo { FOO = 'foo' }` would be inserted throughout the code as just `'foo'`. This is completely disallowed in any projects in the `packages/` directory because those are distributed to 3rd party developers and the `const enums` would be stripped out.
 
-As alternatives to enums, we combine an `Abstract` type (provided in `@darkforest_eth/types`) and an object with a TypeScript `const` assertion. An example of this looks like:
+As alternatives to enums, we combine an `Abstract` type (provided in `@dfdao/types`) and an object with a TypeScript `const` assertion. An example of this looks like:
 
 ```ts
-import type { Abstract } from '@darkforest_eth/types';
+import type { Abstract } from '@dfdao/types';
 
 export type SpaceType = Abstract<0 | 1 | 2 | 3, 'SpaceType'>;
 

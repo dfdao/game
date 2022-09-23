@@ -1,13 +1,13 @@
 {
   "name": "circuits",
-  "version": "6.7.0-dev.0",
+  "version": "100.0.0-dev.0",
   "private": true,
   "main": "index.js",
   "license": "GPL-3.0",
   "devDependencies": {
     "circomlib": "^2.0.3",
-    "eslint": "^7.30.0",
-    "prettier": "^2.3.0"
+    "eslint": "^8.23.1",
+    "prettier": "^2.7.1"
   },
   "scripts": {
     "format": "prettier --write ."

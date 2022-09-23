@@ -11,7 +11,7 @@ import {
   RevealedCoords,
   Transaction,
   WorldLocation,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { IDBPDatabase, openDB } from 'idb';
 import stringify from 'json-stable-stringify';
 import _ from 'lodash';

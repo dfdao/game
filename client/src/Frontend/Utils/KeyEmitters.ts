@@ -1,6 +1,6 @@
-import { SpecialKey } from '@darkforest_eth/constants';
-import { monomitter } from '@darkforest_eth/events';
-import { Setting } from '@darkforest_eth/types';
+import { SpecialKey } from '@dfdao/constants';
+import { monomitter } from '@dfdao/events';
+import { Setting } from '@dfdao/types';
 import { useEffect, useState } from 'react';
 import { Wrapper } from '../../Backend/Utils/Wrapper';
 import { useUIManager } from './AppHooks';

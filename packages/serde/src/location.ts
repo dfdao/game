@@ -1,5 +1,5 @@
-import { LOCATION_ID_UB } from '@darkforest_eth/constants';
-import type { LocationId } from '@darkforest_eth/types';
+import { LOCATION_ID_UB } from '@dfdao/constants';
+import type { LocationId } from '@dfdao/types';
 import bigInt, { BigInteger } from 'big-integer';
 import type { BigNumber as EthersBN } from 'ethers';
 

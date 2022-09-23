@@ -1,15 +1,14 @@
-import type { DarkForest } from '@darkforest_eth/contracts/typechain';
-import { modPBigInt } from '@darkforest_eth/hashing';
+import type { DarkForest } from '@dfdao/contracts/typechain';
+import { modPBigInt } from '@dfdao/hashing';
 import {
   buildContractCallArgs,
   SnarkJSProofAndSignals,
   WhitelistSnarkContractCallArgs,
   WhitelistSnarkInput,
-  whitelistSnarkWasmPath,
-  whitelistSnarkZkeyPath,
-} from '@darkforest_eth/snarks';
-import { ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
-import { bigIntFromKey } from '@darkforest_eth/whitelist';
+} from '@dfdao/snarks';
+import { whitelistSnarkWasmPath, whitelistSnarkZkeyPath } from '@dfdao/snarks/node';
+import { ArtifactRarity, ArtifactType, Biome } from '@dfdao/types';
+import { bigIntFromKey } from '@dfdao/whitelist';
 import { mine, time } from '@nomicfoundation/hardhat-network-helpers';
 import bigInt from 'big-integer';
 import { BigNumber, BigNumberish, constants } from 'ethers';

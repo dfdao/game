@@ -1,9 +1,9 @@
-import type { DarkForest } from '@darkforest_eth/contracts/typechain';
+import type { DarkForest } from '@dfdao/contracts/typechain';
 import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { deployAndCut } from '../../tasks/deploy';
+import { deployAndCut, deployDiamondInit, deployLibraries } from '../../tasks/deploy';
 import { initializers, noPlanetTransferInitializers, target4Initializers } from './WorldConstants';
 
 export interface World {
@@ -27,6 +27,28 @@ export interface Player {
 export interface InitializeWorldArgs {
   initializers: HardhatRuntimeEnvironment['settings']['darkforest']['initializers'];
   whitelistEnabled: boolean;
+}
+
+export async function createArena(
+  contract: DarkForest,
+  initializers: HardhatRuntimeEnvironment['settings']['darkforest']['initializers']
+): Promise<DarkForest> {
+  const { LibGameUtils } = await deployLibraries({}, hre);
+  const DFInitialize = await deployDiamondInit({}, { LibGameUtils }, hre);
+  const initFunctionCall = DFInitialize.interface.encodeFunctionData('init', [
+    false,
+    '',
+    initializers,
+  ]);
+
+  const newLobbyTx = await contract.createLobby(DFInitialize.address, initFunctionCall);
+  await newLobbyTx.wait();
+  const eventFilter = contract.filters.LobbyCreated();
+  const events = await contract.queryFilter(eventFilter, 'latest');
+  const { lobbyAddress } = events[0].args;
+  const lobby = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
+
+  return lobby;
 }
 
 export function defaultWorldFixture(): Promise<World> {
@@ -63,11 +85,6 @@ export async function initializeWorld({
 }: InitializeWorldArgs): Promise<World> {
   const [deployer, user1, user2] = await hre.ethers.getSigners();
 
-  // The tests assume that things get mined right away
-  // TODO(#912): This means the tests are wildly fragile and probably need to be rewritten
-  await hre.network.provider.send('evm_setAutomine', [true]);
-  await hre.network.provider.send('evm_setIntervalMining', [0]);
-
   const [diamond, _initReceipt] = await deployAndCut(
     { ownerAddress: deployer.address, whitelistEnabled, initializers },
     hre
@@ -79,7 +96,6 @@ export async function initializeWorld({
     to: contract.address,
     value: utils.parseEther('0.5'), // good for about (100eth / 0.5eth/test) = 200 tests
   });
-
   return {
     // If any "admin only" contract state needs to be changed, use `contracts`
     // to call methods with deployer privileges. e.g. `world.contracts.core.pause()`

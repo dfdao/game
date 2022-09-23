@@ -26,20 +26,20 @@
     "docs": "npm run --workspaces --if-present docs"
   },
   "devDependencies": {
-    "@monorepo-utils/workspaces-to-typescript-project-references": "^2.7.4",
-    "@projectsophon/eslint-plugin-typescript-enum": "^2.1.0",
-    "@typescript-eslint/eslint-plugin": "^5.15.0",
-    "@typescript-eslint/parser": "^5.15.0",
-    "eslint": "^7.30.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-import-resolver-typescript": "^2.5.0",
-    "eslint-plugin-import": "^2.25.4",
-    "eslint-plugin-react": "^7.26.1",
-    "eslint-plugin-react-hooks": "^4.2.0",
+    "@monorepo-utils/workspaces-to-typescript-project-references": "^2.8.2",
+    "@projectsophon/eslint-plugin-typescript-enum": "^2.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.38.0",
+    "@typescript-eslint/parser": "^5.38.0",
+    "eslint": "^8.23.1",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-import-resolver-typescript": "^3.5.1",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-react": "^7.31.8",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.3.0",
-    "prettier-plugin-organize-imports": "^2.3.2",
-    "prettier-plugin-solidity": "=1.0.0-beta.19",
-    "typescript": "4.5.x"
+    "prettier": "^2.7.1",
+    "prettier-plugin-organize-imports": "^3.1.1",
+    "prettier-plugin-solidity": "=1.0.0-beta.24",
+    "typescript": "4.7.x"
   }
 }

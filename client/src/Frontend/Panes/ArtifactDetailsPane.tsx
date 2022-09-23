@@ -1,6 +1,6 @@
-import { EMPTY_ADDRESS } from '@darkforest_eth/constants';
-import { dateMintedAt, hasStatBoost, isActivated, isSpaceShip } from '@darkforest_eth/gamelogic';
-import { artifactName, getPlanetName, getPlanetNameHash } from '@darkforest_eth/procedural';
+import { EMPTY_ADDRESS } from '@dfdao/constants';
+import { dateMintedAt, hasStatBoost, isActivated, isSpaceShip } from '@dfdao/gamelogic';
+import { artifactName, getPlanetName, getPlanetNameHash } from '@dfdao/procedural';
 import {
   Artifact,
   ArtifactId,
@@ -10,7 +10,7 @@ import {
   LocationId,
   TooltipName,
   Upgrade,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import _ from 'lodash';
 import React from 'react';
 import styled from 'styled-components';

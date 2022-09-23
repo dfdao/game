@@ -1,5 +1,5 @@
-import { RECOMMENDED_MODAL_WIDTH } from '@darkforest_eth/constants';
-import { SpaceType } from '@darkforest_eth/types';
+import { RECOMMENDED_MODAL_WIDTH } from '@dfdao/constants';
+import { SpaceType } from '@dfdao/types';
 import color from 'color';
 import { css } from 'styled-components';
 
@@ -156,7 +156,7 @@ export const snips = {
   pane: ``,
   // It is unclear where this should go in this file
   destroyedBackground: {
-    backgroundImage: 'url("/public/img/destroyedbg.png")',
+    backgroundImage: 'url("/img/destroyedbg.png")',
     backgroundSize: '150px',
     backgroundPosition: 'right bottom',
     backgroundRepeat: 'no-repeat',

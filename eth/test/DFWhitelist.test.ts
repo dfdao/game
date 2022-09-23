@@ -1,5 +1,5 @@
-import { EthAddress } from '@darkforest_eth/types';
-import { generateKeys, keyHash } from '@darkforest_eth/whitelist';
+import { EthAddress } from '@dfdao/types';
+import { generateKeys, keyHash } from '@dfdao/whitelist';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
@@ -69,7 +69,7 @@ describe('DarkForestWhitelist', function () {
 
   it('should reject change admin if not admin', async function () {
     await expect(world.user2Core.transferOwnership(world.user1.address)).to.be.revertedWith(
-      'LibDiamond: Must be contract owner'
+      'Ownable: sender must be owner'
     );
   });
 

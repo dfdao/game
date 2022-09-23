@@ -1,4 +1,4 @@
-import { AttribProps, AttribType } from '@darkforest_eth/types';
+import { AttribProps, AttribType } from '@dfdao/types';
 import { glsl } from '../EngineUtils';
 import { ProgramUtils } from '../WebGL/ProgramUtils';
 
@@ -54,7 +54,7 @@ const frag = glsl`
 
     if (texel.a < 0.5) discard;
     texel = vec4(1.);
- 
+
     outColor = texel;
   }
 `;

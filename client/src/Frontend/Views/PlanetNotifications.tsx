@@ -1,5 +1,5 @@
-import { isLocatable } from '@darkforest_eth/gamelogic';
-import { EthAddress, Planet } from '@darkforest_eth/types';
+import { isLocatable } from '@dfdao/gamelogic';
+import { EthAddress, Planet } from '@dfdao/types';
 import React from 'react';
 import styled from 'styled-components';
 import { GameObjects } from '../../Backend/GameLogic/GameObjects';
@@ -30,7 +30,7 @@ export function getNotifsForPlanet(
 
   if (planet?.owner === account && account !== undefined) {
     if (GameObjects.planetCanUpgrade(planet)) notifs.push(PlanetNotifType.PlanetCanUpgrade);
-    if (process.env.DF_WEBSERVER_URL) notifs.push(PlanetNotifType.CanAddEmoji);
+    if (import.meta.env.DF_WEBSERVER_URL) notifs.push(PlanetNotifType.CanAddEmoji);
   }
 
   return notifs;

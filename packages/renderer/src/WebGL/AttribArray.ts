@@ -1,4 +1,4 @@
-import { AttribType } from '@darkforest_eth/types';
+import { AttribType } from '@dfdao/types';
 import autoBind from 'auto-bind';
 
 const getAttribTypeSize = (type: AttribType): number => {

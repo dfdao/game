@@ -1,4 +1,4 @@
-import { biomeName, isLocatable } from '@darkforest_eth/gamelogic';
+import { biomeName, isLocatable } from '@dfdao/gamelogic';
 import {
   Artifact,
   Biome,
@@ -8,7 +8,7 @@ import {
   LocatablePlanet,
   Planet,
   TxIntent,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import EventEmitter from 'events';
 import { startCase } from 'lodash';
 import React from 'react';

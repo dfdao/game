@@ -1,4 +1,4 @@
-import { Planet, Upgrade, UpgradeBranchName } from '@darkforest_eth/types';
+import { Planet, Upgrade, UpgradeBranchName } from '@dfdao/types';
 import React from 'react';
 import styled from 'styled-components';
 import { getPlanetMaxRank, getPlanetRank, upgradeName } from '../../Backend/Utils/Utils';

@@ -1,4 +1,4 @@
-import { AttribProps } from '@darkforest_eth/types';
+import { AttribProps } from '@dfdao/types';
 import { AttribArray } from './AttribArray';
 
 /**

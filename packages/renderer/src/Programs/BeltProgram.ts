@@ -1,4 +1,4 @@
-import { AttribType, UniformType } from '@darkforest_eth/types';
+import { AttribType, UniformType } from '@dfdao/types';
 import { glsl } from '../EngineUtils';
 import { ShaderMixins } from '../WebGL/ShaderMixins';
 
@@ -139,9 +139,9 @@ export const BELT_PROGRAM_DEFINITION = {
 
       if (
         !isIn &&
-        pow(rX / (xRad - eps), 2.0) + 
+        pow(rX / (xRad - eps), 2.0) +
         pow(rY / (yRad - eps), 2.0) > 1. &&
-        pow(rX / (xRad + eps), 2.0) + 
+        pow(rX / (xRad + eps), 2.0) +
         pow(rY / (yRad + eps), 2.0) < 1.
       ) {
         /* this code /should/ let you add a gradient, it's broken because theta1 - theta2

@@ -35,16 +35,15 @@
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/ban-ts-comment": "off",
     "@projectsophon/typescript-enum/only-const-enum": "error",
-    "import/no-unresolved": ["error", { "ignore": ["^https:", "type-fest"] }],
+    "import/no-unresolved": [
+      "error",
+      { "ignore": ["^https:", "type-fest", "\\?url$", "\\?worker$"] }
+    ],
     "import/no-relative-packages": "error",
     "import/no-extraneous-dependencies": [
       "error",
       {
-        "devDependencies": [
-          "**/client/webpack.config.js",
-          "**/eth/**/*.ts",
-          "**/webserver/test/*.test.ts"
-        ],
+        "devDependencies": ["**/client/vite.config.ts", "**/client/**/*.test.ts", "**/eth/**/*.ts"],
         "optionalDependencies": false,
         "peerDependencies": false,
         "bundledDependencies": false

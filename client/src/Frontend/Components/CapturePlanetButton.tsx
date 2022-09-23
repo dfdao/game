@@ -1,6 +1,6 @@
-import { EMPTY_ADDRESS } from '@darkforest_eth/constants';
-import { isUnconfirmedCapturePlanetTx, isUnconfirmedInvadePlanetTx } from '@darkforest_eth/serde';
-import { Planet, TooltipName } from '@darkforest_eth/types';
+import { EMPTY_ADDRESS } from '@dfdao/constants';
+import { isUnconfirmedCapturePlanetTx, isUnconfirmedInvadePlanetTx } from '@dfdao/serde';
+import { Planet, TooltipName } from '@dfdao/types';
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { Wrapper } from '../../Backend/Utils/Wrapper';

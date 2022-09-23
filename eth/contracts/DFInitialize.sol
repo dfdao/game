@@ -19,19 +19,11 @@ pragma solidity ^0.8.0;
 // of the diamond. Add parameters to the init function if you need to.
 
 // Interface imports
-import {IDiamondLoupe} from "./vendor/interfaces/IDiamondLoupe.sol";
-import {IDiamondCut} from "./vendor/interfaces/IDiamondCut.sol";
-import {IERC173} from "./vendor/interfaces/IERC173.sol";
-import {IERC165} from "@solidstate/contracts/introspection/IERC165.sol";
-import {IERC721} from "@solidstate/contracts/token/ERC721/IERC721.sol";
-import {IERC721Metadata} from "@solidstate/contracts/token/ERC721/metadata/IERC721Metadata.sol";
-import {IERC721Enumerable} from "@solidstate/contracts/token/ERC721/enumerable/IERC721Enumerable.sol";
 
 // Inherited storage
 import {ERC721MetadataStorage} from "@solidstate/contracts/token/ERC721/metadata/ERC721MetadataStorage.sol";
 
 // Library imports
-import {LibDiamond} from "./vendor/libraries/LibDiamond.sol";
 import {WithStorage, SpaceshipConstants} from "./libraries/LibStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
 
@@ -116,16 +108,6 @@ contract DFInitialize is WithStorage {
         string memory artifactBaseURI,
         InitArgs memory initArgs
     ) external {
-        // adding ERC165 data
-        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
-        ds.supportedInterfaces[type(IERC165).interfaceId] = true;
-        ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
-        ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
-        ds.supportedInterfaces[type(IERC173).interfaceId] = true;
-        ds.supportedInterfaces[type(IERC721).interfaceId] = true;
-        ds.supportedInterfaces[type(IERC721Metadata).interfaceId] = true;
-        ds.supportedInterfaces[type(IERC721Enumerable).interfaceId] = true;
-
         // Setup the ERC721 metadata
         // TODO(#1925): Add name and symbol for the artifact tokens
         ERC721MetadataStorage.layout().name = "";

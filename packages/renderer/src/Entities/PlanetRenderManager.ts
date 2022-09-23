@@ -1,13 +1,7 @@
-import { EMPTY_ADDRESS } from '@darkforest_eth/constants';
-import {
-  formatNumber,
-  getRange,
-  hasOwner,
-  isLocatable,
-  isSpaceShip,
-} from '@darkforest_eth/gamelogic';
-import { getOwnerColorVec, getPlanetCosmetic } from '@darkforest_eth/procedural';
-import { isUnconfirmedMoveTx } from '@darkforest_eth/serde';
+import { EMPTY_ADDRESS } from '@dfdao/constants';
+import { formatNumber, getRange, hasOwner, isLocatable, isSpaceShip } from '@dfdao/gamelogic';
+import { getOwnerColorVec, getPlanetCosmetic } from '@dfdao/procedural';
+import { isUnconfirmedMoveTx } from '@dfdao/serde';
 import {
   Artifact,
   HatType,
@@ -21,7 +15,7 @@ import {
   TextAlign,
   TextAnchor,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { engineConsts } from '../EngineConsts';
 import { Renderer } from '../Renderer';
 import { GameGLManager } from '../WebGL/GameGLManager';

@@ -1,5 +1,5 @@
-import { RECOMMENDED_MODAL_WIDTH } from '@darkforest_eth/constants';
-import { TooltipName } from '@darkforest_eth/types';
+import { RECOMMENDED_MODAL_WIDTH } from '@dfdao/constants';
+import { TooltipName } from '@dfdao/types';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';

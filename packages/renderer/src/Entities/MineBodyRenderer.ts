@@ -1,4 +1,4 @@
-import { getPlanetCosmetic, hslToRgb } from '@darkforest_eth/procedural';
+import { getPlanetCosmetic, hslToRgb } from '@dfdao/procedural';
 import {
   CanvasCoords,
   DrawMode,
@@ -7,7 +7,7 @@ import {
   RendererType,
   RGBVec,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { EngineUtils } from '../EngineUtils';
 import { MINE_PROGRAM_DEFINITION } from '../Programs/MineProgram';
 import { GameGLManager } from '../WebGL/GameGLManager';

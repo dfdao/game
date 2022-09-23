@@ -1,5 +1,5 @@
-import { monomitter, Monomitter } from '@darkforest_eth/events';
-import { AutoGasSetting, EthAddress, Setting } from '@darkforest_eth/types';
+import { monomitter, Monomitter } from '@dfdao/events';
+import { AutoGasSetting, EthAddress, Setting } from '@dfdao/types';
 import React, { useCallback, useState } from 'react';
 import GameUIManager from '../../Backend/GameLogic/GameUIManager';
 import { SelectFrom } from '../Components/CoreUI';
@@ -27,11 +27,11 @@ export const ALL_AUTO_GAS_SETTINGS = [
 ];
 
 function onlyInProduction(): string {
-  return process.env.NODE_ENV === 'production' ? 'true' : 'false';
+  return import.meta.env.PROD ? 'true' : 'false';
 }
 
 function onlyInDevelopment(): string {
-  return process.env.NODE_ENV !== 'production' ? 'true' : 'false';
+  return import.meta.env.DEV ? 'true' : 'false';
 }
 
 const defaultSettings: Record<Setting, string> = {

@@ -4,17 +4,17 @@ import {
   PlanetMessageResponse,
   PostMessageRequest,
   SignedMessage,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 
 export async function getMessagesOnPlanets(
   request: PlanetMessageRequest
 ): Promise<PlanetMessageResponse> {
-  if (request.planets.length === 0 || !process.env.DF_WEBSERVER_URL) {
+  if (request.planets.length === 0 || !import.meta.env.DF_WEBSERVER_URL) {
     return {};
   }
 
   try {
-    const response = await fetch(`${process.env.DF_WEBSERVER_URL}/messages`, {
+    const response = await fetch(`${import.meta.env.DF_WEBSERVER_URL}/messages`, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -34,12 +34,12 @@ export async function getMessagesOnPlanets(
 export async function addMessage(
   request: SignedMessage<PostMessageRequest<unknown>>
 ): Promise<void> {
-  if (!process.env.DF_WEBSERVER_URL) {
+  if (!import.meta.env.DF_WEBSERVER_URL) {
     return;
   }
 
   try {
-    const res = await fetch(`${process.env.DF_WEBSERVER_URL}/add-message`, {
+    const res = await fetch(`${import.meta.env.DF_WEBSERVER_URL}/add-message`, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -57,12 +57,12 @@ export async function addMessage(
 }
 
 export async function deleteMessages(request: SignedMessage<DeleteMessagesRequest>): Promise<void> {
-  if (!process.env.DF_WEBSERVER_URL) {
+  if (!import.meta.env.DF_WEBSERVER_URL) {
     return;
   }
 
   try {
-    const res = await fetch(`${process.env.DF_WEBSERVER_URL}/delete-messages`, {
+    const res = await fetch(`${import.meta.env.DF_WEBSERVER_URL}/delete-messages`, {
       headers: {
         'Content-Type': 'application/json',
       },

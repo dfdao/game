@@ -1,5 +1,5 @@
 //@ts-nocheck Because we can't run these tests
-import { modPBigInt } from '@darkforest_eth/hashing';
+import { modPBigInt } from '@dfdao/hashing';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { BigNumber, constants, ethers } from 'ethers';

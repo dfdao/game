@@ -1,5 +1,5 @@
-import { EMPTY_LOCATION_ID } from '@darkforest_eth/constants';
-import { DarkForest } from '@darkforest_eth/contracts/typechain';
+import { EMPTY_LOCATION_ID } from '@dfdao/constants';
+import { DarkForest } from '@dfdao/contracts/typechain';
 import {
   aggregateBulkGetter,
   ContractCaller,
@@ -7,7 +7,7 @@ import {
   ethToWei,
   TxCollection,
   TxExecutor,
-} from '@darkforest_eth/network';
+} from '@dfdao/network';
 import {
   address,
   artifactIdFromEthersBN,
@@ -23,7 +23,7 @@ import {
   decodeUpgradeBranches,
   locationIdFromEthersBN,
   locationIdToDecStr,
-} from '@darkforest_eth/serde';
+} from '@dfdao/serde';
 import {
   Artifact,
   ArtifactId,
@@ -41,7 +41,7 @@ import {
   TransactionId,
   TxIntent,
   VoyageId,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { BigNumber as EthersBN, ContractFunction, Event, providers } from 'ethers';
 import { EventEmitter } from 'events';
 import _ from 'lodash';
@@ -180,7 +180,10 @@ export class ContractsAPI extends EventEmitter {
     this.emit(ContractsAPIEvent.TxProcessing, tx);
   }
 
-  private async afterTransaction(_txRequest: Transaction, txDiagnosticInfo: unknown) {
+  private async afterTransaction(
+    _txRequest: Transaction,
+    txDiagnosticInfo: Record<string, unknown>
+  ) {
     eventLogger.logEvent(EventType.Transaction, txDiagnosticInfo);
   }
 

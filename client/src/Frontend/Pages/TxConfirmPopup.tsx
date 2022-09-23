@@ -1,6 +1,6 @@
-import { weiToGwei } from '@darkforest_eth/network';
-import { address } from '@darkforest_eth/serde';
-import { Setting } from '@darkforest_eth/types';
+import { weiToGwei } from '@dfdao/network';
+import { address } from '@dfdao/serde';
+import { Setting } from '@dfdao/types';
 import { BigNumber as EthersBN } from 'ethers';
 import React, { useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';

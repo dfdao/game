@@ -4,16 +4,16 @@ export const enum EventType {
 }
 
 export class EventLogger {
-  private static augmentEvent(event: unknown, eventType: EventType) {
+  private static augmentEvent(event: Record<string, unknown>, eventType: EventType) {
     return Object.assign(event, { df_event_type: eventType });
   }
 
-  logEvent(eventType: EventType, event: unknown) {
-    if (!process.env.DF_WEBSERVER_URL) {
+  logEvent(eventType: EventType, event: Record<string, unknown>) {
+    if (!import.meta.env.DF_WEBSERVER_URL) {
       return;
     }
 
-    fetch(`${process.env.DF_WEBSERVER_URL}/event`, {
+    fetch(`${import.meta.env.DF_WEBSERVER_URL}/event`, {
       method: 'POST',
       body: JSON.stringify(EventLogger.augmentEvent(event, eventType)),
       headers: {

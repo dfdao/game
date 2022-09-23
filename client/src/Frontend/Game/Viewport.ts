@@ -1,5 +1,5 @@
-import { isLocatable } from '@darkforest_eth/gamelogic';
-import { CanvasCoords, Chunk, DiagnosticUpdater, Planet, WorldCoords } from '@darkforest_eth/types';
+import { isLocatable } from '@dfdao/gamelogic';
+import { CanvasCoords, Chunk, DiagnosticUpdater, Planet, WorldCoords } from '@dfdao/types';
 import autoBind from 'auto-bind';
 import GameUIManager from '../../Backend/GameLogic/GameUIManager';
 import { distL2, vectorLength } from '../../Backend/Utils/Coordinates';

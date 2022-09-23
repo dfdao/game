@@ -1,6 +1,5 @@
-// These are loaded as URL paths by a webpack loader
-import diamondContractAbiUrl from '@darkforest_eth/contracts/abis/DarkForest.json';
-import { createContract, createEthConnection, EthConnection } from '@darkforest_eth/network';
+import diamondContractAbiUrl from '@dfdao/contracts/abis/DarkForest.json?url';
+import { createContract, createEthConnection, EthConnection } from '@dfdao/network';
 import type { Contract, providers, Wallet } from 'ethers';
 
 /**
@@ -17,12 +16,11 @@ export async function loadDiamondContract<T extends Contract>(
 }
 
 export function getEthConnection(): Promise<EthConnection> {
-  const isProd = process.env.NODE_ENV === 'production';
-  const defaultUrl = process.env.DEFAULT_RPC as string;
+  const defaultUrl = import.meta.env.DF_DEFAULT_RPC as string;
 
   let url: string;
 
-  if (isProd) {
+  if (import.meta.env.PROD) {
     url = localStorage.getItem('XDAI_RPC_ENDPOINT_v5') || defaultUrl;
   } else {
     url = 'http://localhost:8545';
@@ -30,8 +28,8 @@ export function getEthConnection(): Promise<EthConnection> {
 
   console.log(`GAME METADATA:`);
   console.log(`rpc url: ${url}`);
-  console.log(`is production: ${isProd}`);
-  console.log(`webserver url: ${process.env.DF_WEBSERVER_URL}`);
+  console.log(`is production: ${import.meta.env.PROD}`);
+  console.log(`webserver url: ${import.meta.env.DF_WEBSERVER_URL}`);
 
   return createEthConnection(url);
 }

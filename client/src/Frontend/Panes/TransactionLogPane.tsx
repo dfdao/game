@@ -1,5 +1,5 @@
-import { RECOMMENDED_MODAL_WIDTH } from '@darkforest_eth/constants';
-import { getPlanetName } from '@darkforest_eth/procedural';
+import { RECOMMENDED_MODAL_WIDTH } from '@dfdao/constants';
+import { getPlanetName } from '@dfdao/procedural';
 import {
   isUnconfirmedActivateArtifactTx,
   isUnconfirmedBuyHatTx,
@@ -16,9 +16,9 @@ import {
   isUnconfirmedUpgradeTx,
   isUnconfirmedWithdrawArtifactTx,
   isUnconfirmedWithdrawSilverTx,
-} from '@darkforest_eth/serde';
-import { ModalName, Planet, TooltipName, Transaction } from '@darkforest_eth/types';
-import { IconType } from '@darkforest_eth/ui';
+} from '@dfdao/serde';
+import { ModalName, Planet, TooltipName, Transaction } from '@dfdao/types';
+import { IconType } from '@dfdao/ui';
 import { isEmpty, reverse, startCase, values } from 'lodash';
 import React, { useCallback } from 'react';
 import Loader from 'react-loader-spinner';

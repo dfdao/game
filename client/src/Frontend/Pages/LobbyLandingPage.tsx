@@ -1,6 +1,6 @@
-import { EthConnection, ThrottledConcurrentQueue, weiToEth } from '@darkforest_eth/network';
-import { address } from '@darkforest_eth/serde';
-import { EthAddress } from '@darkforest_eth/types';
+import { EthConnection, ThrottledConcurrentQueue, weiToEth } from '@dfdao/network';
+import { address } from '@dfdao/serde';
+import { EthAddress } from '@dfdao/types';
 import { utils, Wallet } from 'ethers';
 import React, { useEffect, useRef, useState } from 'react';
 import { addAccount, getAccounts } from '../../Backend/Network/AccountManager';

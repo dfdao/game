@@ -1,4 +1,4 @@
-import { ArtifactRarity } from '@darkforest_eth/types';
+import { ArtifactRarity } from '@dfdao/types';
 import React from 'react';
 import { DarkForestNumberInput, NumberInput } from '../../Components/Input';
 import { ArtifactRarityLabel } from '../../Components/Labels/ArtifactLabels';

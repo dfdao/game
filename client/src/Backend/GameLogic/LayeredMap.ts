@@ -1,5 +1,5 @@
-import { MAX_PLANET_LEVEL, MIN_PLANET_LEVEL } from '@darkforest_eth/constants';
-import { LocationId, Radii, WorldCoords, WorldLocation } from '@darkforest_eth/types';
+import { MAX_PLANET_LEVEL, MIN_PLANET_LEVEL } from '@dfdao/constants';
+import { LocationId, Radii, WorldCoords, WorldLocation } from '@dfdao/types';
 import { Box, Circle, Point, QuadTree } from 'js-quadtree';
 
 /**

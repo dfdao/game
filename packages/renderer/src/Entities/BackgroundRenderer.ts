@@ -1,10 +1,4 @@
-import {
-  BackgroundRendererType,
-  Chunk,
-  RendererType,
-  RGBVec,
-  SpaceType,
-} from '@darkforest_eth/types';
+import { BackgroundRendererType, Chunk, RendererType, RGBVec, SpaceType } from '@dfdao/types';
 import { Renderer } from '../Renderer';
 import { GameGLManager } from '../WebGL/GameGLManager';
 import { RectRenderer } from './RectRenderer';

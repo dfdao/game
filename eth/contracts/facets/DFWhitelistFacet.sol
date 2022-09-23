@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import {DFVerifierFacet} from "./DFVerifierFacet.sol";
 
 // Library imports
-import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
+import {LibPermissions} from "../libraries/LibPermissions.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
@@ -13,7 +13,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 contract DFWhitelistFacet is WithStorage {
     // administrative
     modifier onlyAdmin() {
-        LibDiamond.enforceIsContractOwner();
+        LibPermissions.enforceIsContractOwner();
         _;
     }
 

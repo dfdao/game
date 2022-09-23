@@ -6,7 +6,7 @@ import {
   Transaction,
   TransactionId,
   TxIntent,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { Mutex } from 'async-mutex';
 import { providers } from 'ethers';
 import deferred from 'p-defer';

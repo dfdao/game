@@ -1,6 +1,6 @@
-import { monomitter, Monomitter } from '@darkforest_eth/events';
-import { isSpaceShip } from '@darkforest_eth/gamelogic';
-import { Artifact, EthAddress, Planet } from '@darkforest_eth/types';
+import { monomitter, Monomitter } from '@dfdao/events';
+import { isSpaceShip } from '@dfdao/gamelogic';
+import { Artifact, EthAddress, Planet } from '@dfdao/types';
 import _ from 'lodash';
 
 /**

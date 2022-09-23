@@ -1,6 +1,6 @@
-import { CONTRACT_PRECISION } from '@darkforest_eth/constants';
-import type { DarkForest } from '@darkforest_eth/contracts/typechain';
-import type { ArrivalType, QueuedArrival, VoyageId } from '@darkforest_eth/types';
+import { CONTRACT_PRECISION } from '@dfdao/constants';
+import type { DarkForest } from '@dfdao/contracts/typechain';
+import type { ArrivalType, QueuedArrival, VoyageId } from '@dfdao/types';
 import { address } from './address';
 import { artifactIdFromEthersBN } from './artifact';
 import { locationIdFromDecStr } from './location';
@@ -9,7 +9,7 @@ export type RawArrival = Awaited<ReturnType<DarkForest['getPlanetArrival']>>;
 
 /**
  * Converts the raw typechain result of `ArrivalTypes.ArrivalData` struct to
- * to a `QueuedArrival` typescript typed object (see @darkforest_eth/types)
+ * to a `QueuedArrival` typescript typed object (see @dfdao/types)
  *
  * @param rawArrival Raw data of a `ArrivalTypes.ArrivalData` struct,
  * returned from a blockchain call (assumed to be typed with typechain).

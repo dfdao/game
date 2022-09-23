@@ -1,4 +1,4 @@
-import { Planet, RenderZIndex, RGBVec } from '@darkforest_eth/types';
+import { Planet, RenderZIndex, RGBVec } from '@dfdao/types';
 
 /* generic template string which, combined with a vscode package, let us get syntax highlighting. */
 

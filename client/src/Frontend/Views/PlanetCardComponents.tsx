@@ -1,4 +1,4 @@
-import { Artifact, Planet, TooltipName } from '@darkforest_eth/types';
+import { Artifact, Planet, TooltipName } from '@dfdao/types';
 import React from 'react';
 import styled from 'styled-components';
 import {

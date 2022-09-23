@@ -1,4 +1,4 @@
-import { EMPTY_ADDRESS, EMPTY_LOCATION_ID } from '@darkforest_eth/constants';
+import { EMPTY_ADDRESS, EMPTY_LOCATION_ID } from '@dfdao/constants';
 import {
   Artifact,
   ArtifactId,
@@ -6,7 +6,7 @@ import {
   ArtifactRarity,
   ArtifactType,
   Biome,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 
 const namesById = new Map<ArtifactId, string>();
 export const artifactName = (artifact: Artifact | undefined): string => {

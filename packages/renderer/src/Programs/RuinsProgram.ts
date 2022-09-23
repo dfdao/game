@@ -1,4 +1,4 @@
-import { AttribType, UniformType } from '@darkforest_eth/types';
+import { AttribType, UniformType } from '@dfdao/types';
 import { glsl } from '../EngineUtils';
 import { ShaderMixins } from '../WebGL/ShaderMixins';
 
@@ -73,7 +73,7 @@ export const RUINS_PROGRAM_DEFINITION = {
 
     void main() {
       gl_Position = ${u.matrix} * ${a.position};
-  
+
       ${v.color} = ${a.color};
       ${v.rectPos} = ${a.rectPos};
       ${v.weights} = ${a.weights};

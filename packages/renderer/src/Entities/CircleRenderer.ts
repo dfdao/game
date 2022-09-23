@@ -5,7 +5,7 @@ import {
   RendererType,
   RGBAVec,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { engineConsts } from '../EngineConsts';
 import { EngineUtils } from '../EngineUtils';
 import { CIRCLE_PROGRAM_DEFINITION } from '../Programs/CircleProgram';

@@ -1,4 +1,4 @@
-import { ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
+import { ArtifactRarity, ArtifactType, Biome } from '@dfdao/types';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { BigNumberish } from 'ethers';

@@ -1,4 +1,4 @@
-import { Transaction, TransactionCollection, TxIntent } from '@darkforest_eth/types';
+import { Transaction, TransactionCollection, TxIntent } from '@dfdao/types';
 
 /**
  * Default implementation of a transaction collection - provides a simple api for adding, removing,

@@ -1,6 +1,6 @@
 {
-  "name": "@darkforest_eth/renderer",
-  "version": "6.7.0-dev.0",
+  "name": "@dfdao/renderer",
+  "version": "100.0.0-dev.0",
   "license": "MIT",
   "author": "0xPARC <ivan@0xPARC.org>",
   "engines": {
@@ -22,12 +22,12 @@
     "clean": "del-cli dist node_modules tsconfig.ref.tsbuildinfo"
   },
   "dependencies": {
-    "@darkforest_eth/constants": "6.7.0-dev.0",
-    "@darkforest_eth/gamelogic": "6.7.0-dev.0",
-    "@darkforest_eth/hashing": "6.7.0-dev.0",
-    "@darkforest_eth/procedural": "6.7.0-dev.0",
-    "@darkforest_eth/serde": "6.7.0-dev.0",
-    "@darkforest_eth/types": "6.7.0-dev.0",
+    "@dfdao/constants": "100.0.0-dev.0",
+    "@dfdao/gamelogic": "100.0.0-dev.0",
+    "@dfdao/hashing": "100.0.0-dev.0",
+    "@dfdao/procedural": "100.0.0-dev.0",
+    "@dfdao/serde": "100.0.0-dev.0",
+    "@dfdao/types": "100.0.0-dev.0",
     "@types/gl-matrix": "^3.2.0",
     "@types/webgl2": "^0.0.5",
     "auto-bind": "^4.0.0",
@@ -35,11 +35,11 @@
   },
   "devDependencies": {
     "del-cli": "^4.0.1",
-    "eslint": "^7.30.0",
-    "prettier": "^2.3.0",
-    "typedoc": "^0.22.8",
-    "typedoc-plugin-markdown": "3.11.x",
-    "typescript": "4.5.x"
+    "eslint": "^8.23.1",
+    "prettier": "^2.7.1",
+    "typedoc": "^0.23.15",
+    "typedoc-plugin-markdown": "3.13.x",
+    "typescript": "4.7.x"
   },
   "publishConfig": {
     "access": "public"

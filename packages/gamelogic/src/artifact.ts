@@ -1,5 +1,5 @@
-import { EMPTY_ADDRESS, MAX_SPACESHIP_TYPE, MIN_SPACESHIP_TYPE } from '@darkforest_eth/constants';
-import { hashToInt } from '@darkforest_eth/serde';
+import { EMPTY_ADDRESS, MAX_SPACESHIP_TYPE, MIN_SPACESHIP_TYPE } from '@dfdao/constants';
+import { hashToInt } from '@dfdao/serde';
 import {
   Abstract,
   Artifact,
@@ -15,7 +15,7 @@ import {
   PlanetLevel,
   PlanetType,
   RenderedArtifact,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 
 export const RelicsList: ArtifactType[] = [
   ArtifactType.Wormhole,

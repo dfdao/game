@@ -1,5 +1,5 @@
-import { CONTRACT_ADDRESS } from '@darkforest_eth/contracts';
-import { address } from '@darkforest_eth/serde';
+import { CONTRACT_ADDRESS } from '@dfdao/contracts';
+import { address } from '@dfdao/serde';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
@@ -126,31 +126,31 @@ export default function LandingPage() {
             <InvolvedItem
               href='https://blog.zkga.me/hosting-a-dark-forest-community-round'
               style={{
-                backgroundImage: "url('/public/get_involved/community_round.png')",
+                backgroundImage: "url('/get_involved/community_round.png')",
               }}
             ></InvolvedItem>
             <InvolvedItem
               href='https://github.com/darkforest-eth/plugins#adding-your-plugin'
               style={{
-                backgroundImage: "url('/public/get_involved/write_plugin.png')",
+                backgroundImage: "url('/get_involved/write_plugin.png')",
               }}
             ></InvolvedItem>
             <InvolvedItem
               href='https://github.com/darkforest-eth/plugins#reviewer-guidelines'
               style={{
-                backgroundImage: "url('/public/get_involved/reveiw_plugin.png')",
+                backgroundImage: "url('/get_involved/reveiw_plugin.png')",
               }}
             ></InvolvedItem>
             <InvolvedItem
               href='https://blog.zkga.me/renderer-plugin-contest'
               style={{
-                backgroundImage: "url('/public/get_involved/plugin_render.png')",
+                backgroundImage: "url('/get_involved/plugin_render.png')",
               }}
             ></InvolvedItem>
             <InvolvedItem
               href='https://blog.zkga.me/introducing-dark-forest-lobbies'
               style={{
-                backgroundImage: "url('/public/get_involved/lobby.png')",
+                backgroundImage: "url('/get_involved/lobby.png')",
               }}
             ></InvolvedItem>
           </Involved>

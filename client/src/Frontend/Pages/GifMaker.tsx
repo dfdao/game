@@ -1,4 +1,4 @@
-import { ArtifactFileColor } from '@darkforest_eth/gamelogic';
+import { ArtifactFileColor } from '@dfdao/gamelogic';
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { GifRenderer } from '../Renderers/GifRenderer';
@@ -38,7 +38,7 @@ export function GifMaker() {
   useEffect(() => {
     const script = document.createElement('script');
 
-    script.src = '/public/CCapture.all.min.js';
+    script.src = '/CCapture.all.min.js';
     script.async = true;
 
     document.body.appendChild(script);

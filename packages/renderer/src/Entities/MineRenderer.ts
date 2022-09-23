@@ -1,11 +1,5 @@
-import { MAX_PLANET_LEVEL } from '@darkforest_eth/constants';
-import {
-  CanvasCoords,
-  MineRendererType,
-  Planet,
-  RendererType,
-  WorldCoords,
-} from '@darkforest_eth/types';
+import { MAX_PLANET_LEVEL } from '@dfdao/constants';
+import { CanvasCoords, MineRendererType, Planet, RendererType, WorldCoords } from '@dfdao/types';
 import { engineConsts } from '../EngineConsts';
 import { EngineUtils } from '../EngineUtils';
 import { Renderer } from '../Renderer';

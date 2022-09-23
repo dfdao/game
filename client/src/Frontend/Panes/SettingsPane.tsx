@@ -1,5 +1,5 @@
-import { EthConnection } from '@darkforest_eth/network';
-import { AutoGasSetting, Chunk, ModalName, Setting } from '@darkforest_eth/types';
+import { EthConnection } from '@dfdao/network';
+import { AutoGasSetting, Chunk, ModalName, Setting } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TutorialManager from '../../Backend/GameLogic/TutorialManager';
@@ -57,7 +57,6 @@ export function SettingsPane({
 }) {
   const uiManager = useUIManager();
   const account = useAccount(uiManager);
-  const isDevelopment = process.env.NODE_ENV !== 'production';
   const gasPrices = useEmitterValue(ethConnection.gasPrices$, ethConnection.getAutoGasPrices());
 
   const [rpcUrl, setRpcURL] = useState<string>(ethConnection.getRpcEndpoint());
@@ -182,7 +181,7 @@ export function SettingsPane({
   return (
     <ModalPane id={ModalName.Settings} title='Settings' visible={visible} onClose={onClose}>
       <SettingsContent>
-        {isDevelopment && (
+        {import.meta.env.DEV && (
           <Section>
             <SectionHeader>Development</SectionHeader>
             <BooleanSetting

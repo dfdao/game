@@ -1,6 +1,6 @@
 {
   "recommendations": [
-    "juanblanco.solidity",
+    "NomicFoundation.hardhat-solidity",
     "esbenp.prettier-vscode",
     "hbenl.vscode-mocha-test-adapter",
     "styled-components.vscode-styled-components",

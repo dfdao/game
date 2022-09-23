@@ -1,16 +1,10 @@
-import { MAX_ARTIFACT_TYPE, MAX_BIOME, MIN_ARTIFACT_TYPE } from '@darkforest_eth/constants';
-import { isAncient, isBasic, isRelic, isSpaceShip } from '@darkforest_eth/gamelogic';
-import {
-  ArtifactId,
-  ArtifactRarity,
-  ArtifactType,
-  Biome,
-  RenderedArtifact,
-} from '@darkforest_eth/types';
+import { MAX_ARTIFACT_TYPE, MAX_BIOME, MIN_ARTIFACT_TYPE } from '@dfdao/constants';
+import { isAncient, isBasic, isRelic, isSpaceShip } from '@dfdao/gamelogic';
+import { ArtifactId, ArtifactRarity, ArtifactType, Biome, RenderedArtifact } from '@dfdao/types';
 
-export const ARTIFACTS_URL = '/public/sprites/artifacts.png';
-export const ARTIFACTS_THUMBS_URL = '/public/sprites/artifactthumbs.png';
-export const GLASS_URL = '/public/sprites/glass.png';
+export const ARTIFACTS_URL = '/sprites/artifacts.png';
+export const ARTIFACTS_THUMBS_URL = '/sprites/artifactthumbs.png';
+export const GLASS_URL = '/sprites/glass.png';
 
 const imageByUrl = new Map<string, HTMLImageElement>();
 

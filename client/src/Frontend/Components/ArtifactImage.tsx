@@ -1,11 +1,11 @@
-import { ArtifactFileColor, artifactFileName, isSpaceShip } from '@darkforest_eth/gamelogic';
-import { Artifact } from '@darkforest_eth/types';
+import { ArtifactFileColor, artifactFileName, isSpaceShip } from '@dfdao/gamelogic';
+import { Artifact } from '@dfdao/types';
 import React from 'react';
 import styled, { css } from 'styled-components';
 import dfstyles from '../Styles/dfstyles';
 
 export const ARTIFACT_URL = 'https://d2wspbczt15cqu.cloudfront.net/v0.6.0-artifacts/';
-// const ARTIFACT_URL = '/public/img/artifacts/videos/';
+// const ARTIFACT_URL = '/img/artifacts/videos/';
 
 function getArtifactUrl(thumb: boolean, artifact: Artifact, color: ArtifactFileColor): string {
   const fileName = artifactFileName(true, thumb, artifact, color);

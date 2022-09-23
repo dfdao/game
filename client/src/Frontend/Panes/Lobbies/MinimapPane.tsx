@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LoadingSpinner } from '../../Components/LoadingSpinner';
 import { Modal } from '../../Components/Modal';
+import MinimapWorker from './minimap.worker.ts?worker';
 import { DrawMessage, MinimapConfig } from './MinimapUtils';
 
 function getWorker() {
-  return new Worker(new URL('./minimap.worker.ts', import.meta.url));
+  return new MinimapWorker();
 }
 
 function drawOnCanvas(canvas: HTMLCanvasElement | null, msg: DrawMessage) {

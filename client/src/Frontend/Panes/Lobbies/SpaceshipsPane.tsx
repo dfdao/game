@@ -1,4 +1,4 @@
-import { Initializers } from '@darkforest_eth/settings';
+import { Initializers } from '@dfdao/settings';
 import React from 'react';
 import { Spacer } from '../../Components/CoreUI';
 import { Checkbox, DarkForestCheckbox } from '../../Components/Input';

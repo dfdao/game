@@ -1,4 +1,4 @@
-import { Chunk } from '@darkforest_eth/types';
+import { Chunk } from '@dfdao/types';
 import { EngineUtils } from '../EngineUtils';
 import { MASK_PROGRAM_DEFINITION } from '../Programs/MaskProgram';
 import { GameGLManager } from '../WebGL/GameGLManager';

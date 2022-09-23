@@ -1,5 +1,5 @@
-import { CONTRACT_ADDRESS } from '@darkforest_eth/contracts';
-import { address } from '@darkforest_eth/serde';
+import { CONTRACT_ADDRESS } from '@dfdao/contracts';
+import { address } from '@dfdao/serde';
 import React from 'react';
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
 import { createGlobalStyle } from 'styled-components';
@@ -19,15 +19,13 @@ import { TxConfirmPopup } from './TxConfirmPopup';
 import UnsubscribePage from './UnsubscribePage';
 import { ValhallaPage } from './ValhallaPage';
 
-const isProd = process.env.NODE_ENV === 'production';
-
 const defaultAddress = address(CONTRACT_ADDRESS);
 
 function App() {
   return (
     <>
       <GlobalStyle />
-      {/* Provides theming for WebComponents from the `@darkforest_eth/ui` package */}
+      {/* Provides theming for WebComponents from the `@dfdao/ui` package */}
       <Theme color='dark' scale='medium'>
         <Router>
           <Switch>
@@ -45,9 +43,9 @@ function App() {
             />
             <Route path='/unsubscribe' component={UnsubscribePage} />
             <Route path='/valhalla' component={ValhallaPage} />
-            {!isProd && <Route path='/images' component={TestArtifactImages} />}
-            {!isProd && <Route path='/gifs' component={GifMaker} />}
-            {!isProd && <Route path='/bg' component={LandingPageBackground} />}
+            {import.meta.env.DEV && <Route path='/images' component={TestArtifactImages} />}
+            {import.meta.env.DEV && <Route path='/gifs' component={GifMaker} />}
+            {import.meta.env.DEV && <Route path='/bg' component={LandingPageBackground} />}
             <Route path='*' component={NotFoundPage} />
           </Switch>
         </Router>
