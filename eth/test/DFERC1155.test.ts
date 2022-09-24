@@ -34,6 +34,7 @@ describe('SolidStateERC1155', function () {
     )
       .to.emit(token, 'TransferSingle')
       .withArgs(user1.address, addressZero, user1.address, collectionId, amount);
+
     // Each mint created 2 tokens in the same collection. Two mints = 4 tokens.
     expect(await token.balanceOf(user1.address, collectionId)).to.equal(amount.mul(2));
   });
