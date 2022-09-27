@@ -111,18 +111,20 @@ contract DFMoveFacet is WithStorage {
         ArrivalType arrivalType = ArrivalType.Normal;
         Upgrade memory temporaryUpgrade = LibGameUtils.defaultUpgrade();
 
-        (bool wormholePresent, uint256 distModifier) = _checkWormhole(args);
-        if (wormholePresent) {
-            effectiveDistTimesHundred /= distModifier;
-            arrivalType = ArrivalType.Wormhole;
-        }
+        // TODO: Add back wormhole
+        // (bool wormholePresent, uint256 distModifier) = _checkWormhole(args);
+        // if (wormholePresent) {
+        //     effectiveDistTimesHundred /= distModifier;
+        //     arrivalType = ArrivalType.Wormhole;
+        // }
 
         if (!_isSpaceshipMove(args)) {
-            (bool photoidPresent, Upgrade memory newTempUpgrade) = _checkPhotoid(args);
-            if (photoidPresent) {
-                temporaryUpgrade = newTempUpgrade;
-                arrivalType = ArrivalType.Photoid;
-            }
+            // TODO: Add back photoid
+            // (bool photoidPresent, Upgrade memory newTempUpgrade) = _checkPhotoid(args);
+            // if (photoidPresent) {
+            //     temporaryUpgrade = newTempUpgrade;
+            //     arrivalType = ArrivalType.Photoid;
+            // }
         }
 
         _removeSpaceshipEffectsFromOriginPlanet(args);
@@ -276,59 +278,59 @@ contract DFMoveFacet is WithStorage {
         return the modified distance between the origin and target
         planet.
      */
-    function _checkWormhole(DFPMoveArgs memory args)
-        private
-        view
-        returns (bool wormholePresent, uint256 effectiveDistModifier)
-    {
-        Artifact memory relevantWormhole;
-        Artifact memory activeArtifactFrom = LibGameUtils.getActiveArtifact(args.oldLoc);
-        Artifact memory activeArtifactTo = LibGameUtils.getActiveArtifact(args.newLoc);
+    // function _checkWormhole(DFPMoveArgs memory args)
+    //     private
+    //     view
+    //     returns (bool wormholePresent, uint256 effectiveDistModifier)
+    // {
+    //     Artifact memory relevantWormhole;
+    //     Artifact memory activeArtifactFrom = LibGameUtils.getActiveArtifact(args.oldLoc);
+    //     Artifact memory activeArtifactTo = LibGameUtils.getActiveArtifact(args.newLoc);
 
-        // TODO: take the greater rarity of these, or disallow wormholes between planets that
-        // already have a wormhole between them
-        if (
-            activeArtifactFrom.isInitialized &&
-            activeArtifactFrom.artifactType == ArtifactType.Wormhole &&
-            activeArtifactFrom.wormholeTo == args.newLoc
-        ) {
-            relevantWormhole = activeArtifactFrom;
-        } else if (
-            activeArtifactTo.isInitialized &&
-            activeArtifactTo.artifactType == ArtifactType.Wormhole &&
-            activeArtifactTo.wormholeTo == args.oldLoc
-        ) {
-            relevantWormhole = activeArtifactTo;
-        }
+    //     // TODO: take the greater rarity of these, or disallow wormholes between planets that
+    //     // already have a wormhole between them
+    //     if (
+    //         activeArtifactFrom.isInitialized &&
+    //         activeArtifactFrom.artifactType == ArtifactType.Wormhole &&
+    //         activeArtifactFrom.wormholeTo == args.newLoc
+    //     ) {
+    //         relevantWormhole = activeArtifactFrom;
+    //     } else if (
+    //         activeArtifactTo.isInitialized &&
+    //         activeArtifactTo.artifactType == ArtifactType.Wormhole &&
+    //         activeArtifactTo.wormholeTo == args.oldLoc
+    //     ) {
+    //         relevantWormhole = activeArtifactTo;
+    //     }
 
-        if (relevantWormhole.isInitialized) {
-            wormholePresent = true;
-            uint256[6] memory speedBoosts = [uint256(1), 2, 4, 8, 16, 32];
-            effectiveDistModifier = speedBoosts[uint256(relevantWormhole.rarity)];
-        }
-    }
+    //     if (relevantWormhole.isInitialized) {
+    //         wormholePresent = true;
+    //         uint256[6] memory speedBoosts = [uint256(1), 2, 4, 8, 16, 32];
+    //         effectiveDistModifier = speedBoosts[uint256(relevantWormhole.rarity)];
+    //     }
+    // }
 
     /**
         If an active photoid cannon is present, return
         the upgrade that should be applied to the origin
         planet.
      */
-    function _checkPhotoid(DFPMoveArgs memory args)
-        private
-        returns (bool photoidPresent, Upgrade memory temporaryUpgrade)
-    {
-        Artifact memory activeArtifactFrom = LibGameUtils.getActiveArtifact(args.oldLoc);
-        if (
-            activeArtifactFrom.isInitialized &&
-            activeArtifactFrom.artifactType == ArtifactType.PhotoidCannon &&
-            block.timestamp - activeArtifactFrom.lastActivated >=
-            gameConstants().PHOTOID_ACTIVATION_DELAY
-        ) {
-            photoidPresent = true;
-            LibArtifactUtils.deactivateArtifact(args.oldLoc);
-            temporaryUpgrade = LibGameUtils.timeDelayUpgrade(activeArtifactFrom);
-        }
-    }
+    // function _checkPhotoid(DFPMoveArgs memory args)
+    //     private
+    //     returns (bool photoidPresent, Upgrade memory temporaryUpgrade)
+    // {
+    //     Artifact memory activeArtifactFrom = LibGameUtils.getActiveArtifact(args.oldLoc);
+    //     if (
+    //         activeArtifactFrom.isInitialized &&
+    //         activeArtifactFrom.artifactType == ArtifactType.PhotoidCannon &&
+    //         block.timestamp - activeArtifactFrom.lastActivated >=
+    //         gameConstants().PHOTOID_ACTIVATION_DELAY
+    //     ) {
+    //         photoidPresent = true;
+    //         LibArtifactUtils.deactivateArtifact(args.oldLoc);
+    //         temporaryUpgrade = LibGameUtils.timeDelayUpgrade(activeArtifactFrom);
+    //     }
+    // }
 
     function _abandonPlanet(DFPMoveArgs memory args)
         private
@@ -436,7 +438,7 @@ contract DFMoveFacet is WithStorage {
         });
 
         if (args.movedArtifactId != 0) {
-            LibGameUtils._takeArtifactOffPlanet(args.movedArtifactId, args.oldLoc);
+            LibGameUtils._takeArtifactOffPlanet(args.oldLoc, args.movedArtifactId);
             gs().artifactIdToVoyageId[args.movedArtifactId] = gs().planetEventsCount;
         }
     }

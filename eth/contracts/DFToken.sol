@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {SolidStateERC1155} from "@solidstate/contracts/token/ERC1155/SolidStateERC1155.sol";
-import {ArtifactProperties, ArtifactInfo, CollectionType, ArtifactType, ArtifactRarity, Biome} from "./DFTypes.sol";
+import {ArtifactProperties, TokenInfo, CollectionType, ArtifactType, ArtifactRarity, Biome} from "./DFTypes.sol";
 import "hardhat/console.sol";
 
 // Note: We can call _mint and _setTokenUri directly in DFArtifactFacet, but I like having a wrapper
@@ -55,34 +55,51 @@ contract DFToken is SolidStateERC1155 {
         uint256 _rarity,
         uint256 _artifactType,
         uint256 _biome
-    ) public pure returns (uint256) {
-        uint256 collectionType = _collectionType <<
-            calcBitShift(uint8(ArtifactInfo.CollectionType));
-        uint256 rarity = _rarity << calcBitShift(uint8(ArtifactInfo.ArtifactRarity));
-        uint256 artifactType = _artifactType << calcBitShift(uint8(ArtifactInfo.ArtifactType));
-        uint256 biome = _biome << calcBitShift(uint8(ArtifactInfo.Biome));
+    ) public view returns (uint256) {
+        uint256 collectionType = _collectionType << calcBitShift(uint8(TokenInfo.CollectionType));
+        uint256 rarity = _rarity << calcBitShift(uint8(TokenInfo.ArtifactRarity));
+        uint256 artifactType = _artifactType << calcBitShift(uint8(TokenInfo.ArtifactType));
+        uint256 biome = _biome << calcBitShift(uint8(TokenInfo.Biome));
         return collectionType + rarity + artifactType + biome;
     }
 
-    function decodeArtifact(uint256 artifactId) public pure returns (ArtifactProperties memory) {
-        bytes memory _b = abi.encodePacked(artifactId);
-        // 0 is left most element. 0 is given the property Unknown in ArtifactInfo.
+    // Collection Type should be Spaceship. ArtifactType should be type of ship.
+    function encodeSpaceship(uint256 _collectionType, uint256 _artifactType)
+        public
+        view
+        returns (uint256)
+    {
+        uint256 collectionType = _collectionType << calcBitShift(uint8(TokenInfo.CollectionType));
+        uint256 artifactType = _artifactType << calcBitShift(uint8(TokenInfo.ArtifactType));
+        return collectionType + artifactType;
+    }
 
-        // Note: Bit shifting requires an index greater than zero. This is why the ArtifactInfo has
-        // Unknown as the zero property, so calcBitShift(ArtifactInfo.Level) is correct.
+    function decodeArtifact(uint256 artifactId) public view returns (ArtifactProperties memory) {
+        bytes memory _b = abi.encodePacked(artifactId);
+        // 0 is left most element. 0 is given the property Unknown in TokenInfo.
+
+        // Note: Bit shifting requires an index greater than zero. This is why the TokenInfo has
+        // Unknown as the zero property, so calcBitShift(TokenInfo.Level) is correct.
         // As a consequence, we need to
         // offset fetching the relevant byte from the artifactId by 1.
         // However
-        uint8 collectionType = uint8(_b[uint8(ArtifactInfo.CollectionType) - 1]);
-        uint8 rarity = uint8(_b[uint8(ArtifactInfo.ArtifactRarity) - 1]);
-        uint8 artifactType = uint8(_b[uint8(ArtifactInfo.ArtifactType) - 1]);
-        uint8 biome = uint8(_b[uint8(ArtifactInfo.Biome) - 1]);
-        return
-            ArtifactProperties({
-                collectionType: CollectionType(collectionType),
-                rarity: ArtifactRarity(rarity),
-                artifactType: ArtifactType(artifactType),
-                biome: Biome(biome)
-            });
+        uint8 collectionType = uint8(_b[uint8(TokenInfo.CollectionType) - 1]);
+        uint8 rarity = uint8(_b[uint8(TokenInfo.ArtifactRarity) - 1]);
+        uint8 artifactType = uint8(_b[uint8(TokenInfo.ArtifactType) - 1]);
+        uint8 biome = uint8(_b[uint8(TokenInfo.Biome) - 1]);
+        // console.log("collectionType %s", collectionType);
+        // console.log("rarity %s", rarity);
+        // console.log("artifactType %s", artifactType);
+        // console.log("biome %s", biome);
+
+        ArtifactProperties memory a = ArtifactProperties({
+            id: artifactId,
+            collectionType: CollectionType(collectionType),
+            rarity: ArtifactRarity(rarity),
+            artifactType: ArtifactType(artifactType),
+            planetBiome: Biome(biome)
+        });
+
+        return a;
     }
 }

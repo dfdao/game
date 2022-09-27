@@ -309,15 +309,11 @@ export async function deployAndCut(
   return [diamond, diamondInit, initReceipt] as const;
 }
 
-export async function deployGetterFacet(
-  {},
-  { LibGameUtils }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
+export async function deployGetterFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
   const factory = await hre.ethers.getContractFactory('DFGetterFacet', {
-    libraries: {
-      LibGameUtils,
-    },
+    // libraries: {
+    //   LibGameUtils,
+    // },
   });
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();

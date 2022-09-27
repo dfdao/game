@@ -10,7 +10,8 @@ import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 // Storage imports
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
-import {Biome, SpaceType, Planet, PlanetType, PlanetEventType, Artifact, ArtifactProperties, ArtifactType, ArtifactRarity, Upgrade, PlanetDefaultStats} from "../DFTypes.sol";
+import {Biome, SpaceType, Planet, PlanetType, PlanetEventType, Artifact, ArtifactProperties, ArtifactType, CollectionType, ArtifactRarity, Upgrade, PlanetDefaultStats} from "../DFTypes.sol";
+import "hardhat/console.sol";
 
 library LibGameUtils {
     function gs() internal pure returns (GameStorage storage) {
@@ -267,7 +268,11 @@ library LibGameUtils {
             });
     }
 
-    function _getUpgradeForArtifact(Artifact memory artifact) public pure returns (Upgrade memory) {
+    function _getUpgradeForArtifact(ArtifactProperties memory artifact)
+        public
+        pure
+        returns (Upgrade memory)
+    {
         if (artifact.artifactType == ArtifactType.PlanetaryShield) {
             uint256[6] memory defenseMultipliersPerRarity = [uint256(100), 150, 200, 300, 450, 650];
 
@@ -382,11 +387,14 @@ library LibGameUtils {
     // planets can have multiple artifacts on them. this function updates all the
     // internal contract book-keeping to reflect that the given artifact was
     // put on. note that this function does not transfer the artifact.
-    function _putArtifactOnPlanet(uint256 artifactId, uint256 locationId) public {
-        gs().artifactIdToPlanetId[artifactId] = locationId;
+    function _putArtifactOnPlanet(uint256 locationId, uint256 artifactId) public {
+        console.log("putting %s on %s", locationId, artifactId);
         gs().planetArtifacts[locationId].push(artifactId);
+        uint256 length = gs().planetArtifacts[locationId].length;
+        console.log("new planet artifact id", gs().planetArtifacts[locationId][length - 1]);
     }
 
+    // TODO: Why not burn ?
     // planets can have multiple artifacts on them. this function updates all the
     // internal contract book-keeping to reflect that the given artifact was
     // taken off the given planet. note that this function does not transfer the
@@ -394,18 +402,23 @@ library LibGameUtils {
     //
     // if the given artifact is not on the given planet, reverts
     // if the given artifact is currently activated, reverts
-    function _takeArtifactOffPlanet(uint256 artifactId, uint256 locationId) public {
+
+    /**
+     * Should remove artifactId from planet with locationId if artifactId exists AND is not active.
+     */
+
+    function _takeArtifactOffPlanet(uint256 locationId, uint256 artifactId) public {
         uint256 artifactsOnThisPlanet = gs().planetArtifacts[locationId].length;
         bool hadTheArtifact = false;
 
         for (uint256 i = 0; i < artifactsOnThisPlanet; i++) {
             if (gs().planetArtifacts[locationId][i] == artifactId) {
-                Artifact memory artifact = DFArtifactFacet(address(this)).getArtifact(
+                ArtifactProperties memory artifact = DFArtifactFacet(address(this)).getArtifact(
                     gs().planetArtifacts[locationId][i]
                 );
 
                 require(
-                    !isActivated(artifact),
+                    !isActivatedERC1155(locationId, artifactId),
                     "you cannot take an activated artifact off a planet"
                 );
 
@@ -419,7 +432,6 @@ library LibGameUtils {
         }
 
         require(hadTheArtifact, "this artifact was not present on this planet");
-        gs().artifactIdToPlanetId[artifactId] = 0;
         gs().planetArtifacts[locationId].pop();
     }
 
@@ -429,6 +441,10 @@ library LibGameUtils {
     // whether or not the artifact is activated.
     function isActivated(Artifact memory artifact) public pure returns (bool) {
         return artifact.lastDeactivated < artifact.lastActivated;
+    }
+
+    function isActivatedERC1155(uint256 locationId, uint256 artifactId) public view returns (bool) {
+        return (gs().planetActiveArtifact[locationId] > 0);
     }
 
     function isArtifactOnPlanet(uint256 locationId, uint256 artifactId) public returns (bool) {
@@ -446,31 +462,31 @@ library LibGameUtils {
     function getPlanetArtifact(uint256 locationId, uint256 artifactId)
         public
         view
-        returns (Artifact memory)
+        returns (ArtifactProperties memory)
     {
+        console.log("searching for %s on %s", locationId, artifactId);
+        console.log(
+            "%s artifacts on planet %s",
+            gs().planetArtifacts[locationId].length,
+            locationId
+        );
         for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
+            console.log("found %s ", gs().planetArtifacts[locationId][i]);
             if (gs().planetArtifacts[locationId][i] == artifactId) {
                 return DFArtifactFacet(address(this)).getArtifact(artifactId);
             }
         }
 
-        return _nullArtifact();
+        return _nullArtifactProperties();
     }
 
     // if the given planet has an activated artifact on it, then return the artifact
     // otherwise, return a 'null artifact'
-    function getActiveArtifact(uint256 locationId) public view returns (Artifact memory) {
-        for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
-            Artifact memory artifact = DFArtifactFacet(address(this)).getArtifact(
-                gs().planetArtifacts[locationId][i]
-            );
+    function getActiveArtifact(uint256 locationId) public view returns (ArtifactProperties memory) {
+        uint256 artifactId = gs().planetActiveArtifact[locationId];
+        if (artifactId != 0) return DFArtifactFacet(address(this)).decodeArtifact(artifactId);
 
-            if (isActivated(artifact)) {
-                return artifact;
-            }
-        }
-
-        return _nullArtifact();
+        return _nullArtifactProperties();
     }
 
     // the space junk that a planet starts with
@@ -498,6 +514,17 @@ library LibGameUtils {
                 0,
                 0,
                 address(0)
+            );
+    }
+
+    function _nullArtifactProperties() private pure returns (ArtifactProperties memory) {
+        return
+            ArtifactProperties(
+                0,
+                CollectionType.Unknown,
+                ArtifactRarity.Unknown,
+                ArtifactType.Unknown,
+                Biome.Unknown
             );
     }
 

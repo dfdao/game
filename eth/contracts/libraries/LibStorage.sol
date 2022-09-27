@@ -45,8 +45,10 @@ struct GameStorage {
     mapping(uint256 => PlanetEventMetadata[]) planetEvents;
     // maps event id to arrival data
     mapping(uint256 => ArrivalData) planetArrivals;
-    mapping(uint256 => uint256[]) planetArtifacts;
     // Artifact stuff
+    mapping(uint256 => uint256[]) planetArtifacts;
+    // TODO: Make this an array
+    mapping(uint256 => uint256) planetActiveArtifact;
     mapping(uint256 => Artifact) artifacts;
     // Capture Zones
     uint256 nextChangeBlock;

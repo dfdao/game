@@ -1,4 +1,5 @@
 import { DFToken, DFToken__factory } from '@dfdao/contracts/typechain';
+import { ArtifactRarity, ArtifactType, Biome } from '@dfdao/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
@@ -45,16 +46,26 @@ describe('SolidStateERC1155', function () {
 
     expect(await token.uri(collectionId)).to.equal(tokenURI);
   });
-  it('logs bits', async function () {
+  it.skip('logs bits for artifact', async function () {
+    // Must be valid options
     const _collectionType = '0x01';
-    const _rarity = '0xff';
-    const _artifactType = '0x01';
-    const _biome = '0xab';
+    const _rarity = ArtifactRarity.Legendary;
+    const _artifactType = ArtifactType.Colossus;
+    const _biome = Biome.DESERT;
     const res = await token.encodeArtifact(_collectionType, _rarity, _artifactType, _biome);
-    const { collectionType, rarity, biome, artifactType } = await token.decodeArtifact(res);
+    const { collectionType, rarity, planetBiome, artifactType } = await token.decodeArtifact(res);
     expect(collectionType).to.equal(Number(_collectionType));
     expect(rarity).to.equal(Number(_rarity));
-    expect(biome).to.equal(Number(_biome));
+    expect(planetBiome).to.equal(Number(_biome));
+    expect(artifactType).to.equal(Number(_artifactType));
+  });
+  it.only('logs bits for spaceship', async function () {
+    // Must be valid options
+    const _collectionType = '0x02'; // TODO: add CollectionType to @dfdao/types
+    const _artifactType = ArtifactType.ShipGear;
+    const res = await token.encodeArtifact(_collectionType, 0, _artifactType, 0);
+    const { collectionType, artifactType } = await token.decodeArtifact(res);
+    expect(collectionType).to.equal(Number(_collectionType));
     expect(artifactType).to.equal(Number(_artifactType));
   });
 });
