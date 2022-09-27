@@ -45,13 +45,16 @@ describe('SolidStateERC1155', function () {
 
     expect(await token.uri(collectionId)).to.equal(tokenURI);
   });
-  it.only('logs bits', async function () {
-    const _level = '0xff';
+  it('logs bits', async function () {
+    const _collectionType = '0x01';
+    const _rarity = '0xff';
     const _artifactType = '0x01';
     const _biome = '0xab';
-    const res = await token.encodeArtifact(_level, _artifactType, _biome);
-    console.log(res._hex);
-    const { level, biome, artifactType } = await token.decodeArtifact(res);
-    console.log(level, biome, artifactType);
+    const res = await token.encodeArtifact(_collectionType, _rarity, _artifactType, _biome);
+    const { collectionType, rarity, biome, artifactType } = await token.decodeArtifact(res);
+    expect(collectionType).to.equal(Number(_collectionType));
+    expect(rarity).to.equal(Number(_rarity));
+    expect(biome).to.equal(Number(_biome));
+    expect(artifactType).to.equal(Number(_artifactType));
   });
 });

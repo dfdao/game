@@ -11,7 +11,7 @@ import {LibGameUtils} from "./LibGameUtils.sol";
 import {LibStorage, GameStorage, GameConstants} from "./LibStorage.sol";
 
 // Type imports
-import {Biome, Planet, PlanetType, Artifact, ArtifactType, ArtifactRarity, DFPFindArtifactArgs, DFTCreateArtifactArgs} from "../DFTypes.sol";
+import {Biome, Planet, PlanetType, Artifact, ArtifactType, ArtifactRarity, DFPFindArtifactArgs, DFTCreateArtifactArgs, ArtifactProperties} from "../DFTypes.sol";
 
 library LibArtifactUtils {
     function gs() internal pure returns (GameStorage storage) {
@@ -105,12 +105,12 @@ library LibArtifactUtils {
 
         DFTCreateArtifactArgs memory createArtifactArgs = DFTCreateArtifactArgs(
             artifactSeed,
-            msg.sender,
+            msg.sender, // discoverer
             args.planetId,
             LibGameUtils.artifactRarityFromPlanetLevel(levelBonus + planet.planetLevel),
             biome,
             artifactType,
-            args.coreAddress,
+            args.coreAddress, // owner
             address(0)
         );
 
@@ -252,12 +252,14 @@ library LibArtifactUtils {
 
         if (shouldDeactivateAndBurn) {
             artifact.lastDeactivated = block.timestamp; // immediately deactivate
-            DFArtifactFacet(address(this)).updateArtifact(artifact); // save artifact state immediately, because _takeArtifactOffPlanet will access pull it from tokens contract
+            // artifact, owner
+            DFArtifactFacet(address(this)).updateArtifact(artifact, address(this)); // save artifact state immediately, because _takeArtifactOffPlanet will access pull it from tokens contract
             emit ArtifactDeactivated(msg.sender, artifactId, locationId);
             // burn it after use. will be owned by contract but not on a planet anyone can control
             LibGameUtils._takeArtifactOffPlanet(artifactId, locationId);
         } else {
-            DFArtifactFacet(address(this)).updateArtifact(artifact);
+            // artifact, owner
+            DFArtifactFacet(address(this)).updateArtifact(artifact, address(this));
         }
 
         // this is fine even tho some artifacts are immediately deactivated, because
@@ -282,7 +284,7 @@ library LibArtifactUtils {
         artifact.lastDeactivated = block.timestamp;
         artifact.wormholeTo = 0;
         emit ArtifactDeactivated(msg.sender, artifact.id, locationId);
-        DFArtifactFacet(address(this)).updateArtifact(artifact);
+        DFArtifactFacet(address(this)).updateArtifact(artifact, address(this));
 
         bool shouldBurn = artifact.artifactType == ArtifactType.PlanetaryShield ||
             artifact.artifactType == ArtifactType.PhotoidCannon;
@@ -304,12 +306,12 @@ library LibArtifactUtils {
         require(!gs().planets[locationId].destroyed, "planet is destroyed");
         require(planet.planetType == PlanetType.TRADING_POST, "can only deposit on trading posts");
         require(
-            DFArtifactFacet(address(this)).ownerOf(artifactId) == msg.sender,
+            DFArtifactFacet(address(this)).balanceOf(msg.sender, artifactId) > 0,
             "you can only deposit artifacts you own"
         );
         require(planet.owner == msg.sender, "you can only deposit on a planet you own");
 
-        Artifact memory artifact = DFArtifactFacet(address(this)).getArtifact(artifactId);
+        ArtifactProperties memory artifact = DFArtifactFacet(address(this)).getArtifact(artifactId);
         require(
             planet.planetLevel > uint256(artifact.rarity),
             "spacetime rip not high enough level to deposit this artifact"
@@ -319,8 +321,8 @@ library LibArtifactUtils {
         require(gs().planetArtifacts[locationId].length < 5, "too many artifacts on this planet");
 
         LibGameUtils._putArtifactOnPlanet(artifactId, locationId);
-
-        DFArtifactFacet(address(this)).transferArtifact(artifactId, coreAddress);
+        // artifactId, curr owner, new owner
+        DFArtifactFacet(address(this)).transferArtifact(artifactId, msg.sender, coreAddress);
     }
 
     function withdrawArtifact(uint256 locationId, uint256 artifactId) public {
@@ -342,7 +344,8 @@ library LibArtifactUtils {
         require(!isSpaceship(artifact.artifactType), "cannot withdraw spaceships");
         LibGameUtils._takeArtifactOffPlanet(artifactId, locationId);
 
-        DFArtifactFacet(address(this)).transferArtifact(artifactId, msg.sender);
+        // artifactId, curr owner, new owner
+        DFArtifactFacet(address(this)).transferArtifact(artifactId, address(this), msg.sender);
     }
 
     function prospectPlanet(uint256 locationId) public {
@@ -364,9 +367,11 @@ library LibArtifactUtils {
         uint256[] memory artifactIds = gs().planetArtifacts[locationId];
 
         for (uint256 i = 0; i < artifactIds.length; i++) {
-            Artifact memory artifact = DFArtifactFacet(address(this)).getArtifact(artifactIds[i]);
+            ArtifactProperties memory artifact = DFArtifactFacet(address(this)).getArtifact(
+                artifactIds[i]
+            );
             if (
-                artifact.artifactType == ArtifactType.ShipGear && msg.sender == artifact.controller
+                artifact.artifactType == ArtifactType.ShipGear // && msg.sender == artifact.controller
             ) {
                 return true;
             }

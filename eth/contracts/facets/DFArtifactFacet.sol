@@ -2,10 +2,9 @@
 pragma solidity ^0.8.0;
 
 // Contract imports
-import {SolidStateERC721} from "@solidstate/contracts/token/ERC721/SolidStateERC721.sol";
-import {ERC721BaseStorage} from "@solidstate/contracts/token/ERC721/base/ERC721BaseStorage.sol";
 import {DFVerifierFacet} from "./DFVerifierFacet.sol";
 import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
+import {DFToken} from "../DFToken.sol";
 
 // Library Imports
 import {LibPermissions} from "../libraries/LibPermissions.sol";
@@ -17,11 +16,9 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {Artifact, ArtifactType, DFTCreateArtifactArgs, DFPFindArtifactArgs} from "../DFTypes.sol";
+import {Artifact, ArtifactType, DFTCreateArtifactArgs, DFPFindArtifactArgs, ArtifactProperties} from "../DFTypes.sol";
 
-contract DFArtifactFacet is WithStorage, SolidStateERC721 {
-    using ERC721BaseStorage for ERC721BaseStorage.Layout;
-
+contract DFArtifactFacet is WithStorage, DFToken {
     event PlanetProspected(address player, uint256 loc);
     event ArtifactFound(address player, uint256 artifactId, uint256 loc);
     event ArtifactDeposited(address player, uint256 artifactId, uint256 loc);
@@ -71,7 +68,8 @@ contract DFArtifactFacet is WithStorage, SolidStateERC721 {
     {
         require(args.tokenId >= 1, "artifact id must be positive");
 
-        _mint(args.owner, args.tokenId);
+        // Account, Id, Amount, Data
+        _mint(args.owner, args.tokenId, 1, "");
 
         Artifact memory newArtifact = Artifact(
             true,
@@ -94,44 +92,51 @@ contract DFArtifactFacet is WithStorage, SolidStateERC721 {
         return newArtifact;
     }
 
-    function getArtifact(uint256 tokenId) public view returns (Artifact memory) {
-        return gs().artifacts[tokenId];
+    function getArtifact(uint256 tokenId) public view returns (ArtifactProperties memory) {
+        return DFToken.decodeArtifact(tokenId);
+        //return gs().artifacts[tokenId];
     }
 
-    function getArtifactAtIndex(uint256 idx) public view returns (Artifact memory) {
-        return gs().artifacts[tokenByIndex(idx)];
-    }
+    // function getArtifactAtIndex(uint256 idx) public view returns (Artifact memory) {
+    //     return gs().artifacts[tokenByIndex(idx)];
+    // }
 
-    function getPlayerArtifactIds(address playerId) public view returns (uint256[] memory) {
-        uint256 balance = balanceOf(playerId);
-        uint256[] memory results = new uint256[](balance);
+    // function getPlayerArtifactIds(address playerId) public view returns (uint256[] memory) {
+    //     uint256 balance = balanceOf(playerId);
+    //     uint256[] memory results = new uint256[](balance);
 
-        for (uint256 idx = 0; idx < balance; idx++) {
-            results[idx] = tokenOfOwnerByIndex(playerId, idx);
-        }
+    //     for (uint256 idx = 0; idx < balance; idx++) {
+    //         results[idx] = tokenOfOwnerByIndex(playerId, idx);
+    //     }
 
-        return results;
-    }
+    //     return results;
+    // }
 
-    function transferArtifact(uint256 tokenId, address newOwner) public onlyAdminOrCore {
+    function transferArtifact(
+        uint256 tokenId,
+        address owner,
+        address newOwner
+    ) public onlyAdminOrCore {
         if (newOwner == address(0)) {
-            _burn(tokenId);
+            // account, id, amount.
+            _burn(owner, tokenId, 1);
         } else {
-            _transfer(ownerOf(tokenId), newOwner, tokenId);
+            // operator sender receiver id amount data
+            _transfer(owner, owner, newOwner, tokenId, 1, "");
         }
     }
 
-    function updateArtifact(Artifact memory updatedArtifact) public onlyAdminOrCore {
+    function updateArtifact(Artifact memory updatedArtifact, address owner) public onlyAdminOrCore {
         require(
-            ERC721BaseStorage.layout().exists(updatedArtifact.id),
+            doesArtifactExist(owner, updatedArtifact.id),
             "you cannot update an artifact that doesn't exist"
         );
 
         gs().artifacts[updatedArtifact.id] = updatedArtifact;
     }
 
-    function doesArtifactExist(uint256 tokenId) public view returns (bool) {
-        return ERC721BaseStorage.layout().exists(tokenId);
+    function doesArtifactExist(address owner, uint256 tokenId) public view returns (bool) {
+        return balanceOf(owner, tokenId) > 0;
     }
 
     function findArtifact(
@@ -287,7 +292,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC721 {
 
     function adminGiveArtifact(DFTCreateArtifactArgs memory args) public onlyAdmin {
         Artifact memory artifact = createArtifact(args);
-        transferArtifact(artifact.id, address(this));
+        transferArtifact(artifact.id, address(this), address(this));
         LibGameUtils._putArtifactOnPlanet(artifact.id, args.planetId);
 
         emit ArtifactFound(args.owner, artifact.id, args.planetId);
