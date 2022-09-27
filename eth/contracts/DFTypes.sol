@@ -263,3 +263,24 @@ enum Biome {
     Lava,
     Corrupted
 }
+
+enum ArtifactInfo {
+    Unknown,
+    CollectionType, // Each bin of tokens gets an id (spaceships, artifacts, etc...)
+    ArtifactRarity,
+    ArtifactType,
+    Biome
+}
+
+enum CollectionType {
+    Unknown,
+    Artifact,
+    Spaceship
+}
+
+struct ArtifactProperties {
+    CollectionType collectionType;
+    ArtifactRarity rarity;
+    ArtifactType artifactType;
+    Biome biome;
+}

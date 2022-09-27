@@ -10,7 +10,7 @@ import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 // Storage imports
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
-import {Biome, SpaceType, Planet, PlanetType, PlanetEventType, Artifact, ArtifactType, ArtifactRarity, Upgrade, PlanetDefaultStats} from "../DFTypes.sol";
+import {Biome, SpaceType, Planet, PlanetType, PlanetEventType, Artifact, ArtifactProperties, ArtifactType, ArtifactRarity, Upgrade, PlanetDefaultStats} from "../DFTypes.sol";
 
 library LibGameUtils {
     function gs() internal pure returns (GameStorage storage) {
