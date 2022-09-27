@@ -264,7 +264,7 @@ enum Biome {
     Corrupted
 }
 
-enum ArtifactInfo {
+enum TokenInfo {
     Unknown,
     CollectionType, // Each bin of tokens gets an id (spaceships, artifacts, etc...)
     ArtifactRarity,
@@ -279,8 +279,9 @@ enum CollectionType {
 }
 
 struct ArtifactProperties {
+    uint256 id;
     CollectionType collectionType;
     ArtifactRarity rarity;
     ArtifactType artifactType;
-    Biome biome;
+    Biome planetBiome;
 }

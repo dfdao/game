@@ -17,6 +17,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
 import {Artifact, ArtifactType, DFTCreateArtifactArgs, DFPFindArtifactArgs, ArtifactProperties} from "../DFTypes.sol";
+import "hardhat/console.sol";
 
 contract DFArtifactFacet is WithStorage, DFToken {
     event PlanetProspected(address player, uint256 loc);
@@ -162,6 +163,7 @@ contract DFArtifactFacet is WithStorage, DFToken {
             );
         }
 
+        console.log("finding artifact...");
         uint256 foundArtifactId = LibArtifactUtils.findArtifact(
             DFPFindArtifactArgs(planetId, biomebase, address(this))
         );
@@ -177,7 +179,7 @@ contract DFArtifactFacet is WithStorage, DFToken {
 
         LibArtifactUtils.depositArtifact(locationId, artifactId, address(this));
 
-        emit ArtifactDeposited(msg.sender, artifactId, locationId);
+        emit ArtifactDeposited(msg.sender, locationId, artifactId);
     }
 
     // withdraws the given artifact from the given planet. you must own the planet,
@@ -187,7 +189,7 @@ contract DFArtifactFacet is WithStorage, DFToken {
 
         LibArtifactUtils.withdrawArtifact(locationId, artifactId);
 
-        emit ArtifactWithdrawn(msg.sender, artifactId, locationId);
+        emit ArtifactWithdrawn(msg.sender, locationId, artifactId);
     }
 
     // activates the given artifact on the given planet. the artifact must have
@@ -288,13 +290,5 @@ contract DFArtifactFacet is WithStorage, DFToken {
         }
 
         gs().players[msg.sender].claimedShips = true;
-    }
-
-    function adminGiveArtifact(DFTCreateArtifactArgs memory args) public onlyAdmin {
-        Artifact memory artifact = createArtifact(args);
-        transferArtifact(artifact.id, address(this), address(this));
-        LibGameUtils._putArtifactOnPlanet(artifact.id, args.planetId);
-
-        emit ArtifactFound(args.owner, artifact.id, args.planetId);
     }
 }

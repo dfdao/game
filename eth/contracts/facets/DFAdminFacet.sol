@@ -10,14 +10,17 @@ import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
 
+import {DFArtifactFacet} from "./DFArtifactFacet.sol";
+
 // Type imports
-import {SpaceType, DFPInitPlanetArgs, AdminCreatePlanetArgs, Artifact, ArtifactType, Player, Planet} from "../DFTypes.sol";
+import {SpaceType, DFPInitPlanetArgs, AdminCreatePlanetArgs, DFTCreateArtifactArgs, Artifact, ArtifactType, Player, Planet} from "../DFTypes.sol";
 
 contract DFAdminFacet is WithStorage {
     event AdminOwnershipChanged(uint256 loc, address newOwner);
     event AdminPlanetCreated(uint256 loc);
     event AdminGiveSpaceship(uint256 loc, address owner, ArtifactType artifactType);
     event PauseStateChanged(bool paused);
+    event AdminArtifactCreated(address player, uint256 artifactId, uint256 loc);
 
     /////////////////////////////
     /// Administrative Engine ///
@@ -160,5 +163,13 @@ contract DFAdminFacet is WithStorage {
 
     function setPlanetTransferEnabled(bool enabled) public onlyAdmin {
         gameConstants().PLANET_TRANSFER_ENABLED = enabled;
+    }
+
+    function adminGiveArtifact(DFTCreateArtifactArgs memory args) public onlyAdmin {
+        Artifact memory artifact = DFArtifactFacet(address(this)).createArtifact(args);
+        // TODO: Remove this redundant logic ?
+        DFArtifactFacet(address(this)).transferArtifact(artifact.id, address(this), address(this));
+        LibGameUtils._putArtifactOnPlanet(args.planetId, artifact.id);
+        emit AdminArtifactCreated(args.owner, artifact.id, args.planetId);
     }
 }

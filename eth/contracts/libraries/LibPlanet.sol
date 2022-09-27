@@ -13,6 +13,7 @@ import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStora
 
 // Type imports
 import {Artifact, ArtifactType, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetType, RevealedCoords, SpaceType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
+import "hardhat/console.sol";
 
 library LibPlanet {
     function gs() internal pure returns (GameStorage storage) {
@@ -346,7 +347,7 @@ library LibPlanet {
         for (uint256 i = 0; i < 12; i++) {
             if (artifactIdsToAddToPlanet[i] != 0) {
                 gs().artifactIdToVoyageId[artifactIdsToAddToPlanet[i]] = 0;
-                LibGameUtils._putArtifactOnPlanet(artifactIdsToAddToPlanet[i], location);
+                LibGameUtils._putArtifactOnPlanet(location, artifactIdsToAddToPlanet[i]);
             }
         }
     }

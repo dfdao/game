@@ -1,4 +1,5 @@
 import type { DarkForest } from '@dfdao/contracts/typechain';
+import { ArtifactPropertiesStructOutput } from '@dfdao/contracts/typechain/contracts/DFToken';
 import { modPBigInt } from '@dfdao/hashing';
 import {
   buildContractCallArgs,
@@ -7,7 +8,15 @@ import {
   WhitelistSnarkInput,
 } from '@dfdao/snarks';
 import { whitelistSnarkWasmPath, whitelistSnarkZkeyPath } from '@dfdao/snarks/node';
-import { ArtifactRarity, ArtifactType, Biome } from '@dfdao/types';
+import {
+  ArtifactRarity,
+  ArtifactRarityNames,
+  ArtifactType,
+  ArtifactTypeNames,
+  Biome,
+  BiomeNames,
+  CollectionTypeNames,
+} from '@dfdao/types';
 import { bigIntFromKey } from '@dfdao/whitelist';
 import { mine, time } from '@nomicfoundation/hardhat-network-helpers';
 import bigInt from 'big-integer';
@@ -32,6 +41,14 @@ export const BN_ZERO = constants.Zero;
 
 export function hexToBigNumber(hex: string): BigNumber {
   return BigNumber.from(`0x${hex}`);
+}
+
+export function prettyPrintToken(token: ArtifactPropertiesStructOutput) {
+  console.log(
+    `~Token~\nCollection: ${CollectionTypeNames[token.collectionType]}\nRarity: ${
+      ArtifactRarityNames[token.rarity]
+    }\nType: ${ArtifactTypeNames[token.artifactType]}\nBiome: ${BiomeNames[token.planetBiome]}`
+  );
 }
 
 export function makeRevealArgs(
@@ -292,7 +309,7 @@ export async function user1MintArtifactPlanet(user1Core: DarkForest) {
   const findArtifactReceipt = await findArtifactTx.wait();
   // 0th event is erc721 transfer (i think); 1st event is UpdateArtifact, 2nd argument of this event is artifactId
   const artifactId = findArtifactReceipt.events?.[1].args?.[1];
-  return artifactId;
+  return artifactId as BigNumber;
 }
 
 export async function getArtifactsOwnedBy(contract: DarkForest, addr: string) {
