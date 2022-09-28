@@ -316,6 +316,10 @@ contract DFGetterFacet is WithStorage {
         return ret;
     }
 
+    function getArtifactActivationTimeOnPlanet(uint256 locationId) public view returns (uint256) {
+        return gs().planetArtifactActivationTime[locationId];
+    }
+
     // function getArtifactById(uint256 artifactId)
     //     public
     //     view
@@ -354,6 +358,19 @@ contract DFGetterFacet is WithStorage {
             ret[i] = DFArtifactFacet(address(this)).decodeArtifact(artifactIds[i]);
         }
         return ret;
+    }
+
+    function artifactExistsOnPlanet(uint256 locationId, uint256 artifactId)
+        public
+        view
+        returns (bool)
+    {
+        bool hasArtifact = false;
+        uint256[] memory artifactIds = gs().planetArtifacts[locationId];
+        for (uint256 i = 0; i < artifactIds.length; i++) {
+            if (artifactIds[i] == artifactId) hasArtifact = true;
+        }
+        return hasArtifact;
     }
 
     function getActiveArtifactOnPlanet(uint256 locationId)

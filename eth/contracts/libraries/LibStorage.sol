@@ -51,7 +51,8 @@ struct GameStorage {
     mapping(uint256 => uint256) planetActiveArtifact;
     // wormhole from => to. planetWormHoles[from] = to;
     mapping(uint256 => uint256) planetWormholes;
-    // spaceShip owners uint256 => address or balanceOf(owner,id)
+    // planetId to timestamp. For all artifacts, but only used for photoids.
+    mapping(uint256 => uint256) planetArtifactActivationTime;
     mapping(uint256 => Artifact) artifacts;
     // Capture Zones
     uint256 nextChangeBlock;

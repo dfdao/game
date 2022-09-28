@@ -28,7 +28,7 @@ import {
 
 const { BigNumber: BN } = ethers;
 
-describe.only('DarkForestMove', function () {
+describe('DarkForestMove', function () {
   describe('moving space ships', function () {
     let world: World;
 
