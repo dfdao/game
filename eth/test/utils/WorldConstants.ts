@@ -96,10 +96,10 @@ const defaultInitializerValues = {
   CAPTURE_ZONES_PER_5000_WORLD_RADIUS: 1,
   SPACESHIPS: {
     GEAR: true,
-    MOTHERSHIP: false,
-    CRESCENT: false,
-    TITAN: false,
-    WHALE: false,
+    MOTHERSHIP: true,
+    CRESCENT: true,
+    TITAN: true,
+    WHALE: true,
   },
   ROUND_END_REWARDS_BY_RANK: [
     5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

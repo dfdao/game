@@ -36,7 +36,7 @@ import {
   ZERO_PLANET,
 } from './utils/WorldConstants';
 
-describe.only('DarkForestArtifacts', function () {
+describe('DarkForestArtifacts', function () {
   let world: World;
 
   async function worldFixture() {
