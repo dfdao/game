@@ -75,7 +75,7 @@ class ReaderDataStore {
     const addressTwitterMap = await getAllTwitters();
     const contractConstants = await contractsAPI.getConstants();
     const persistentChunkStore =
-      viewer && (await PersistentChunkStore.create({ account: viewer, contractAddress }));
+      viewer && new PersistentChunkStore({ account: viewer, contractAddress });
 
     const singlePlanetStore = new ReaderDataStore({
       contractAddress,
@@ -99,7 +99,7 @@ class ReaderDataStore {
     }
   }
 
-  private setPlanetLocationIfKnown(planet: Planet): void {
+  private async setPlanetLocationIfKnown(planet: Planet): Promise<void> {
     let planetLocation = undefined;
 
     if (planet && isLocatable(planet)) {
@@ -111,6 +111,7 @@ class ReaderDataStore {
     }
 
     if (this.persistentChunkStore) {
+      await this.persistentChunkStore.chunksLoaded();
       for (const chunk of this.persistentChunkStore.allChunks()) {
         for (const loc of chunk.planetLocations) {
           if (loc.hash === planet.locationId) {
@@ -147,7 +148,7 @@ class ReaderDataStore {
     }
 
     updatePlanetToTime(planet, [], Date.now(), contractConstants);
-    this.setPlanetLocationIfKnown(planet);
+    await this.setPlanetLocationIfKnown(planet);
 
     return planet;
   }
