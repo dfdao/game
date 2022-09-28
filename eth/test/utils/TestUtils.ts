@@ -15,6 +15,7 @@ import {
   ArtifactTypeNames,
   Biome,
   BiomeNames,
+  CollectionType,
   CollectionTypeNames,
 } from '@dfdao/types';
 import { bigIntFromKey } from '@dfdao/whitelist';
@@ -319,18 +320,19 @@ export async function getArtifactsOwnedBy(contract: DarkForest, addr: string) {
   );
 }
 
-export async function createArtifactOnPlanet(
+export async function createArtifact(
   contract: DarkForest,
   owner: string,
   planet: TestLocation,
   type: ArtifactType,
+  collectionType = CollectionType.Artifact,
   { rarity, biome }: { rarity?: ArtifactRarity; biome?: Biome } = {}
 ) {
   rarity ||= ArtifactRarity.Common;
   biome ||= Biome.FOREST;
 
-  const tokenId = hexToBigNumber(Math.floor(Math.random() * 10000000000).toString(16));
-
+  const tokenId = await contract.encodeArtifact(collectionType, rarity, type, biome);
+  console.log(`tokenId`, tokenId);
   await contract.adminGiveArtifact({
     tokenId,
     discoverer: owner,

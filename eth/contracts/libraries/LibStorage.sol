@@ -49,6 +49,8 @@ struct GameStorage {
     mapping(uint256 => uint256[]) planetArtifacts;
     // TODO: Make this an array
     mapping(uint256 => uint256) planetActiveArtifact;
+    // wormhole from => to. planetWormHoles[from] = to;
+    mapping(uint256 => uint256) planetWormholes;
     mapping(uint256 => Artifact) artifacts;
     // Capture Zones
     uint256 nextChangeBlock;

@@ -167,9 +167,8 @@ contract DFAdminFacet is WithStorage {
 
     function adminGiveArtifact(DFTCreateArtifactArgs memory args) public onlyAdmin {
         Artifact memory artifact = DFArtifactFacet(address(this)).createArtifact(args);
-        // TODO: Remove this redundant logic ?
-        DFArtifactFacet(address(this)).transferArtifact(artifact.id, address(this), address(this));
-        LibGameUtils._putArtifactOnPlanet(args.planetId, artifact.id);
+        // Don't put artifact on planet if no planetId given.
+        if (args.planetId != 0) LibGameUtils._putArtifactOnPlanet(args.planetId, artifact.id);
         emit AdminArtifactCreated(args.owner, artifact.id, args.planetId);
     }
 }
