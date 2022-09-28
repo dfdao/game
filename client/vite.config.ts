@@ -55,7 +55,7 @@ export default defineConfig(async ({ mode }) => {
     optimizeDeps: {
       include: Array.from(all().keys()).filter((name) => !privateWorkspaces.includes(name)),
       esbuildOptions: {
-        target: 'es2020',
+        target: 'es2021',
       },
     },
   };
