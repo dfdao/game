@@ -59,7 +59,7 @@ describe('SolidStateERC1155', function () {
     expect(planetBiome).to.equal(Number(_biome));
     expect(artifactType).to.equal(Number(_artifactType));
   });
-  it.only('logs bits for spaceship', async function () {
+  it('logs bits for spaceship', async function () {
     // Must be valid options
     const _collectionType = '0x02'; // TODO: add CollectionType to @dfdao/types
     const _artifactType = ArtifactType.ShipGear;

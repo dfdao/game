@@ -391,6 +391,12 @@ export const ADMIN_PLANET = new TestLocation({
   distFromOrigin: 1998,
 });
 
+export const ZERO_PLANET = new TestLocation({
+  hex: '0000000000000000000000000000000000000000000000000000000000000069',
+  perlin: NEBULA_PERLIN,
+  distFromOrigin: 1998,
+});
+
 // not under difficulty threshold
 export const ADMIN_PLANET_CLOAKED = new TestLocation({
   hex: '0100000000000000000000000000000000000000000000000000000000000069',

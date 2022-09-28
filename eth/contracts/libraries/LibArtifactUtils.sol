@@ -166,7 +166,7 @@ library LibArtifactUtils {
         );
 
         if (isSpaceship(artifact.artifactType)) {
-            // This breaks Crescent functionality
+            // TODO: fix Crescent functionality
             // activateSpaceshipArtifact(locationId, artifactId, planet, artifact);
         } else {
             activateNonSpaceshipArtifact(locationId, artifactId, wormholeTo, planet, artifact);
@@ -220,7 +220,7 @@ library LibArtifactUtils {
         Planet storage planet,
         ArtifactProperties memory artifact
     ) private {
-        console.log("activating %s on %s", locationId, artifactId);
+        console.log("activating %s on %s", artifactId, locationId);
         require(
             planet.owner == msg.sender,
             "you must own the planet you are activating an artifact on"
@@ -260,15 +260,18 @@ library LibArtifactUtils {
 
         // TODO: Wormhole is broken
 
-        // if (artifact.artifactType == ArtifactType.Wormhole) {
-        //     require(wormholeTo != 0, "you must provide a wormholeTo to activate a wormhole");
-        //     require(
-        //         gs().planets[wormholeTo].owner == msg.sender,
-        //         "you can only create a wormhole to a planet you own"
-        //     );
-        //     require(!gs().planets[wormholeTo].destroyed, "planet destroyed");
-        //     artifact.wormholeTo = wormholeTo;
-        if (artifact.artifactType == ArtifactType.BloomFilter) {
+        if (artifact.artifactType == ArtifactType.Wormhole) {
+            require(wormholeTo != 0, "you must provide a wormholeTo to activate a wormhole");
+
+            require(
+                gs().planets[wormholeTo].owner == msg.sender,
+                "you can only create a wormhole to a planet you own"
+            );
+            require(!gs().planets[wormholeTo].destroyed, "planet destroyed");
+            // TODO: Store some way to remember where a wormhole is. Maybe new data structure.
+            // artifact.wormholeTo = wormholeTo;
+            gs().planetWormholes[locationId] = wormholeTo;
+        } else if (artifact.artifactType == ArtifactType.BloomFilter) {
             require(
                 2 * uint256(artifact.rarity) >= planet.planetLevel,
                 "artifact is not powerful enough to apply effect to this planet level"
@@ -287,6 +290,8 @@ library LibArtifactUtils {
 
         if (shouldDeactivateAndBurn) {
             // artifact.lastDeactivated = block.timestamp; // immediately deactivate
+            gs().planetActiveArtifact[locationId] = 0; // immediately deactivate
+
             // artifact, owner
             // TODO: We aren't updating the artifact beacuse there are no properties to change.
             // DFArtifactFacet(address(this)).updateArtifact(artifact, address(this)); // save artifact state immediately, because _takeArtifactOffPlanet will access pull it from tokens contract
@@ -322,7 +327,8 @@ library LibArtifactUtils {
         );
 
         // artifact.lastDeactivated = block.timestamp;
-        // artifact.wormholeTo = 0;
+        // LOL just pretend there is a wormhole.
+        gs().planetWormholes[locationId] = 0;
         gs().planetActiveArtifact[locationId] = 0;
         emit ArtifactDeactivated(msg.sender, artifact.id, locationId);
         // TODO: Figure out update artifact

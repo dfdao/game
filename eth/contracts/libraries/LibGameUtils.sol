@@ -388,7 +388,7 @@ library LibGameUtils {
     // internal contract book-keeping to reflect that the given artifact was
     // put on. note that this function does not transfer the artifact.
     function _putArtifactOnPlanet(uint256 locationId, uint256 artifactId) public {
-        console.log("putting %s on %s", locationId, artifactId);
+        console.log("putting %s on %s", artifactId, locationId);
         gs().planetArtifacts[locationId].push(artifactId);
         uint256 length = gs().planetArtifacts[locationId].length;
         console.log("new planet artifact id", gs().planetArtifacts[locationId][length - 1]);
