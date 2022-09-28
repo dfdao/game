@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 // Contract imports
 import {DFVerifierFacet} from "./DFVerifierFacet.sol";
+import {DFArtifactFacet} from "./DFArtifactFacet.sol";
 
 // Library imports
 import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
@@ -199,7 +200,8 @@ contract DFMoveFacet is WithStorage {
             require(args.popMoved == 0, "ship moves must move 0 energy");
             require(args.silverMoved == 0, "ship moves must move 0 silver");
             require(
-                gs().artifacts[args.movedArtifactId].controller == msg.sender,
+                // TODO: better name for doesArtifactExist function
+                DFArtifactFacet(address(this)).doesArtifactExist(msg.sender, args.movedArtifactId),
                 "you can only move your own ships"
             );
         } else {

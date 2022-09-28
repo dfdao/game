@@ -70,6 +70,7 @@ library LibArtifactUtils {
             uint8(shipType),
             uint8(Biome.Unknown)
         );
+        // TODO: Use struct naming convetion for readability
         DFTCreateArtifactArgs memory createArtifactArgs = DFTCreateArtifactArgs(
             tokenId,
             msg.sender,
@@ -77,7 +78,7 @@ library LibArtifactUtils {
             ArtifactRarity.Unknown,
             Biome.Unknown,
             shipType,
-            address(this),
+            owner, // Player is owner of new ship
             owner
         );
 

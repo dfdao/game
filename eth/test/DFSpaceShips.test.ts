@@ -16,7 +16,7 @@ import {
   SPAWN_PLANET_2,
 } from './utils/WorldConstants';
 
-describe('Space Ships', function () {
+describe.only('DarkForestSpaceShips', function () {
   let world: World;
 
   async function worldFixture() {
@@ -62,8 +62,8 @@ describe('Space Ships', function () {
 
     it('pauses energy regeneration on planets', async function () {
       const titan = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
-        (a) => a.artifact.artifactType === ArtifactType.ShipTitan
-      )?.artifact;
+        (a) => a.artifactType === ArtifactType.ShipTitan
+      );
 
       // Move Titan to planet
       await world.user1Core.move(
