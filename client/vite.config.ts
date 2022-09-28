@@ -54,6 +54,9 @@ export default defineConfig(async ({ mode }) => {
     clearScreen: false,
     optimizeDeps: {
       include: Array.from(all().keys()).filter((name) => !privateWorkspaces.includes(name)),
+      esbuildOptions: {
+        target: 'es2020',
+      },
     },
   };
 });
