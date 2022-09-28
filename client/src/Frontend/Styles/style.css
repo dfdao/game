@@ -1,5 +1,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@300&display=swap');
 
+:root {
+  --df-font-size: 16pt;
+  --df-font-size-s: 12pt;
+  --df-font-size-xs: 10pt;
+
+  --df-colors-background: #151515;
+  --df-colors-backgroundlighter: #282828;
+
+  --df-screen-size-s: 660px;
+
+  --df-colors-text: #bbb;
+  --df-colors-subtext: #838383;
+  --df-colors-dfblue: #00ade1;
+  --df-colors-dfgreen: #00dc82;
+  --df-colors-dfwhite: #ffffff;
+  --df-colors-icons-twitter: #1da1f2;
+  --df-colors-icons-github: #8e65db;
+  --df-colors-icons-discord: #7289da;
+  --df-colors-icons-email: #d44638;
+  --df-colors-icons-blog: #ffcb1f;
+
+  --df-colors-artifact-rarity-unknown: #000000;
+  --df-colors-artifact-rarity-common: var(--df-colors-subtext);
+  --df-colors-artifact-rarity-rare: #6b68ff;
+  --df-colors-artifact-rarity-epic: #c13cff;
+  --df-colors-artifact-rarity-legendary: #f8b73e;
+  --df-colors-artifact-rarity-mythic: #ff44b7;
+}
+
 html,
 body,
 #root {

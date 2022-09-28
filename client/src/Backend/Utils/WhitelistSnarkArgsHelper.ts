@@ -7,8 +7,8 @@ import {
 import whitelistCircuitPath from '@dfdao/snarks/whitelist.wasm?url';
 import whitelistZkeyPath from '@dfdao/snarks/whitelist.zkey?url';
 import { EthAddress } from '@dfdao/types';
+import { EthAddress as PSEthAddress } from '@projectsophon/types';
 import bigInt, { BigInteger } from 'big-integer';
-import { TerminalTextStyle } from '../../Frontend/Utils/TerminalTypes';
 import { TerminalHandle } from '../../Frontend/Views/Terminal';
 
 /**
@@ -19,15 +19,10 @@ import { TerminalHandle } from '../../Frontend/Views/Terminal';
  */
 export const getWhitelistArgs = async (
   key: BigInteger,
-  recipient: EthAddress,
-  terminal?: React.MutableRefObject<TerminalHandle | undefined>
+  recipient: EthAddress | PSEthAddress,
+  _terminal?: React.MutableRefObject<TerminalHandle | undefined>
 ): Promise<WhitelistSnarkContractCallArgs> => {
   try {
-    const start = Date.now();
-    terminal?.current?.println(
-      'WHITELIST REGISTER: calculating witness and proof',
-      TerminalTextStyle.Sub
-    );
     const input: WhitelistSnarkInput = {
       key: key.toString(),
       recipient: bigInt(recipient.substring(2), 16).toString(),
@@ -40,11 +35,6 @@ export const getWhitelistArgs = async (
     );
     const { proof, publicSignals }: SnarkJSProofAndSignals = fullProveResponse;
     const ret = buildContractCallArgs(proof, publicSignals) as WhitelistSnarkContractCallArgs;
-    const end = Date.now();
-    terminal?.current?.println(
-      `WHITELIST REGISTER: calculated witness and proof in ${end - start}ms`,
-      TerminalTextStyle.Sub
-    );
 
     return ret;
   } catch (e) {

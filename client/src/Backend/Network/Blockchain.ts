@@ -1,5 +1,6 @@
 import diamondContractAbiUrl from '@dfdao/contracts/abis/DarkForest.json?url';
 import { createContract, createEthConnection, EthConnection } from '@dfdao/network';
+import { ConnectionManager } from '@projectsophon/network';
 import type { Contract, providers, Wallet } from 'ethers';
 
 /**
@@ -32,4 +33,23 @@ export function getEthConnection(): Promise<EthConnection> {
   console.log(`webserver url: ${import.meta.env.DF_WEBSERVER_URL}`);
 
   return createEthConnection(url);
+}
+
+export function makeConnection(): ConnectionManager {
+  const defaultUrl = import.meta.env.DF_DEFAULT_RPC;
+
+  let url: string;
+
+  if (import.meta.env.PROD) {
+    url = localStorage.getItem('XDAI_RPC_ENDPOINT_v5') || defaultUrl;
+  } else {
+    url = 'http://localhost:8545';
+  }
+
+  console.log(`GAME METADATA:`);
+  console.log(`rpc url: ${url}`);
+  console.log(`is production: ${import.meta.env.PROD}`);
+  console.log(`webserver url: ${import.meta.env.DF_WEBSERVER_URL}`);
+
+  return new ConnectionManager(url);
 }
