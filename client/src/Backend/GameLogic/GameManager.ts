@@ -136,6 +136,7 @@ import {
   verifyTwitterHandle,
 } from '../Network/UtilityServerAPI';
 import { SerializedPlugin } from '../Plugins/SerializedPlugin';
+import OtherStore from '../Storage/OtherStore';
 import PersistentChunkStore from '../Storage/PersistentChunkStore';
 import { easeInAnimation, emojiEaseOutAnimation } from '../Utils/Animation';
 import SnarkArgsHelper from '../Utils/SnarkArgsHelper';
@@ -207,6 +208,8 @@ class GameManager extends EventEmitter {
    * or something like that.
    */
   private readonly persistentChunkStore: PersistentChunkStore;
+  // Literally other storage stuff that people dumped into the chunk store
+  private readonly otherStore: OtherStore;
 
   /**
    * Responsible for generating snark proofs.
@@ -368,6 +371,7 @@ class GameManager extends EventEmitter {
     contractsAPI: ContractsAPI,
     contractConstants: ContractConstants,
     persistentChunkStore: PersistentChunkStore,
+    otherStore: OtherStore,
     snarkHelper: SnarkArgsHelper,
     homeLocation: WorldLocation | undefined,
     useMockHash: boolean,
@@ -474,6 +478,7 @@ class GameManager extends EventEmitter {
 
     this.contractsAPI = contractsAPI;
     this.persistentChunkStore = persistentChunkStore;
+    this.otherStore = otherStore;
     this.snarkHelper = snarkHelper;
     this.useMockHash = useMockHash;
     this.paused = paused;
@@ -589,19 +594,24 @@ class GameManager extends EventEmitter {
     terminal.current?.println('Loading game data from disk...');
 
     const persistentChunkStore = await PersistentChunkStore.create({ account, contractAddress });
+    const otherStore = await OtherStore.create({ account, contractAddress });
 
     terminal.current?.println('Downloading data from Ethereum blockchain...');
     terminal.current?.println('(the contract is very big. this may take a while)');
     terminal.current?.newline();
 
-    const initialState = await gameStateDownloader.download(contractsAPI, persistentChunkStore);
-    const possibleHomes = await persistentChunkStore.getHomeLocations();
+    const initialState = await gameStateDownloader.download(
+      contractsAPI,
+      persistentChunkStore,
+      otherStore
+    );
+    const possibleHomes = await otherStore.getHomeLocations();
 
     terminal.current?.println('');
     terminal.current?.println('Building Index...');
 
-    await persistentChunkStore.saveTouchedPlanetIds(initialState.allTouchedPlanetIds);
-    await persistentChunkStore.saveRevealedCoords(initialState.allRevealedCoords);
+    await otherStore.saveTouchedPlanetIds(initialState.allTouchedPlanetIds);
+    await otherStore.saveRevealedCoords(initialState.allRevealedCoords);
 
     const knownArtifacts: Map<ArtifactId, Artifact> = new Map();
 
@@ -632,7 +642,7 @@ class GameManager extends EventEmitter {
     for (const loc of possibleHomes) {
       if (initialState.allTouchedPlanetIds.includes(loc.hash)) {
         homeLocation = loc;
-        await persistentChunkStore.confirmHomeLocation(loc);
+        await otherStore.confirmHomeLocation(loc);
         break;
       }
     }
@@ -666,6 +676,7 @@ class GameManager extends EventEmitter {
       contractsAPI,
       initialState.contractConstants,
       persistentChunkStore,
+      otherStore,
       snarkHelper,
       homeLocation,
       useMockHash,
@@ -751,12 +762,12 @@ class GameManager extends EventEmitter {
         gameManager.entityStore.onTxIntent(tx);
       })
       .on(ContractsAPIEvent.TxSubmitted, (tx: Transaction) => {
-        gameManager.persistentChunkStore.onEthTxSubmit(tx);
+        gameManager.otherStore.onEthTxSubmit(tx);
         gameManager.onTxSubmit(tx);
       })
       .on(ContractsAPIEvent.TxConfirmed, async (tx: Transaction) => {
         if (!tx.hash) return; // this should never happen
-        gameManager.persistentChunkStore.onEthTxComplete(tx.hash);
+        gameManager.otherStore.onEthTxComplete(tx.hash);
 
         if (isUnconfirmedRevealTx(tx)) {
           await gameManager.hardRefreshPlanet(tx.intent.locationId);
@@ -832,7 +843,7 @@ class GameManager extends EventEmitter {
       .on(ContractsAPIEvent.TxErrored, async (tx: Transaction) => {
         gameManager.entityStore.clearUnconfirmedTxIntent(tx);
         if (tx.hash) {
-          gameManager.persistentChunkStore.onEthTxComplete(tx.hash);
+          gameManager.otherStore.onEthTxComplete(tx.hash);
         }
         gameManager.onTxReverted(tx);
       })
@@ -844,7 +855,7 @@ class GameManager extends EventEmitter {
         gameManager.setRadius(newRadius);
       });
 
-    const unconfirmedTxs = await persistentChunkStore.getUnconfirmedSubmittedEthTxs();
+    const unconfirmedTxs = await otherStore.getUnconfirmedSubmittedEthTxs();
     const confirmationQueue = new ThrottledConcurrentQueue({
       invocationIntervalMs: 1000,
       maxInvocationsPerIntervalMs: 10,
@@ -1590,6 +1601,9 @@ class GameManager extends EventEmitter {
   getChunkStore(): PersistentChunkStore {
     return this.persistentChunkStore;
   }
+  getOtherStore(): OtherStore {
+    return this.otherStore;
+  }
 
   /**
    * The perlin value at each coordinate determines the space type. There are four space
@@ -1912,7 +1926,7 @@ class GameManager extends EventEmitter {
       );
       this.terminal.current?.println('');
 
-      await this.persistentChunkStore.addHomeLocation(planet.location);
+      await this.otherStore.addHomeLocation(planet.location);
 
       const getArgs = async () => {
         const args = await this.snarkHelper.getInitArgs(
@@ -2012,7 +2026,7 @@ class GameManager extends EventEmitter {
    */
   async addAccount(coords: WorldCoords): Promise<boolean> {
     const loc: WorldLocation = this.locationFromCoords(coords);
-    await this.persistentChunkStore.addHomeLocation(loc);
+    await this.otherStore.addHomeLocation(loc);
     this.initMiningManager(coords);
     this.homeLocation = loc;
     return true;
@@ -3236,14 +3250,14 @@ class GameManager extends EventEmitter {
    * Load the serialized versions of all the plugins that this player has.
    */
   public async loadPlugins(): Promise<SerializedPlugin[]> {
-    return this.persistentChunkStore.loadPlugins();
+    return this.otherStore.loadPlugins();
   }
 
   /**
    * Overwrites all the saved plugins to equal the given array of plugins.
    */
   public async savePlugins(savedPlugins: SerializedPlugin[]): Promise<void> {
-    await this.persistentChunkStore.savePlugins(savedPlugins);
+    await this.otherStore.savePlugins(savedPlugins);
   }
 
   /**

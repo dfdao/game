@@ -18,6 +18,7 @@ import { TerminalHandle } from '../../Frontend/Views/Terminal';
 import { ContractConstants } from '../../_types/darkforest/api/ContractsAPITypes';
 import { AddressTwitterMap } from '../../_types/darkforest/api/UtilityServerAPITypes';
 import { tryGetAllTwitters } from '../Network/UtilityServerAPI';
+import OtherStore from '../Storage/OtherStore';
 import PersistentChunkStore from '../Storage/PersistentChunkStore';
 import { ContractsAPI } from './ContractsAPI';
 
@@ -61,7 +62,8 @@ export class InitialGameStateDownloader {
 
   async download(
     contractsAPI: ContractsAPI,
-    persistentChunkStore: PersistentChunkStore
+    persistentChunkStore: PersistentChunkStore,
+    otherStore: OtherStore
   ): Promise<InitialGameState> {
     /**
      * In development we use the same contract address every time we deploy,
@@ -69,10 +71,10 @@ export class InitialGameStateDownloader {
      */
     const storedTouchedPlanetIds = import.meta.env.DEV
       ? []
-      : await persistentChunkStore.getSavedTouchedPlanetIds();
+      : await otherStore.getSavedTouchedPlanetIds();
     const storedRevealedCoords = import.meta.env.DEV
       ? []
-      : await persistentChunkStore.getSavedRevealedCoords();
+      : await otherStore.getSavedRevealedCoords();
 
     this.terminal.printElement(<DarkForestTips tips={tips} />);
     this.terminal.newline();

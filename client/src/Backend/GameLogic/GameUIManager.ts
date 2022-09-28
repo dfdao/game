@@ -201,7 +201,7 @@ class GameUIManager extends EventEmitter {
     const uiEmitter = UIEmitter.getInstance();
 
     const uiManager = new GameUIManager(gameManager, terminalHandle);
-    const modalManager = await ModalManager.create(gameManager.getChunkStore());
+    const modalManager = await ModalManager.create(gameManager.getOtherStore());
 
     uiManager.setModalManager(modalManager);
 
