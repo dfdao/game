@@ -915,9 +915,65 @@ describe('DarkForestArtifacts', function () {
     // TODO ...
   });
 
-  describe('photoid cannon', function () {
-    // TODO ...
-  });
+  describe.only('photoid cannon', function () {
+    it('activates photoid cannon, increases move speed and rage, then burns photoid', async function () {
+      const to = LVL0_PLANET;
+      const dist = 50;
+      const forces = 500000;
 
-  // TODO: tests for photoid cannon and planetary shield?
+      const newTokenId = await createArtifact(
+        world.contract,
+        world.user1.address,
+        ZERO_PLANET,
+        ArtifactType.PhotoidCannon,
+        CollectionType.Artifact,
+        { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
+      );
+      await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, newTokenId);
+
+      // Confirm photoid cannon is activated.
+      const activateTx = await world.user1Core.activateArtifact(LVL3_SPACETIME_1.id, newTokenId, 0);
+      const activateRct = await activateTx.wait();
+      const block = await hre.ethers.provider.getBlock(activateRct.blockNumber);
+      expect(await world.user1Core.getArtifactActivationTimeOnPlanet(LVL3_SPACETIME_1.id)).to.equal(
+        block.timestamp
+      );
+      expect((await world.user1Core.getActiveArtifactOnPlanet(LVL3_SPACETIME_1.id)).id).to.equal(
+        newTokenId
+      );
+      await increaseBlockchainTime();
+
+      // Make a move that uses photoid cannon
+      await world.user1Core.move(
+        ...makeMoveArgs(LVL3_SPACETIME_1, to, dist, forces, 0, newTokenId)
+      );
+      const fromPlanet = await world.contract.planets(LVL3_SPACETIME_1.id);
+      const planetArrivals = await world.contract.getPlanetArrivals(to.id);
+      const arrival = planetArrivals[0];
+      const rangeBoosts = [100, 200, 200, 200, 200, 200];
+      // Divided by 100 to reflect effect on travel time.
+      const speedBoosts = [1, 5, 10, 15, 20, 25];
+
+      const expectedTime = Math.floor(
+        Math.floor((dist * 100) / speedBoosts[ArtifactRarity.Common]) / fromPlanet.speed.toNumber()
+      );
+
+      expect(arrival.arrivalTime.sub(arrival.departureTime).toNumber()).to.be.equal(expectedTime);
+
+      const range = (fromPlanet.range.toNumber() * rangeBoosts[ArtifactRarity.Common]) / 100;
+      const popCap = fromPlanet.populationCap.toNumber();
+      const decayFactor = Math.pow(2, dist / range);
+      const approxArriving = forces / decayFactor - 0.05 * popCap;
+
+      expect(planetArrivals[0].popArriving.toNumber()).to.be.above(approxArriving - 1000);
+      expect(planetArrivals[0].popArriving.toNumber()).to.be.below(approxArriving + 1000);
+
+      // Confirm photoid is burned
+      expect((await getArtifactsOnPlanet(world, LVL3_SPACETIME_1.id)).length).to.equal(0);
+      expect((await world.user1Core.getActiveArtifactOnPlanet(LVL3_SPACETIME_1.id)).id).to.equal(0);
+      expect(await world.user1Core.getArtifactActivationTimeOnPlanet(LVL3_SPACETIME_1.id)).to.equal(
+        0
+      );
+    });
+  });
 });

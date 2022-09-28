@@ -237,7 +237,11 @@ library LibGameUtils {
             });
     }
 
-    function timeDelayUpgrade(Artifact memory artifact) public pure returns (Upgrade memory) {
+    function timeDelayUpgrade(ArtifactProperties memory artifact)
+        public
+        pure
+        returns (Upgrade memory)
+    {
         if (artifact.artifactType == ArtifactType.PhotoidCannon) {
             uint256[6] memory range = [uint256(100), 200, 200, 200, 200, 200];
             uint256[6] memory speedBoosts = [uint256(100), 500, 1000, 1500, 2000, 2500];
@@ -464,7 +468,7 @@ library LibGameUtils {
         view
         returns (ArtifactProperties memory)
     {
-        console.log("searching for %s on %s", locationId, artifactId);
+        console.log("searching for %s on %s", artifactId, locationId);
         console.log(
             "%s artifacts on planet %s",
             gs().planetArtifacts[locationId].length,

@@ -16,6 +16,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
 import {ArrivalData, ArrivalType, Artifact, ArtifactProperties, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetEventMetadata, PlanetEventType, Upgrade} from "../DFTypes.sol";
+import "hardhat/console.sol";
 
 contract DFMoveFacet is WithStorage {
     modifier notPaused() {
@@ -121,11 +122,12 @@ contract DFMoveFacet is WithStorage {
 
         if (!_isSpaceshipMove(args)) {
             // TODO: Add back photoid
-            // (bool photoidPresent, Upgrade memory newTempUpgrade) = _checkPhotoid(args);
-            // if (photoidPresent) {
-            //     temporaryUpgrade = newTempUpgrade;
-            //     arrivalType = ArrivalType.Photoid;
-            // }
+            (bool photoidPresent, Upgrade memory newTempUpgrade) = _checkPhotoid(args);
+            if (photoidPresent) {
+                temporaryUpgrade = newTempUpgrade;
+                arrivalType = ArrivalType.Photoid;
+                console.log("doing photoid move");
+            }
         }
 
         _removeSpaceshipEffectsFromOriginPlanet(args);
@@ -152,6 +154,7 @@ contract DFMoveFacet is WithStorage {
             _transferPlanetSpaceJunkToPlayer(args);
         }
 
+        // updates oldLoc speed if photoid.
         LibGameUtils._buffPlanet(args.oldLoc, temporaryUpgrade);
 
         uint256 travelTime = effectiveDistTimesHundred / gs().planets[args.oldLoc].speed;
@@ -319,22 +322,22 @@ contract DFMoveFacet is WithStorage {
         the upgrade that should be applied to the origin
         planet.
      */
-    // function _checkPhotoid(DFPMoveArgs memory args)
-    //     private
-    //     returns (bool photoidPresent, Upgrade memory temporaryUpgrade)
-    // {
-    //     Artifact memory activeArtifactFrom = LibGameUtils.getActiveArtifact(args.oldLoc);
-    //     if (
-    //         activeArtifactFrom.isInitialized &&
-    //         activeArtifactFrom.artifactType == ArtifactType.PhotoidCannon &&
-    //         block.timestamp - activeArtifactFrom.lastActivated >=
-    //         gameConstants().PHOTOID_ACTIVATION_DELAY
-    //     ) {
-    //         photoidPresent = true;
-    //         LibArtifactUtils.deactivateArtifact(args.oldLoc);
-    //         temporaryUpgrade = LibGameUtils.timeDelayUpgrade(activeArtifactFrom);
-    //     }
-    // }
+    function _checkPhotoid(DFPMoveArgs memory args)
+        private
+        returns (bool photoidPresent, Upgrade memory temporaryUpgrade)
+    {
+        ArtifactProperties memory activeArtifactFrom = LibGameUtils.getActiveArtifact(args.oldLoc);
+        if (
+            activeArtifactFrom.artifactType == ArtifactType.PhotoidCannon &&
+            block.timestamp - gs().planetArtifactActivationTime[args.oldLoc] >=
+            gameConstants().PHOTOID_ACTIVATION_DELAY
+        ) {
+            photoidPresent = true;
+            console.log("photoid present? %s", LibGameUtils.getActiveArtifact(args.oldLoc).id > 0);
+            LibArtifactUtils.deactivateArtifact(args.oldLoc);
+            temporaryUpgrade = LibGameUtils.timeDelayUpgrade(activeArtifactFrom);
+        }
+    }
 
     function _abandonPlanet(DFPMoveArgs memory args)
         private
@@ -440,10 +443,12 @@ contract DFMoveFacet is WithStorage {
             carriedArtifactId: args.movedArtifactId,
             distance: args.actualDist
         });
-
-        if (args.movedArtifactId != 0) {
+        // Photoids are burned _checkPhotoid, so don't remove twice
+        ArtifactProperties memory artifact = DFArtifactFacet(address(this)).decodeArtifact(
+            args.movedArtifactId
+        );
+        if (args.movedArtifactId != 0 && artifact.artifactType != ArtifactType.PhotoidCannon) {
             LibGameUtils._takeArtifactOffPlanet(args.oldLoc, args.movedArtifactId);
-            // gs().artifactIdToVoyageId[args.movedArtifactId] = gs().planetEventsCount;
         }
     }
 

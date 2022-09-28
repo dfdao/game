@@ -16,7 +16,7 @@ import {
   SPAWN_PLANET_2,
 } from './utils/WorldConstants';
 
-describe.only('DarkForestSpaceShips', function () {
+describe('DarkForestSpaceShips', function () {
   let world: World;
 
   async function worldFixture() {

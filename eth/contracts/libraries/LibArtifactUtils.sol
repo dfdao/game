@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 // External contract imports
 import {DFArtifactFacet} from "../facets/DFArtifactFacet.sol";
+import {DFGetterFacet} from "../facets/DFGetterFacet.sol";
 
 // Library imports
 import {LibGameUtils} from "./LibGameUtils.sol";
@@ -176,43 +177,43 @@ library LibArtifactUtils {
         // artifact.activations++;
     }
 
-    function activateSpaceshipArtifact(
-        uint256 locationId,
-        uint256 artifactId,
-        Planet storage planet,
-        Artifact storage artifact
-    ) private {
-        if (artifact.artifactType == ArtifactType.ShipCrescent) {
-            require(artifact.activations == 0, "crescent cannot be activated more than once");
+    // function activateSpaceshipArtifact(
+    //     uint256 locationId,
+    //     uint256 artifactId,
+    //     Planet storage planet,
+    //     ArtifactProperties memory artifact
+    // ) private {
+    //     if (artifact.artifactType == ArtifactType.ShipCrescent) {
+    //         require(artifact.activations == 0, "crescent cannot be activated more than once");
 
-            require(
-                planet.planetType != PlanetType.SILVER_MINE,
-                "cannot turn a silver mine into a silver mine"
-            );
+    //         require(
+    //             planet.planetType != PlanetType.SILVER_MINE,
+    //             "cannot turn a silver mine into a silver mine"
+    //         );
 
-            require(planet.owner == address(0), "can only activate crescent on unowned planets");
-            require(planet.planetLevel >= 1, "planet level must be more than one");
+    //         require(planet.owner == address(0), "can only activate crescent on unowned planets");
+    //         require(planet.planetLevel >= 1, "planet level must be more than one");
 
-            artifact.lastActivated = block.timestamp;
-            artifact.lastDeactivated = block.timestamp;
+    //         artifact.lastActivated = block.timestamp;
+    //         artifact.lastDeactivated = block.timestamp;
 
-            if (planet.silver == 0) {
-                planet.silver = 1;
-                Planet memory defaultPlanet = LibGameUtils._defaultPlanet(
-                    locationId,
-                    planet.planetLevel,
-                    PlanetType.SILVER_MINE,
-                    planet.spaceType,
-                    gameConstants().TIME_FACTOR_HUNDREDTHS
-                );
+    //         if (planet.silver == 0) {
+    //             planet.silver = 1;
+    //             Planet memory defaultPlanet = LibGameUtils._defaultPlanet(
+    //                 locationId,
+    //                 planet.planetLevel,
+    //                 PlanetType.SILVER_MINE,
+    //                 planet.spaceType,
+    //                 gameConstants().TIME_FACTOR_HUNDREDTHS
+    //             );
 
-                planet.silverGrowth = defaultPlanet.silverGrowth;
-            }
+    //             planet.silverGrowth = defaultPlanet.silverGrowth;
+    //         }
 
-            planet.planetType = PlanetType.SILVER_MINE;
-            emit ArtifactActivated(msg.sender, locationId, artifactId);
-        }
-    }
+    //         planet.planetType = PlanetType.SILVER_MINE;
+    //         emit ArtifactActivated(msg.sender, locationId, artifactId);
+    //     }
+    // }
 
     function activateNonSpaceshipArtifact(
         uint256 locationId,
@@ -240,22 +241,9 @@ library LibArtifactUtils {
             "this artifact is not on this planet"
         );
 
-        // Unknown is the 0th one, Monolith is the 1st, and so on.
-        // TODO v0.6: consider photoid canon
-        uint256[10] memory artifactCooldownsHours = [uint256(24), 0, 0, 0, 0, 4, 4, 24, 24, 24];
-        // TODO: Cooldown is broken
-        // require(
-        //     artifact.lastDeactivated +
-        //         artifactCooldownsHours[uint256(artifact.artifactType)] *
-        //         60 *
-        //         60 <
-        //         block.timestamp,
-        //     "this artifact is on a cooldown"
-        // );
-
         bool shouldDeactivateAndBurn = false;
 
-        // artifact.lastActivated = block.timestamp;
+        gs().planetArtifactActivationTime[locationId] = block.timestamp;
         gs().planetActiveArtifact[locationId] = artifactId;
         emit ArtifactActivated(msg.sender, locationId, artifactId);
 
@@ -291,19 +279,13 @@ library LibArtifactUtils {
 
         if (shouldDeactivateAndBurn) {
             // artifact.lastDeactivated = block.timestamp; // immediately deactivate
-            gs().planetActiveArtifact[locationId] = 0; // immediately deactivate
+            gs().planetActiveArtifact[locationId] = 0; // immediately remove activate artifact
 
-            // artifact, owner
-            // TODO: We aren't updating the artifact beacuse there are no properties to change.
-            // DFArtifactFacet(address(this)).updateArtifact(artifact, address(this)); // save artifact state immediately, because _takeArtifactOffPlanet will access pull it from tokens contract
             emit ArtifactDeactivated(msg.sender, locationId, artifactId);
             // burn it after use. will be owned by contract but not on a planet anyone can control
             LibGameUtils._takeArtifactOffPlanet(locationId, artifactId);
-        } else {
-            // TODO: We aren't updating the artifact beacuse there are no properties to change.
-            // artifact, owner
-            // DFArtifactFacet(address(this)).updateArtifact(artifact, address(this));
         }
+
         console.log("buffing planet");
         // this is fine even tho some artifacts are immediately deactivated, because
         // those artifacts do not buff the planet.
@@ -331,15 +313,20 @@ library LibArtifactUtils {
         // LOL just pretend there is a wormhole.
         gs().planetWormholes[locationId] = 0;
         gs().planetActiveArtifact[locationId] = 0;
+        gs().planetArtifactActivationTime[locationId] = 0;
+
         emit ArtifactDeactivated(msg.sender, artifact.id, locationId);
-        // TODO: Figure out update artifact
-        // DFArtifactFacet(address(this)).updateArtifact(artifact, address(this));
 
         bool shouldBurn = artifact.artifactType == ArtifactType.PlanetaryShield ||
             artifact.artifactType == ArtifactType.PhotoidCannon;
         if (shouldBurn) {
+            console.log("burning %s", artifact.id);
+            console.log(
+                "artifact is on planet? %s",
+                DFGetterFacet(address(this)).artifactExistsOnPlanet(locationId, artifact.id)
+            );
             // burn it after use. will be owned by contract but not on a planet anyone can control
-            LibGameUtils._takeArtifactOffPlanet(artifact.id, locationId);
+            LibGameUtils._takeArtifactOffPlanet(locationId, artifact.id);
         }
 
         LibGameUtils._debuffPlanet(locationId, LibGameUtils._getUpgradeForArtifact(artifact));
