@@ -62,8 +62,8 @@ library LibArtifactUtils {
         ArtifactType shipType
     ) public returns (uint256) {
         require(shipType <= ArtifactType.ShipTitan && shipType >= ArtifactType.ShipMothership);
-
-        uint256 id = uint256(keccak256(abi.encodePacked(planetId, gs().miscNonce++)));
+        // require(gs().miscNonce < MAX UINT 128) but won't happen.
+        uint128 id = uint128(gs().miscNonce++);
         uint256 tokenId = DFArtifactFacet(address(this)).encodeArtifact(
             uint8(CollectionType.Spaceship),
             uint8(ArtifactRarity.Unknown),
@@ -72,7 +72,7 @@ library LibArtifactUtils {
         );
         // TODO: Use struct naming convetion for readability
         DFTCreateArtifactArgs memory createArtifactArgs = DFTCreateArtifactArgs(
-            tokenId,
+            tokenId + id, // makes each spaceship unique but keeps generic properties.
             msg.sender,
             planetId,
             ArtifactRarity.Unknown,
