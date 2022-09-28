@@ -36,7 +36,7 @@ import {
   ZERO_PLANET,
 } from './utils/WorldConstants';
 
-describe('DarkForestArtifacts', function () {
+describe.only('DarkForestArtifacts', function () {
   let world: World;
 
   async function worldFixture() {
@@ -59,7 +59,6 @@ describe('DarkForestArtifacts', function () {
     const gearShip = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
       (artifact) => artifact.artifactType === ArtifactType.ShipGear
     );
-    console.log(`gearId`, gearShip?.id._hex);
     const gearId = gearShip?.id;
     await world.user1Core.move(
       ...makeMoveArgs(SPAWN_PLANET_1, ARTIFACT_PLANET_1, 100, 0, 0, gearId)
@@ -664,7 +663,7 @@ describe('DarkForestArtifacts', function () {
       }
     });
 
-    it("shouldn't transfer energy to planets that aren't owned by the sender", async function () {
+    it.only("shouldn't transfer energy to planets that aren't owned by the sender", async function () {
       const from = SPAWN_PLANET_1;
       const to = LVL0_PLANET;
 
@@ -692,9 +691,23 @@ describe('DarkForestArtifacts', function () {
 
       // activate the wormhole to the 2nd planet
       await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, artifactId);
+      console.log('her?');
+
+      // Move gear bc too many artifacts on SPAWN_PLANET_1, so can't receive wormhole.
+      const gearShip = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (artifact) => artifact.artifactType === ArtifactType.ShipGear
+      );
+      console.log(`gearId`);
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET, 1000, 100, 0, gearShip?.id)
+      );
+
+      increaseBlockchainTime();
+
       await world.user1Core.move(
         ...makeMoveArgs(LVL3_SPACETIME_1, SPAWN_PLANET_1, 0, 500000, 0, artifactId)
       );
+
       await world.user1Core.activateArtifact(from.id, artifactId, to.id);
 
       const dist = 50;
@@ -779,7 +792,7 @@ describe('DarkForestArtifacts', function () {
       expect(planetAfterBloomFilter.population).to.eq(planetAfterBloomFilter.populationCap);
       expect(planetAfterBloomFilter.silver).to.eq(planetAfterBloomFilter.silverCap);
 
-      const artifactsOnRipAfterBurn = await world.contract.getArtifactsOnPlanet(SPAWN_PLANET_1.id);
+      const artifactsOnRipAfterBurn = await getArtifactsOnPlanet(world, SPAWN_PLANET_1.id);
 
       // bloom filter is immediately deactivated after activation
       expect(artifactsOnRipAfterBurn.length).to.equal(0);
@@ -915,7 +928,7 @@ describe('DarkForestArtifacts', function () {
     // TODO ...
   });
 
-  describe.only('photoid cannon', function () {
+  describe('photoid cannon', function () {
     it('activates photoid cannon, increases move speed and rage, then burns photoid', async function () {
       const to = LVL0_PLANET;
       const dist = 50;

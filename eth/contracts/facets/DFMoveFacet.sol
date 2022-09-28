@@ -425,7 +425,7 @@ contract DFMoveFacet is WithStorage {
             planet.populationCap
         );
         bool isSpaceship = LibArtifactUtils.isSpaceship(
-            gs().artifacts[args.movedArtifactId].artifactType
+            DFArtifactFacet(address(this)).decodeArtifact(args.movedArtifactId).artifactType
         );
         // space ship moves are implemented as 0-energy moves
         require(popArriving > 0 || isSpaceship, "Not enough forces to make move");

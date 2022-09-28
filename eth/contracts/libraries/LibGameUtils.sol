@@ -413,6 +413,7 @@ library LibGameUtils {
 
     function _takeArtifactOffPlanet(uint256 locationId, uint256 artifactId) public {
         uint256 artifactsOnThisPlanet = gs().planetArtifacts[locationId].length;
+        console.log("%s artifacts on %s", artifactsOnThisPlanet, locationId);
         bool hadTheArtifact = false;
 
         for (uint256 i = 0; i < artifactsOnThisPlanet; i++) {
