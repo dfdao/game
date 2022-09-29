@@ -1,6 +1,20 @@
+import type { Abstract } from '@dfdao/types';
 import { Chunk, Rectangle, WorldCoords, WorldLocation } from '@dfdao/types';
 import { Map } from 'yjs';
-import { BucketId, ChunkId } from '../../_types/darkforest/api/ChunkStoreTypes';
+
+/**
+ * one of "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+ */
+type BucketId = Abstract<string, 'BucketId'>;
+type ChunkId = Abstract<string, 'ChunkId'>;
+
+/**
+ * Abstract interface shared between different types of chunk stores. Currently we have one that
+ * writes to IndexedDB, and one that simply throws away the data.
+ */
+export interface ChunkStore {
+  hasMinedChunk: (chunkFootprint: Rectangle) => boolean;
+}
 
 /**
  * Deterministically assigns a bucket ID to a rectangle, based on its position and size in the

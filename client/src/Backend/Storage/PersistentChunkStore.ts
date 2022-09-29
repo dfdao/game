@@ -2,8 +2,8 @@ import { Chunk, DiagnosticUpdater, EthAddress, Rectangle } from '@dfdao/types';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { Doc, Map } from 'yjs';
 import { MAX_CHUNK_SIZE } from '../../Frontend/Utils/constants';
-import { ChunkStore } from '../../_types/darkforest/api/ChunkStoreTypes';
 import {
+  ChunkStore,
   getChunkKey,
   getChunkOfSideLengthContainingPoint,
   processChunkInMap,
