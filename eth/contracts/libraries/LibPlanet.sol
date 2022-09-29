@@ -3,16 +3,18 @@ pragma solidity ^0.8.0;
 
 // Contract imports
 import {DFVerifierFacet} from "../facets/DFVerifierFacet.sol";
+import {DFArtifactFacet} from "../facets/DFArtifactFacet.sol";
 
 // Library imports
 import {LibGameUtils} from "./LibGameUtils.sol";
 import {LibLazyUpdate} from "./LibLazyUpdate.sol";
+import {LibArtifactUtils} from "./LibArtifactUtils.sol";
 
 // Storage imports
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
 // Type imports
-import {Artifact, ArtifactType, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetType, RevealedCoords, SpaceType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
+import {ArtifactType, ArtifactProperties, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetType, RevealedCoords, SpaceType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 library LibPlanet {
@@ -286,7 +288,8 @@ library LibPlanet {
         }
 
         for (uint256 i = 0; i < artifactsToAdd.length; i++) {
-            Artifact memory artifact = gs().artifacts[artifactsToAdd[i]];
+            // artifactsToAdd[i]
+            ArtifactProperties memory artifact = LibArtifactUtils.decodeArtifact(artifactsToAdd[i]);
 
             planet = applySpaceshipArrive(artifact, planet);
         }
@@ -296,7 +299,7 @@ library LibPlanet {
         return (planet, eventsToRemove, artifactsToAdd);
     }
 
-    function applySpaceshipArrive(Artifact memory artifact, Planet memory planet)
+    function applySpaceshipArrive(ArtifactProperties memory artifact, Planet memory planet)
         public
         pure
         returns (Planet memory)

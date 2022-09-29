@@ -309,11 +309,15 @@ export async function deployAndCut(
   return [diamond, diamondInit, initReceipt] as const;
 }
 
-export async function deployGetterFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
+export async function deployGetterFacet(
+  {},
+  { LibArtifactUtils }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
   const factory = await hre.ethers.getContractFactory('DFGetterFacet', {
-    // libraries: {
-    //   LibGameUtils,
-    // },
+    libraries: {
+      LibArtifactUtils,
+    },
   });
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
@@ -411,6 +415,7 @@ export async function deployLibraries({}, hre: HardhatRuntimeEnvironment) {
     libraries: {
       LibGameUtils: LibGameUtils.address,
       LibLazyUpdate: LibLazyUpdate.address,
+      LibArtifactUtils: LibArtifactUtils.address,
     },
   });
   const LibPlanet = await LibPlanetFactory.deploy();

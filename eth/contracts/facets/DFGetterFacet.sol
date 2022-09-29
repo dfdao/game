@@ -7,12 +7,13 @@ import {DFArtifactFacet} from "./DFArtifactFacet.sol";
 // Library imports
 import {LibPermissions} from "../libraries/LibPermissions.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
+import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 
 // Storage imports
 import {WithStorage, SnarkConstants, GameConstants} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {RevealedCoords, ArtifactProperties, ArrivalData, Planet, PlanetEventType, PlanetEventMetadata, PlanetDefaultStats, PlanetData, Player, ArtifactWithMetadata, Upgrade, Artifact} from "../DFTypes.sol";
+import {RevealedCoords, ArtifactProperties, ArrivalData, Planet, PlanetEventType, PlanetEventMetadata, PlanetDefaultStats, PlanetData, Player, ArtifactWithMetadata, Upgrade} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 contract DFGetterFacet is WithStorage {
@@ -325,7 +326,7 @@ contract DFGetterFacet is WithStorage {
     //     view
     //     returns (ArtifactWithMetadata memory ret)
     // {
-    //     Artifact memory artifact = DFArtifactFacet(address(this)).getArtifact(artifactId);
+    //     Artifact memory artifact = LibArtifactUtils(address(this)).decodeArtifact(artifactId);
 
     //     address owner;
 
@@ -355,7 +356,7 @@ contract DFGetterFacet is WithStorage {
         uint256[] memory artifactIds = gs().planetArtifacts[locationId];
         ret = new ArtifactProperties[](artifactIds.length);
         for (uint256 i = 0; i < artifactIds.length; i++) {
-            ret[i] = DFArtifactFacet(address(this)).decodeArtifact(artifactIds[i]);
+            ret[i] = LibArtifactUtils.decodeArtifact(artifactIds[i]);
         }
         return ret;
     }
@@ -379,7 +380,7 @@ contract DFGetterFacet is WithStorage {
         returns (ArtifactProperties memory ret)
     {
         uint256 artifactId = gs().planetActiveArtifact[locationId];
-        return DFArtifactFacet(address(this)).getArtifact(artifactId);
+        return LibArtifactUtils.decodeArtifact(artifactId);
     }
 
     // function bulkGetPlanetArtifacts(uint256[] calldata planetIds)
@@ -405,7 +406,7 @@ contract DFGetterFacet is WithStorage {
     //     ret = new ArtifactWithMetadata[](ids.length);
 
     //     for (uint256 i = 0; i < ids.length; i++) {
-    //         Artifact memory artifact = DFArtifactFacet(address(this)).getArtifact(ids[i]);
+    //         Artifact memory artifact = LibArtifactUtils(address(this)).decodeArtifact(ids[i]);
 
     //         address owner;
 
@@ -443,7 +444,7 @@ contract DFGetterFacet is WithStorage {
     //     ret = new ArtifactWithMetadata[](endIdx - startIdx);
 
     //     for (uint256 i = startIdx; i < endIdx; i++) {
-    //         Artifact memory artifact = DFArtifactFacet(address(this)).getArtifactAtIndex(i);
+    //         Artifact memory artifact = LibArtifactUtils(address(this)).decodeArtifactAtIndex(i);
     //         address owner = address(0);
 
     //         try DFArtifactFacet(address(this)).ownerOf(artifact.id) returns (address addr) {

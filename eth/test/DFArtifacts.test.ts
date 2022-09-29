@@ -79,7 +79,7 @@ describe('DarkForestArtifacts', function () {
     world = await loadFixture(worldFixture);
   });
 
-  describe.only('it tests basic artifact actions', function () {
+  describe('it tests basic artifact actions', function () {
     it('logs bits for artifact', async function () {
       // Must be valid options
       const _collectionType = '0x01';
@@ -93,7 +93,7 @@ describe('DarkForestArtifacts', function () {
         _biome
       );
       const { collectionType, rarity, planetBiome, artifactType } =
-        await world.contract.decodeArtifact(res);
+        await world.contract.getArtifact(res);
       expect(collectionType).to.equal(Number(_collectionType));
       expect(rarity).to.equal(Number(_rarity));
       expect(planetBiome).to.equal(Number(_biome));
@@ -104,7 +104,7 @@ describe('DarkForestArtifacts', function () {
       const _collectionType = '0x02'; // TODO: add CollectionType to @dfdao/types
       const _artifactType = ArtifactType.ShipGear;
       const res = await world.contract.encodeArtifact(_collectionType, 0, _artifactType, 0);
-      const { collectionType, artifactType } = await world.contract.decodeArtifact(res);
+      const { collectionType, artifactType } = await world.contract.getArtifact(res);
       expect(collectionType).to.equal(Number(_collectionType));
       expect(artifactType).to.equal(Number(_artifactType));
     });
@@ -123,7 +123,7 @@ describe('DarkForestArtifacts', function () {
 
       await world.user1Core.activateArtifact(ARTIFACT_PLANET_1.id, artifactId, 0);
 
-      prettyPrintToken(await world.user1Core.decodeArtifact(artifactId));
+      prettyPrintToken(await world.user1Core.getArtifact(artifactId));
 
       // artifact and gear should be on planet. Gear is 0 and Artifact is 1.
       const artifactsOnPlanet = await getArtifactsOnPlanet(world, ARTIFACT_PLANET_1.id);
@@ -625,7 +625,7 @@ describe('DarkForestArtifacts', function () {
           CollectionType.Artifact,
           { rarity: artifactRarities[i] as ArtifactRarity, biome: Biome.OCEAN }
         );
-        prettyPrintToken(await world.contract.decodeArtifact(artifactId));
+        prettyPrintToken(await world.contract.getArtifact(artifactId));
 
         activateAndConfirm(world.user1Core, from.id, artifactId, to.id);
 
@@ -786,7 +786,7 @@ describe('DarkForestArtifacts', function () {
         CollectionType.Artifact,
         { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
       );
-      prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
+      prettyPrintToken(await world.contract.getArtifact(newTokenId));
 
       await increaseBlockchainTime(); // so that trading post can fill up to max energy
       await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, newTokenId);
@@ -834,7 +834,7 @@ describe('DarkForestArtifacts', function () {
         { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
       );
 
-      prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
+      prettyPrintToken(await world.contract.getArtifact(newTokenId));
       await increaseBlockchainTime(); // so that trading post can fill up to max energy
       await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, newTokenId);
       await world.user1Core.move(
@@ -942,7 +942,7 @@ describe('DarkForestArtifacts', function () {
         CollectionType.Artifact,
         { rarity: ArtifactRarity.Rare as ArtifactRarity, biome: Biome.OCEAN }
       );
-      prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
+      prettyPrintToken(await world.contract.getArtifact(newTokenId));
 
       const planetBeforeActivation = await world.user1Core.planets(LVL3_SPACETIME_1.id);
       await activateAndConfirm(world.user1Core, LVL3_SPACETIME_1.id, newTokenId);
@@ -987,7 +987,7 @@ describe('DarkForestArtifacts', function () {
           CollectionType.Artifact,
           { rarity: artifactRarities[i] as ArtifactRarity, biome: Biome.OCEAN }
         );
-        prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
+        prettyPrintToken(await world.contract.getArtifact(newTokenId));
 
         await world.user1Core.depositArtifact(LVL6_SPACETIME.id, newTokenId);
 
