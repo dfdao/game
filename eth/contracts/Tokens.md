@@ -121,7 +121,7 @@ In hex:
 
 > | 0x02 | 0x00 | 0x0a | 0x00 | ... | uniqueId (16 chunks) |
 
-A Spaceship's tokenId = `uint128 tokenInfo` + `uint128 uniqueId`
+A Spaceship's tokenId = `<uint128 tokenInfo><uint128 uniqueId>`
 
 ### Minting
 
@@ -152,7 +152,54 @@ We could easily turn off this check if we wanted players to be able to buy and s
 
 Every Artifact and one Spaceship (Crescent) must be activated on a planet to be used.
 
-## Deactiving
+The fungible nature of Artifacts creates a challenge: How do we associate data with specific artifacts? How do I know when my
+Epic Monolith is activated?
+
+There are new data structures in `LibStorage.sol` to handle this information. Because Artifact
+activations are always associated with planets, we can store the needed information on the relevant planets
+instead of on the Artifacts themselves.
+
+```js
+    mapping(uint256 => uint256[]) planetArtifacts;
+    mapping(uint256 => uint256) planetActiveArtifact;
+    mapping(uint256 => uint256) planetWormholes;
+    mapping(uint256 => uint256) planetArtifactActivationTime;
+```
+
+Lets say I move my Epic Monolith with id `0xMonolith` to planet A with id `0xA`.
+Now `planetArtifacts[0xA]` includes `0xMonolith`.
+Now, I activate my Monolith. The following occurs:
+
+- `planetActiveArtifact[0xA] = 0xMonolith`.
+- `planetArtifactActivationTime[0xA] = block.timestamp`
+
+If I had a Wormhole instead of a Monolith, I would also update `planetWormholes`. Lets say I want a
+wormhole from `0xA` to `0xB`.
+
+- `planetWormholes[0xA] = 0xB`
+
+## Deactivating
+
+If I deactivate my artifact from `0xA`, we simply undo these maneuvers:
+
+- `planetActiveArtifact[0xA] = 0`.
+- `planetArtifactActivationTime[0xA] = 0`
+
+For the wormhole, we do the same:
+
+- `planetWormholes[0xA] = 0`
+
+## Simulteanous Activate and Deactivate
+
+Some Bloom Filters (Artifacts) and Crescents (Spaceships) are burned on use.
+
+All we do is make sure that we call the Activate and Deactivate functions in the same transaction.
+
+## Photoid
+
+For Photoid cannons, we simply apply the Photoid move if the current time is greater than the time
+activated + the Photoid activation delay. If someone captures the planet, the activation time
+doesn't change.
 
 # Next Steps
 
