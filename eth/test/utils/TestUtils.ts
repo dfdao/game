@@ -21,13 +21,14 @@ import {
 import { bigIntFromKey } from '@dfdao/whitelist';
 import { mine, time } from '@nomicfoundation/hardhat-network-helpers';
 import bigInt from 'big-integer';
+import { expect } from 'chai';
 import { BigNumber, BigNumberish, constants } from 'ethers';
+import hre from 'hardhat';
 // @ts-ignore
 import * as snarkjs from 'snarkjs';
 import { TestLocation } from './TestLocation';
 import { World } from './TestWorld';
 import { ARTIFACT_PLANET_1, initializers, LARGE_INTERVAL } from './WorldConstants';
-
 const {
   PLANETHASH_KEY,
   SPACETYPE_KEY,
@@ -351,4 +352,23 @@ export async function createArtifact(
   });
 
   return tokenId;
+}
+
+export async function testDeactivate(world: World, locationId: BigNumberish) {
+  expect((await getArtifactsOnPlanet(world, locationId)).length).to.equal(0);
+  expect((await world.contract.getActiveArtifactOnPlanet(locationId)).id).to.equal(0);
+  expect(await world.contract.getArtifactActivationTimeOnPlanet(locationId)).to.equal(0);
+}
+
+export async function activateAndConfirm(
+  contract: DarkForest,
+  locationId: BigNumber,
+  tokenId: BigNumberish,
+  wormHoleTo?: BigNumberish
+) {
+  const activateTx = await contract.activateArtifact(locationId, tokenId, wormHoleTo || 0);
+  const activateRct = await activateTx.wait();
+  const block = await hre.ethers.provider.getBlock(activateRct.blockNumber);
+  expect(await contract.getArtifactActivationTimeOnPlanet(locationId)).to.equal(block.timestamp);
+  expect((await contract.getActiveArtifactOnPlanet(locationId)).id).to.equal(tokenId);
 }

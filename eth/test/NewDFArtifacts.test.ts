@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import hre from 'hardhat';
 import { TestLocation } from './utils/TestLocation';
 import {
+  activateAndConfirm,
   conquerUnownedPlanet,
   createArtifact,
   getArtifactsOnPlanet,
@@ -16,6 +17,7 @@ import {
   makeInitArgs,
   makeMoveArgs,
   prettyPrintToken,
+  testDeactivate,
   user1MintArtifactPlanet,
   ZERO_ADDRESS,
 } from './utils/TestUtils';
@@ -602,10 +604,8 @@ describe('DarkForestArtifacts', function () {
           { rarity: artifactRarities[i] as ArtifactRarity, biome: Biome.OCEAN }
         );
         prettyPrintToken(await world.contract.decodeArtifact(artifactId));
-        await world.user1Core.activateArtifact(from.id, artifactId, to.id);
-        // Confirm womrhole is active
-        const activeArtifact = await world.user1Core.getActiveArtifactOnPlanet(from.id);
-        expect(activeArtifact.id).to.equal(artifactId);
+
+        activateAndConfirm(world.user1Core, from.id, artifactId, to.id);
 
         // move from planet with artifact to its wormhole destination
         await increaseBlockchainTime();
@@ -853,8 +853,7 @@ describe('DarkForestArtifacts', function () {
 
       // black domain is no longer on a planet (is instead owned by contract), and so is effectively
       // burned
-      const artifactsOnRipAfterBurn = await world.contract.getArtifactsOnPlanet(to.id);
-      expect(artifactsOnRipAfterBurn.length).to.equal(0);
+      testDeactivate(world, to.id);
 
       // check the planet is destroyed
       const newPlanet = await world.user1Core.planets(to.id);
@@ -924,17 +923,9 @@ describe('DarkForestArtifacts', function () {
       prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
 
       const planetBeforeActivation = await world.user1Core.planets(LVL3_SPACETIME_1.id);
-      const activateTx = await world.user1Core.activateArtifact(LVL3_SPACETIME_1.id, newTokenId, 0);
-      const activateRct = await activateTx.wait();
+      await activateAndConfirm(world.user1Core, LVL3_SPACETIME_1.id, newTokenId);
       const planetAfterActivation = await world.user1Core.planets(LVL3_SPACETIME_1.id);
 
-      const block = await hre.ethers.provider.getBlock(activateRct.blockNumber);
-      expect(await world.user1Core.getArtifactActivationTimeOnPlanet(LVL3_SPACETIME_1.id)).to.equal(
-        block.timestamp
-      );
-      expect((await world.user1Core.getActiveArtifactOnPlanet(LVL3_SPACETIME_1.id)).id).to.equal(
-        newTokenId
-      );
       // Boosts are applied
       expect(planetBeforeActivation.defense).to.be.lessThan(planetAfterActivation.defense);
       expect(planetBeforeActivation.range).to.be.greaterThan(planetAfterActivation.range);
@@ -979,15 +970,7 @@ describe('DarkForestArtifacts', function () {
         await world.user1Core.depositArtifact(LVL6_SPACETIME.id, newTokenId);
 
         // Confirm photoid cannon is activated.
-        const activateTx = await world.user1Core.activateArtifact(LVL6_SPACETIME.id, newTokenId, 0);
-        const activateRct = await activateTx.wait();
-        const block = await hre.ethers.provider.getBlock(activateRct.blockNumber);
-        expect(await world.user1Core.getArtifactActivationTimeOnPlanet(LVL6_SPACETIME.id)).to.equal(
-          block.timestamp
-        );
-        expect((await world.user1Core.getActiveArtifactOnPlanet(LVL6_SPACETIME.id)).id).to.equal(
-          newTokenId
-        );
+        await activateAndConfirm(world.user1Core, LVL6_SPACETIME.id, newTokenId);
 
         await increaseBlockchainTime();
 
@@ -1014,11 +997,7 @@ describe('DarkForestArtifacts', function () {
         expect(planetArrivals[0].popArriving.toNumber()).to.be.below(approxArriving + 1000);
 
         // Confirm photoid is burned
-        expect((await getArtifactsOnPlanet(world, LVL6_SPACETIME.id)).length).to.equal(0);
-        expect((await world.user1Core.getActiveArtifactOnPlanet(LVL6_SPACETIME.id)).id).to.equal(0);
-        expect(await world.user1Core.getArtifactActivationTimeOnPlanet(LVL6_SPACETIME.id)).to.equal(
-          0
-        );
+        await testDeactivate(world, LVL6_SPACETIME.id);
       }
     });
   });
