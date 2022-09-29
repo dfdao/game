@@ -25,6 +25,14 @@ describe('DarkForestWhitelist', function () {
     world = await loadFixture(worldFixture);
   });
 
+  it('always indicates that the admin is whitelisted', async function () {
+    expect(await world.contract.isWhitelisted(world.deployer.address)).to.eq(true);
+  });
+
+  it('indicates that an address is not whitelisted before it uses a key', async function () {
+    expect(await world.contract.isWhitelisted(world.user1.address)).to.eq(false);
+  });
+
   it('allows a user to register with a valid key', async function () {
     const whitelistArgs = await makeWhitelistArgs(keys[0], world.user1.address as EthAddress);
     await world.user1Core.useKey(...whitelistArgs);
