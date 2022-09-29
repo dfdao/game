@@ -2,8 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Contract imports
-import {ERC1155BaseInternal} from "@solidstate/contracts/token/ERC1155/base/ERC1155Base.sol";
-import {ERC1155EnumerableInternal} from "@solidstate/contracts/token/ERC1155/enumerable/ERC1155EnumerableInternal.sol";
+import {SolidStateERC1155} from "@solidstate/contracts/token/ERC1155/SolidStateERC1155.sol";
 import {DFVerifierFacet} from "./DFVerifierFacet.sol";
 import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
 import {DFToken} from "../DFToken.sol";
@@ -18,11 +17,11 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {Artifact, ArtifactType, DFTCreateArtifactArgs, DFPFindArtifactArgs, ArtifactProperties} from "../DFTypes.sol";
+import {Artifact, ArtifactRarity, ArtifactType, Biome, CollectionType, DFTCreateArtifactArgs, DFPFindArtifactArgs, ArtifactProperties, TokenInfo} from "../DFTypes.sol";
 
 import "hardhat/console.sol";
 
-contract DFArtifactFacet is WithStorage, DFToken {
+contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
     event PlanetProspected(address player, uint256 loc);
     event ArtifactFound(address player, uint256 artifactId, uint256 loc);
     event ArtifactDeposited(address player, uint256 artifactId, uint256 loc);
@@ -96,9 +95,8 @@ contract DFArtifactFacet is WithStorage, DFToken {
         return newArtifact;
     }
 
-    function getArtifact(uint256 tokenId) public view returns (ArtifactProperties memory) {
-        return DFToken.decodeArtifact(tokenId);
-        //return gs().artifacts[tokenId];
+    function getArtifact(uint256 tokenId) public pure returns (ArtifactProperties memory) {
+        return decodeArtifact(tokenId);
     }
 
     // function getArtifactAtIndex(uint256 idx) public view returns (Artifact memory) {
@@ -313,5 +311,80 @@ contract DFArtifactFacet is WithStorage, DFToken {
                 require(msg.sender == gs().diamondAddress, "player cannot transfer a Spaceship");
             }
         }
+    }
+
+    /**
+     * @notice set per-token metadata URI
+     * @param tokenId token whose metadata URI to set
+     * @param tokenURI per-token URI
+     */
+    function setTokenURI(uint256 tokenId, string memory tokenURI) public {
+        _setTokenURI(tokenId, tokenURI);
+    }
+
+    /**
+     * @notice calculate amount of bits to shift left
+     * @param index number of 1 byte words to shift from left
+     * @return shift length of left shift
+     */
+    function calcBitShift(uint8 index) internal pure returns (uint8) {
+        uint8 maxVal = 32;
+
+        require(index <= maxVal, "shift index is too high");
+        require(index > 0, "shift index is too low");
+
+        uint256 bin = 8;
+        uint256 shift = 256;
+        return uint8(shift - (bin * index));
+    }
+
+    /**
+     * @notice Create the collection ID for a given artifact
+     * @param _collectionType type of artifact
+     * @param _rarity rarity of artifact
+     * @param _artifactType of artifact
+     * @param _biome of artifact
+     * @notice this is not a struct because I can't figure out how to bit shift a uint in a struct.
+     */
+    function encodeArtifact(
+        uint256 _collectionType,
+        uint256 _rarity,
+        uint256 _artifactType,
+        uint256 _biome
+    ) public pure returns (uint256) {
+        uint256 collectionType = _collectionType << calcBitShift(uint8(TokenInfo.CollectionType));
+        uint256 rarity = _rarity << calcBitShift(uint8(TokenInfo.ArtifactRarity));
+        uint256 artifactType = _artifactType << calcBitShift(uint8(TokenInfo.ArtifactType));
+        uint256 biome = _biome << calcBitShift(uint8(TokenInfo.Biome));
+        return collectionType + rarity + artifactType + biome;
+    }
+
+    /**
+     * @notice Fetch the ArtifactProperties for the given id
+     * @param artifactId type of artifact
+     */
+    function decodeArtifact(uint256 artifactId) public pure returns (ArtifactProperties memory) {
+        bytes memory _b = abi.encodePacked(artifactId);
+        // 0 is left most element. 0 is given the property Unknown in TokenInfo.
+
+        // Note: Bit shifting requires an index greater than zero. This is why the TokenInfo has
+        // Unknown as the zero property, so calcBitShift(TokenInfo.Level) is correct.
+        // As a consequence, we need to
+        // offset fetching the relevant byte from the artifactId by 1.
+        // However
+        uint8 collectionType = uint8(_b[uint8(TokenInfo.CollectionType) - 1]);
+        uint8 rarity = uint8(_b[uint8(TokenInfo.ArtifactRarity) - 1]);
+        uint8 artifactType = uint8(_b[uint8(TokenInfo.ArtifactType) - 1]);
+        uint8 biome = uint8(_b[uint8(TokenInfo.Biome) - 1]);
+
+        ArtifactProperties memory a = ArtifactProperties({
+            id: artifactId,
+            collectionType: CollectionType(collectionType),
+            rarity: ArtifactRarity(rarity),
+            artifactType: ArtifactType(artifactType),
+            planetBiome: Biome(biome)
+        });
+
+        return a;
     }
 }
