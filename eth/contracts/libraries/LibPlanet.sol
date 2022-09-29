@@ -349,7 +349,6 @@ library LibPlanet {
 
         for (uint256 i = 0; i < 12; i++) {
             if (artifactIdsToAddToPlanet[i] != 0) {
-                gs().artifactIdToVoyageId[artifactIdsToAddToPlanet[i]] = 0;
                 LibGameUtils._putArtifactOnPlanet(location, artifactIdsToAddToPlanet[i]);
             }
         }

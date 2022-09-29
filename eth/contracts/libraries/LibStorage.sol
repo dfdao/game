@@ -38,8 +38,6 @@ struct GameStorage {
     uint256 miscNonce;
     mapping(uint256 => Planet) planets;
     mapping(uint256 => RevealedCoords) revealedCoords;
-    mapping(uint256 => uint256) artifactIdToPlanetId;
-    mapping(uint256 => uint256) artifactIdToVoyageId;
     mapping(address => Player) players;
     // maps location id to planet events array
     mapping(uint256 => PlanetEventMetadata[]) planetEvents;

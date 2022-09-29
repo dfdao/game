@@ -78,14 +78,6 @@ contract DFGetterFacet is WithStorage {
         return gs().revealedCoords[key];
     }
 
-    function artifactIdToPlanetId(uint256 key) public view returns (uint256) {
-        return gs().artifactIdToPlanetId[key];
-    }
-
-    function artifactIdToVoyageId(uint256 key) public view returns (uint256) {
-        return gs().artifactIdToVoyageId[key];
-    }
-
     function planetEvents(uint256 key) public view returns (PlanetEventMetadata[] memory) {
         return gs().planetEvents[key];
     }
@@ -406,7 +398,7 @@ contract DFGetterFacet is WithStorage {
     //     ret = new ArtifactWithMetadata[](ids.length);
 
     //     for (uint256 i = 0; i < ids.length; i++) {
-    //         Artifact memory artifact = LibArtifactUtils(address(this)).decodeArtifact(ids[i]);
+    //         ArtifactProperties memory artifact = LibArtifactUtils.decodeArtifact(ids[i]);
 
     //         address owner;
 
