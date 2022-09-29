@@ -169,7 +169,7 @@ library LibArtifactUtils {
 
         if (isSpaceship(artifact.artifactType)) {
             // TODO: fix Crescent functionality
-            // activateSpaceshipArtifact(locationId, artifactId, planet, artifact);
+            activateSpaceshipArtifact(locationId, artifactId, planet, artifact);
         } else {
             activateNonSpaceshipArtifact(locationId, artifactId, wormholeTo, planet, artifact);
         }
@@ -177,43 +177,46 @@ library LibArtifactUtils {
         // artifact.activations++;
     }
 
-    // function activateSpaceshipArtifact(
-    //     uint256 locationId,
-    //     uint256 artifactId,
-    //     Planet storage planet,
-    //     ArtifactProperties memory artifact
-    // ) private {
-    //     if (artifact.artifactType == ArtifactType.ShipCrescent) {
-    //         require(artifact.activations == 0, "crescent cannot be activated more than once");
+    function activateSpaceshipArtifact(
+        uint256 locationId,
+        uint256 artifactId,
+        Planet storage planet,
+        ArtifactProperties memory artifact
+    ) private {
+        if (artifact.artifactType == ArtifactType.ShipCrescent) {
+            // Burn the goddam crescent
+            // require(artifact.activations == 0, "crescent cannot be activated more than once");
 
-    //         require(
-    //             planet.planetType != PlanetType.SILVER_MINE,
-    //             "cannot turn a silver mine into a silver mine"
-    //         );
+            require(
+                planet.planetType != PlanetType.SILVER_MINE,
+                "cannot turn a silver mine into a silver mine"
+            );
 
-    //         require(planet.owner == address(0), "can only activate crescent on unowned planets");
-    //         require(planet.planetLevel >= 1, "planet level must be more than one");
+            require(planet.owner == address(0), "can only activate crescent on unowned planets");
+            require(planet.planetLevel >= 1, "planet level must be more than zero");
 
-    //         artifact.lastActivated = block.timestamp;
-    //         artifact.lastDeactivated = block.timestamp;
+            if (planet.silver == 0) {
+                planet.silver = 1;
+                Planet memory defaultPlanet = LibGameUtils._defaultPlanet(
+                    locationId,
+                    planet.planetLevel,
+                    PlanetType.SILVER_MINE,
+                    planet.spaceType,
+                    gameConstants().TIME_FACTOR_HUNDREDTHS
+                );
 
-    //         if (planet.silver == 0) {
-    //             planet.silver = 1;
-    //             Planet memory defaultPlanet = LibGameUtils._defaultPlanet(
-    //                 locationId,
-    //                 planet.planetLevel,
-    //                 PlanetType.SILVER_MINE,
-    //                 planet.spaceType,
-    //                 gameConstants().TIME_FACTOR_HUNDREDTHS
-    //             );
+                planet.silverGrowth = defaultPlanet.silverGrowth;
+            }
 
-    //             planet.silverGrowth = defaultPlanet.silverGrowth;
-    //         }
+            planet.planetType = PlanetType.SILVER_MINE;
+            emit ArtifactActivated(msg.sender, locationId, artifactId);
 
-    //         planet.planetType = PlanetType.SILVER_MINE;
-    //         emit ArtifactActivated(msg.sender, locationId, artifactId);
-    //     }
-    // }
+            // TODO: Why not actually burn?
+            // burn it after use. will be owned by contract but not on a planet anyone can control
+            LibGameUtils._takeArtifactOffPlanet(locationId, artifactId);
+            emit ArtifactDeactivated(msg.sender, locationId, artifactId);
+        }
+    }
 
     function activateNonSpaceshipArtifact(
         uint256 locationId,
