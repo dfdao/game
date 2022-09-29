@@ -71,18 +71,18 @@ library LibArtifactUtils {
             uint8(shipType),
             uint8(Biome.Unknown)
         );
-        // TODO: Use struct naming convetion for readability
-        DFTCreateArtifactArgs memory createArtifactArgs = DFTCreateArtifactArgs(
-            tokenId + id, // makes each spaceship unique but keeps generic properties.
-            msg.sender,
-            planetId,
-            ArtifactRarity.Unknown,
-            Biome.Unknown,
-            shipType,
-            owner, // Player is owner of new ship
-            owner
-        );
-
+        // TODO: Use struct naming convention for readability
+        DFTCreateArtifactArgs memory createArtifactArgs = DFTCreateArtifactArgs({
+            tokenId: tokenId + id,
+            discoverer: msg.sender,
+            planetId: planetId,
+            rarity: ArtifactRarity.Unknown,
+            biome: Biome.Unknown,
+            artifactType: shipType,
+            owner: owner,
+            // Only used for spaceships
+            controller: owner
+        });
         Artifact memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
             createArtifactArgs
         );

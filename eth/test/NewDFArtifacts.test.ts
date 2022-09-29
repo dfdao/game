@@ -11,7 +11,6 @@ import {
   getArtifactsOwnedBy,
   getCurrentTime,
   getStatSum,
-  hexToBigNumber,
   increaseBlockchainTime,
   makeFindArtifactArgs,
   makeInitArgs,
@@ -19,7 +18,6 @@ import {
   prettyPrintToken,
   testDeactivate,
   user1MintArtifactPlanet,
-  ZERO_ADDRESS,
 } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import {
@@ -195,6 +193,7 @@ describe('DarkForestArtifacts', function () {
       );
       const moveReceipt = await moveTx.wait();
       const voyageId = moveReceipt.events?.[0].args?.[1]; // emitted by ArrivalQueued
+      await world.contract.refreshPlanet(ARTIFACT_PLANET_1.id);
       const oldLocArtifacts = await getArtifactsOnPlanet(world, ARTIFACT_PLANET_1.id);
       expect(oldLocArtifacts.length).to.equal(0);
       // confirming that artifact is on a voyage by checking that its no longer at the old
@@ -226,17 +225,12 @@ describe('DarkForestArtifacts', function () {
       const maxArtifactsOnPlanet = 4;
       for (let i = 0; i <= maxArtifactsOnPlanet; i++) {
         // place an artifact on the trading post
-        const newTokenId = hexToBigNumber(i + 1 + '');
-        await world.contract.createArtifact({
-          tokenId: newTokenId,
-          discoverer: world.user1.address,
-          planetId: 1,
-          rarity: 1,
-          biome: 1,
-          artifactType: 5,
-          owner: world.user1.address,
-          controller: ZERO_ADDRESS,
-        });
+        const newTokenId = await createArtifact(
+          world.contract,
+          world.user1.address,
+          ZERO_PLANET,
+          ArtifactType.Monolith
+        );
         await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, newTokenId);
 
         // wait for the planet to fill up and download its stats
@@ -909,7 +903,7 @@ describe('DarkForestArtifacts', function () {
   });
 
   describe('planetary shield', function () {
-    it.only('activates planetary shield, + defense, - range, then burns shield', async function () {
+    it('activates planetary shield, + defense, - range, then burns shield', async function () {
       await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL3_SPACETIME_1);
 
       const newTokenId = await createArtifact(

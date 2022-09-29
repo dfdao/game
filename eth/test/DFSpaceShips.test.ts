@@ -3,6 +3,7 @@ import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import {
   conquerUnownedPlanet,
+  getArtifactOnPlanetByType,
   increaseBlockchainTime,
   makeInitArgs,
   makeMoveArgs,
@@ -55,6 +56,47 @@ describe('DarkForestSpaceShips', function () {
           'you can only spawn ships on your home planet'
         );
       });
+    });
+  });
+
+  describe.only('ship transfers', function () {
+    it('cannot transfer your own spaceship', async function () {
+      const motherShip = await getArtifactOnPlanetByType(
+        world.contract,
+        SPAWN_PLANET_1.id,
+        ArtifactType.ShipMothership
+      );
+      // Player owns ship.
+      expect(await world.contract.balanceOf(world.user1.address, motherShip.id)).to.equal(1);
+      await expect(
+        world.user1Core.safeTransferFrom(
+          world.user1.address,
+          world.user2.address,
+          motherShip.id,
+          1,
+          '0x00'
+        )
+      ).to.be.revertedWith('player cannot transfer a Spaceship');
+    });
+    it('cannot transfer other players spaceship', async function () {
+      await world.user2Core.giveSpaceShips(SPAWN_PLANET_2.id);
+
+      const motherShip = await getArtifactOnPlanetByType(
+        world.contract,
+        SPAWN_PLANET_2.id,
+        ArtifactType.ShipMothership
+      );
+      // Other Player owns ship.
+      expect(await world.contract.balanceOf(world.user2.address, motherShip.id)).to.equal(1);
+      await expect(
+        world.user1Core.safeTransferFrom(
+          world.user2.address,
+          world.user1.address,
+          motherShip.id,
+          1,
+          '0x00'
+        )
+      ).to.be.revertedWith('ERC1155: caller is not owner nor approved');
     });
   });
 

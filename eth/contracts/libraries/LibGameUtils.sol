@@ -467,13 +467,7 @@ library LibGameUtils {
         returns (ArtifactProperties memory)
     {
         console.log("searching for %s on %s", artifactId, locationId);
-        console.log(
-            "%s artifacts on planet %s",
-            gs().planetArtifacts[locationId].length,
-            locationId
-        );
         for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
-            console.log("found %s ", gs().planetArtifacts[locationId][i]);
             if (gs().planetArtifacts[locationId][i] == artifactId) {
                 return DFArtifactFacet(address(this)).getArtifact(artifactId);
             }

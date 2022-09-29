@@ -8,15 +8,6 @@ import "hardhat/console.sol";
 // Note: We can call _mint and _setTokenUri directly in DFArtifactFacet, but I like having a wrapper
 // This makes it more obvious when we are using the DFToken functions
 contract DFToken is SolidStateERC1155 {
-    function mint(
-        address account,
-        uint256 id,
-        uint256 amount,
-        bytes memory data
-    ) public {
-        _mint(account, id, amount, data);
-    }
-
     /**
      * @notice set per-token metadata URI
      * @param tokenId token whose metadata URI to set
@@ -55,7 +46,7 @@ contract DFToken is SolidStateERC1155 {
         uint256 _rarity,
         uint256 _artifactType,
         uint256 _biome
-    ) public view returns (uint256) {
+    ) public pure returns (uint256) {
         uint256 collectionType = _collectionType << calcBitShift(uint8(TokenInfo.CollectionType));
         uint256 rarity = _rarity << calcBitShift(uint8(TokenInfo.ArtifactRarity));
         uint256 artifactType = _artifactType << calcBitShift(uint8(TokenInfo.ArtifactType));
@@ -63,18 +54,11 @@ contract DFToken is SolidStateERC1155 {
         return collectionType + rarity + artifactType + biome;
     }
 
-    // Collection Type should be Spaceship. ArtifactType should be type of ship.
-    function encodeSpaceship(uint256 _collectionType, uint256 _artifactType)
-        public
-        view
-        returns (uint256)
-    {
-        uint256 collectionType = _collectionType << calcBitShift(uint8(TokenInfo.CollectionType));
-        uint256 artifactType = _artifactType << calcBitShift(uint8(TokenInfo.ArtifactType));
-        return collectionType + artifactType;
-    }
-
-    function decodeArtifact(uint256 artifactId) public view returns (ArtifactProperties memory) {
+    /**
+     * @notice Fetch the ArtifactProperties for the given id
+     * @param artifactId type of artifact
+     */
+    function decodeArtifact(uint256 artifactId) public pure returns (ArtifactProperties memory) {
         bytes memory _b = abi.encodePacked(artifactId);
         // 0 is left most element. 0 is given the property Unknown in TokenInfo.
 
@@ -87,10 +71,6 @@ contract DFToken is SolidStateERC1155 {
         uint8 rarity = uint8(_b[uint8(TokenInfo.ArtifactRarity) - 1]);
         uint8 artifactType = uint8(_b[uint8(TokenInfo.ArtifactType) - 1]);
         uint8 biome = uint8(_b[uint8(TokenInfo.Biome) - 1]);
-        // console.log("collectionType %s", collectionType);
-        // console.log("rarity %s", rarity);
-        // console.log("artifactType %s", artifactType);
-        // console.log("biome %s", biome);
 
         ArtifactProperties memory a = ArtifactProperties({
             id: artifactId,
