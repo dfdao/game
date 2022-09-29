@@ -222,27 +222,9 @@ enum ArtifactRarity {
     Mythic
 }
 
-// for NFTs
-struct Artifact {
-    bool isInitialized;
-    uint256 id;
-    uint256 planetDiscoveredOn;
-    ArtifactRarity rarity;
-    Biome planetBiome;
-    uint256 mintedAtTimestamp;
-    address discoverer;
-    ArtifactType artifactType;
-    // an artifact is 'activated' iff lastActivated > lastDeactivated
-    uint256 activations;
-    uint256 lastActivated;
-    uint256 lastDeactivated;
-    uint256 wormholeTo; // location id
-    address controller; // space ships can be controlled regardless of which planet they're on
-}
-
 // for artifact getters
 struct ArtifactWithMetadata {
-    Artifact artifact;
+    ArtifactProperties artifact;
     Upgrade upgrade;
     Upgrade timeDelayedUpgrade; // for photoid canons specifically.
     address owner;

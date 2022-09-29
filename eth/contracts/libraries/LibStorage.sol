@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Type imports
-import {Planet, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData, Artifact} from "../DFTypes.sol";
+import {Planet, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData} from "../DFTypes.sol";
 
 struct WhitelistStorage {
     bool enabled;
@@ -53,7 +53,6 @@ struct GameStorage {
     mapping(uint256 => uint256) planetWormholes;
     // planetId to timestamp. For all artifacts, but only used for photoids.
     mapping(uint256 => uint256) planetArtifactActivationTime;
-    mapping(uint256 => Artifact) artifacts;
     // Capture Zones
     uint256 nextChangeBlock;
 }

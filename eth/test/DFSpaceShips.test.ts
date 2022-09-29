@@ -59,7 +59,7 @@ describe('DarkForestSpaceShips', function () {
     });
   });
 
-  describe.only('ship transfers', function () {
+  describe('ship transfers', function () {
     it('cannot transfer your own spaceship', async function () {
       const motherShip = await getArtifactOnPlanetByType(
         world.contract,

@@ -15,7 +15,7 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {ArrivalData, ArrivalType, Artifact, ArtifactProperties, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetEventMetadata, PlanetEventType, Upgrade} from "../DFTypes.sol";
+import {ArrivalData, ArrivalType, ArtifactProperties, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetEventMetadata, PlanetEventType, Upgrade} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 contract DFMoveFacet is WithStorage {
@@ -126,7 +126,6 @@ contract DFMoveFacet is WithStorage {
             if (photoidPresent) {
                 temporaryUpgrade = newTempUpgrade;
                 arrivalType = ArrivalType.Photoid;
-                console.log("doing photoid move");
             }
         }
 
@@ -236,7 +235,7 @@ contract DFMoveFacet is WithStorage {
         }
     }
 
-    function applySpaceshipDepart(Artifact memory artifact, Planet memory planet)
+    function applySpaceshipDepart(ArtifactProperties memory artifact, Planet memory planet)
         public
         view
         returns (Planet memory)
@@ -273,7 +272,9 @@ contract DFMoveFacet is WithStorage {
         Undo the spaceship effects that were applied when the ship arrived on the planet.
      */
     function _removeSpaceshipEffectsFromOriginPlanet(DFPMoveArgs memory args) private {
-        Artifact memory movedArtifact = gs().artifacts[args.movedArtifactId];
+        ArtifactProperties memory movedArtifact = LibArtifactUtils.decodeArtifact(
+            args.movedArtifactId
+        );
         Planet memory planet = applySpaceshipDepart(movedArtifact, gs().planets[args.oldLoc]);
         gs().planets[args.oldLoc] = planet;
     }
@@ -291,10 +292,13 @@ contract DFMoveFacet is WithStorage {
     {
         wormholePresent = false;
 
-        // Artifact memory relevantWormhole;
         ArtifactProperties memory relevantWormhole;
-        ArtifactProperties memory activeArtifactFrom = LibGameUtils.getActiveArtifact(args.oldLoc);
-        ArtifactProperties memory activeArtifactTo = LibGameUtils.getActiveArtifact(args.newLoc);
+        ArtifactProperties memory activeArtifactFrom = LibArtifactUtils.getActiveArtifact(
+            args.oldLoc
+        );
+        ArtifactProperties memory activeArtifactTo = LibArtifactUtils.getActiveArtifact(
+            args.newLoc
+        );
         // TODO: take the greater rarity of these, or disallow wormholes between planets that
         // already have a wormhole between them
         if (
@@ -326,14 +330,15 @@ contract DFMoveFacet is WithStorage {
         private
         returns (bool photoidPresent, Upgrade memory temporaryUpgrade)
     {
-        ArtifactProperties memory activeArtifactFrom = LibGameUtils.getActiveArtifact(args.oldLoc);
+        ArtifactProperties memory activeArtifactFrom = LibArtifactUtils.getActiveArtifact(
+            args.oldLoc
+        );
         if (
             activeArtifactFrom.artifactType == ArtifactType.PhotoidCannon &&
             block.timestamp - gs().planetArtifactActivationTime[args.oldLoc] >=
             gameConstants().PHOTOID_ACTIVATION_DELAY
         ) {
             photoidPresent = true;
-            console.log("photoid present? %s", LibGameUtils.getActiveArtifact(args.oldLoc).id > 0);
             LibArtifactUtils.deactivateArtifact(args.oldLoc);
             temporaryUpgrade = LibGameUtils.timeDelayUpgrade(activeArtifactFrom);
         }
@@ -412,19 +417,15 @@ contract DFMoveFacet is WithStorage {
     }
 
     function _isSpaceshipMove(DFPMoveArgs memory args) private view returns (bool) {
-        return LibArtifactUtils.isSpaceship(gs().artifacts[args.movedArtifactId].artifactType);
+        return
+            LibArtifactUtils.isSpaceship(
+                LibArtifactUtils.decodeArtifact(args.movedArtifactId).artifactType
+            );
     }
 
     function _createArrival(DFPCreateArrivalArgs memory args) private {
         // enter the arrival data for event id
         Planet memory planet = gs().planets[args.oldLoc];
-        // console.log(
-        //     "pop moved: %s dist %s range %s",
-        //     args.popMoved,
-        //     args.effectiveDistTimesHundred,
-        //     uint256(planet.range)
-        // );
-        // console.logUint(planet.populationCap);
 
         uint256 popArriving = _getDecayedPop(
             args.popMoved,
@@ -433,7 +434,7 @@ contract DFMoveFacet is WithStorage {
             planet.populationCap
         );
         bool isSpaceship = LibArtifactUtils.isSpaceship(
-            DFArtifactFacet(address(this)).decodeArtifact(args.movedArtifactId).artifactType
+            LibArtifactUtils.decodeArtifact(args.movedArtifactId).artifactType
         );
         // space ship moves are implemented as 0-energy moves
         require(popArriving > 0 || isSpaceship, "Not enough forces to make move");
@@ -452,9 +453,7 @@ contract DFMoveFacet is WithStorage {
             distance: args.actualDist
         });
         // Photoids are burned _checkPhotoid, so don't remove twice
-        ArtifactProperties memory artifact = DFArtifactFacet(address(this)).decodeArtifact(
-            args.movedArtifactId
-        );
+        ArtifactProperties memory artifact = LibArtifactUtils.decodeArtifact(args.movedArtifactId);
         if (args.movedArtifactId != 0 && artifact.artifactType != ArtifactType.PhotoidCannon) {
             LibGameUtils._takeArtifactOffPlanet(args.oldLoc, args.movedArtifactId);
         }

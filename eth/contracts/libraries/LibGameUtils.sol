@@ -10,7 +10,7 @@ import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 // Storage imports
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
-import {Biome, SpaceType, Planet, PlanetType, PlanetEventType, Artifact, ArtifactProperties, ArtifactType, CollectionType, ArtifactRarity, Upgrade, PlanetDefaultStats} from "../DFTypes.sol";
+import {Biome, SpaceType, Planet, PlanetType, PlanetEventType, ArtifactProperties, ArtifactType, CollectionType, ArtifactRarity, Upgrade, PlanetDefaultStats} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 library LibGameUtils {
@@ -392,10 +392,8 @@ library LibGameUtils {
     // internal contract book-keeping to reflect that the given artifact was
     // put on. note that this function does not transfer the artifact.
     function _putArtifactOnPlanet(uint256 locationId, uint256 artifactId) public {
-        console.log("putting %s on %s", artifactId, locationId);
         gs().planetArtifacts[locationId].push(artifactId);
         uint256 length = gs().planetArtifacts[locationId].length;
-        console.log("new planet artifact id", gs().planetArtifacts[locationId][length - 1]);
     }
 
     // TODO: Why not burn ?
@@ -413,14 +411,13 @@ library LibGameUtils {
 
     function _takeArtifactOffPlanet(uint256 locationId, uint256 artifactId) public {
         uint256 artifactsOnThisPlanet = gs().planetArtifacts[locationId].length;
-        console.log("removing %s from %s", artifactId, locationId);
-        console.log("%s artifacts on %s", artifactsOnThisPlanet, locationId);
+
         bool hadTheArtifact = false;
 
         for (uint256 i = 0; i < artifactsOnThisPlanet; i++) {
             if (gs().planetArtifacts[locationId][i] == artifactId) {
                 require(
-                    !isActivatedERC1155(locationId, artifactId),
+                    !isActivated(locationId, artifactId),
                     "you cannot take an activated artifact off a planet"
                 );
 
@@ -441,11 +438,8 @@ library LibGameUtils {
     // we do not have an `isActive` field on artifact; the times that the
     // artifact was last activated and deactivated are sufficent to determine
     // whether or not the artifact is activated.
-    function isActivated(Artifact memory artifact) public pure returns (bool) {
-        return artifact.lastDeactivated < artifact.lastActivated;
-    }
 
-    function isActivatedERC1155(uint256 locationId, uint256 artifactId) public view returns (bool) {
+    function isActivated(uint256 locationId, uint256 artifactId) public view returns (bool) {
         return (gs().planetActiveArtifact[locationId] == artifactId);
     }
 
@@ -459,69 +453,11 @@ library LibGameUtils {
         return false;
     }
 
-    // if the given artifact is on the given planet, then return the artifact
-    // otherwise, return a 'null' artifact
-    function getPlanetArtifact(uint256 locationId, uint256 artifactId)
-        public
-        view
-        returns (ArtifactProperties memory)
-    {
-        console.log("searching for %s on %s", artifactId, locationId);
-        for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
-            if (gs().planetArtifacts[locationId][i] == artifactId) {
-                return DFArtifactFacet(address(this)).getArtifact(artifactId);
-            }
-        }
-
-        return _nullArtifactProperties();
-    }
-
-    // if the given planet has an activated artifact on it, then return the artifact
-    // otherwise, return a 'null artifact'
-    function getActiveArtifact(uint256 locationId) public view returns (ArtifactProperties memory) {
-        uint256 artifactId = gs().planetActiveArtifact[locationId];
-        if (artifactId != 0) return DFArtifactFacet(address(this)).decodeArtifact(artifactId);
-
-        return _nullArtifactProperties();
-    }
-
     // the space junk that a planet starts with
     function getPlanetDefaultSpaceJunk(Planet memory planet) public view returns (uint256) {
         if (planet.isHomePlanet) return 0;
 
         return gameConstants().PLANET_LEVEL_JUNK[planet.planetLevel];
-    }
-
-    // constructs a new artifact whose `isInititalized` field is set to `false`
-    // used to represent the concept of 'no artifact'
-    function _nullArtifact() private pure returns (Artifact memory) {
-        return
-            Artifact(
-                false,
-                0,
-                0,
-                ArtifactRarity(0),
-                Biome(0),
-                0,
-                address(0),
-                ArtifactType(0),
-                0,
-                0,
-                0,
-                0,
-                address(0)
-            );
-    }
-
-    function _nullArtifactProperties() private pure returns (ArtifactProperties memory) {
-        return
-            ArtifactProperties(
-                0,
-                CollectionType.Unknown,
-                ArtifactRarity.Unknown,
-                ArtifactType.Unknown,
-                Biome.Unknown
-            );
     }
 
     function _buffPlanet(uint256 location, Upgrade memory upgrade) public {
