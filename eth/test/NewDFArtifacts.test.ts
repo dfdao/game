@@ -1,12 +1,12 @@
 import { ArtifactRarity, ArtifactType, Biome, CollectionType } from '@dfdao/types';
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
+import { loadFixture, mine } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
-import { BigNumberish } from 'ethers';
 import hre from 'hardhat';
 import { TestLocation } from './utils/TestLocation';
 import {
   conquerUnownedPlanet,
   createArtifact,
+  getArtifactsOnPlanet,
   getArtifactsOwnedBy,
   getCurrentTime,
   getStatSum,
@@ -36,7 +36,7 @@ import {
   ZERO_PLANET,
 } from './utils/WorldConstants';
 
-describe.only('DarkForestArtifacts', function () {
+describe('DarkForestArtifacts', function () {
   let world: World;
 
   async function worldFixture() {
@@ -79,23 +79,23 @@ describe.only('DarkForestArtifacts', function () {
     world = await loadFixture(worldFixture);
   });
 
-  // Gets Artifacts but not Spaceships
-  async function getArtifactsOnPlanet(world: World, locationId: BigNumberish) {
-    return (await world.contract.getArtifactsOnPlanet(locationId)).filter(
-      (artifact) => artifact.artifactType < ArtifactType.ShipMothership
-    );
-  }
-
   describe('it tests basic artifact actions', function () {
     // This test will fail if the artifact is special.
     it('be able to mint artifact on ruins, activate/buff, deactivate/debuff', async function () {
       const statSumInitial = getStatSum(await world.contract.planets(ARTIFACT_PLANET_1.id));
 
-      const newId = await user1MintArtifactPlanet(world.user1Core);
-      console.log('new id', newId._hex);
-      const res = await world.user1Core.decodeArtifact(newId);
-      prettyPrintToken(res);
+      const artifactId = await createArtifact(
+        world.contract,
+        world.user1.address,
+        ARTIFACT_PLANET_1,
+        ArtifactType.Colossus
+      );
+
       const statSumAfterFound = getStatSum(await world.contract.planets(ARTIFACT_PLANET_1.id));
+
+      await world.user1Core.activateArtifact(ARTIFACT_PLANET_1.id, artifactId, 0);
+
+      prettyPrintToken(await world.user1Core.decodeArtifact(artifactId));
 
       // artifact and gear should be on planet. Gear is 0 and Artifact is 1.
       const artifactsOnPlanet = await getArtifactsOnPlanet(world, ARTIFACT_PLANET_1.id);
@@ -106,23 +106,13 @@ describe.only('DarkForestArtifacts', function () {
         expect(await world.contract.balanceOf(world.contract.address, a.id)).to.equal(1);
       });
 
-      // expect(artifactsOnPlanet[0].discoverer).to.eq(world.user1.address);
-
-      // let's update the planet to be one of the basic artifacts, so that
-      // we know it's definitely going to buff the planet in some way. also,
-      // this prevents the artifact from being one that requires valid parameter
-      // in order to activate
-      // const updatedArtifact = Object.assign({}, artifactsOnPlanet[0]);
-      // updatedArtifact.artifactType = 0;
-      // await world.contract.updateArtifact(updatedArtifact);
-
-      // // planet should be buffed after discovered artifact
-      await world.user1Core.activateArtifact(ARTIFACT_PLANET_1.id, artifactsOnPlanet[0].id, 0);
+      // planet should be buffed after discovered artifact
       const activeArtifact = await world.user1Core.getActiveArtifactOnPlanet(ARTIFACT_PLANET_1.id);
       prettyPrintToken(activeArtifact);
+
       const statSumAfterActivation = getStatSum(await world.contract.planets(ARTIFACT_PLANET_1.id));
 
-      // // planet buff should be removed after artifact deactivated
+      // planet buff should be removed after artifact deactivated
       await world.user1Core.deactivateArtifact(ARTIFACT_PLANET_1.id);
       const statSumAfterDeactivate = getStatSum(await world.contract.planets(ARTIFACT_PLANET_1.id));
 
@@ -142,9 +132,7 @@ describe.only('DarkForestArtifacts', function () {
         'this planet has already been prospected'
       );
 
-      for (let i = 0; i < 256; i++) {
-        await increaseBlockchainTime();
-      }
+      await mine(256);
 
       await expect(
         world.user1Core.findArtifact(...makeFindArtifactArgs(ARTIFACT_PLANET_1))
@@ -663,7 +651,7 @@ describe.only('DarkForestArtifacts', function () {
       }
     });
 
-    it.only("shouldn't transfer energy to planets that aren't owned by the sender", async function () {
+    it("shouldn't transfer energy to planets that aren't owned by the sender", async function () {
       const from = SPAWN_PLANET_1;
       const to = LVL0_PLANET;
 
@@ -686,23 +674,20 @@ describe.only('DarkForestArtifacts', function () {
         { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
       );
 
+      // Move gear bc too many artifacts on SPAWN_PLANET_1, so can't receive wormhole.
+      const crescentShip = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (artifact) => artifact.artifactType === ArtifactType.ShipCrescent
+      );
+
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET, 0, 0, 0, crescentShip?.id)
+      );
+
       const userWormholeBalance = await world.contract.balanceOf(world.user1.address, artifactId);
       expect(userWormholeBalance).to.eq(1);
 
       // activate the wormhole to the 2nd planet
       await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, artifactId);
-      console.log('her?');
-
-      // Move gear bc too many artifacts on SPAWN_PLANET_1, so can't receive wormhole.
-      const gearShip = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
-        (artifact) => artifact.artifactType === ArtifactType.ShipGear
-      );
-      console.log(`gearId`);
-      await world.user1Core.move(
-        ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET, 1000, 100, 0, gearShip?.id)
-      );
-
-      increaseBlockchainTime();
 
       await world.user1Core.move(
         ...makeMoveArgs(LVL3_SPACETIME_1, SPAWN_PLANET_1, 0, 500000, 0, artifactId)
@@ -930,63 +915,73 @@ describe.only('DarkForestArtifacts', function () {
 
   describe('photoid cannon', function () {
     it('activates photoid cannon, increases move speed and rage, then burns photoid', async function () {
-      const to = LVL0_PLANET;
-      const dist = 50;
-      const forces = 500000;
-
-      const newTokenId = await createArtifact(
-        world.contract,
-        world.user1.address,
-        ZERO_PLANET,
-        ArtifactType.PhotoidCannon,
-        CollectionType.Artifact,
-        { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
-      );
-      await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, newTokenId);
-
-      // Confirm photoid cannon is activated.
-      const activateTx = await world.user1Core.activateArtifact(LVL3_SPACETIME_1.id, newTokenId, 0);
-      const activateRct = await activateTx.wait();
-      const block = await hre.ethers.provider.getBlock(activateRct.blockNumber);
-      expect(await world.user1Core.getArtifactActivationTimeOnPlanet(LVL3_SPACETIME_1.id)).to.equal(
-        block.timestamp
-      );
-      expect((await world.user1Core.getActiveArtifactOnPlanet(LVL3_SPACETIME_1.id)).id).to.equal(
-        newTokenId
-      );
+      await conquerUnownedPlanet(world, world.user1Core, LVL3_SPACETIME_1, LVL6_SPACETIME);
       await increaseBlockchainTime();
 
-      // Make a move that uses photoid cannon
-      await world.user1Core.move(
-        ...makeMoveArgs(LVL3_SPACETIME_1, to, dist, forces, 0, newTokenId)
-      );
-      const fromPlanet = await world.contract.planets(LVL3_SPACETIME_1.id);
-      const planetArrivals = await world.contract.getPlanetArrivals(to.id);
-      const arrival = planetArrivals[0];
+      const to = LVL0_PLANET;
+      const dist = 50;
+      const forces = 40000000; // Has to be big to account for
+
       const rangeBoosts = [100, 200, 200, 200, 200, 200];
       // Divided by 100 to reflect effect on travel time.
       const speedBoosts = [1, 5, 10, 15, 20, 25];
+      const artifactRarities = [1, 2, 3, 4, 5];
 
-      const expectedTime = Math.floor(
-        Math.floor((dist * 100) / speedBoosts[ArtifactRarity.Common]) / fromPlanet.speed.toNumber()
-      );
+      for (let i = 0; i < artifactRarities.length; i++) {
+        const newTokenId = await createArtifact(
+          world.contract,
+          world.user1.address,
+          ZERO_PLANET,
+          ArtifactType.PhotoidCannon,
+          CollectionType.Artifact,
+          { rarity: artifactRarities[i] as ArtifactRarity, biome: Biome.OCEAN }
+        );
+        prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
 
-      expect(arrival.arrivalTime.sub(arrival.departureTime).toNumber()).to.be.equal(expectedTime);
+        await world.user1Core.depositArtifact(LVL6_SPACETIME.id, newTokenId);
 
-      const range = (fromPlanet.range.toNumber() * rangeBoosts[ArtifactRarity.Common]) / 100;
-      const popCap = fromPlanet.populationCap.toNumber();
-      const decayFactor = Math.pow(2, dist / range);
-      const approxArriving = forces / decayFactor - 0.05 * popCap;
+        // Confirm photoid cannon is activated.
+        const activateTx = await world.user1Core.activateArtifact(LVL6_SPACETIME.id, newTokenId, 0);
+        const activateRct = await activateTx.wait();
+        const block = await hre.ethers.provider.getBlock(activateRct.blockNumber);
+        expect(await world.user1Core.getArtifactActivationTimeOnPlanet(LVL6_SPACETIME.id)).to.equal(
+          block.timestamp
+        );
+        expect((await world.user1Core.getActiveArtifactOnPlanet(LVL6_SPACETIME.id)).id).to.equal(
+          newTokenId
+        );
 
-      expect(planetArrivals[0].popArriving.toNumber()).to.be.above(approxArriving - 1000);
-      expect(planetArrivals[0].popArriving.toNumber()).to.be.below(approxArriving + 1000);
+        await increaseBlockchainTime();
 
-      // Confirm photoid is burned
-      expect((await getArtifactsOnPlanet(world, LVL3_SPACETIME_1.id)).length).to.equal(0);
-      expect((await world.user1Core.getActiveArtifactOnPlanet(LVL3_SPACETIME_1.id)).id).to.equal(0);
-      expect(await world.user1Core.getArtifactActivationTimeOnPlanet(LVL3_SPACETIME_1.id)).to.equal(
-        0
-      );
+        // Make a move that uses photoid cannon
+        await world.user1Core.move(
+          ...makeMoveArgs(LVL6_SPACETIME, to, dist, forces, 0, newTokenId)
+        );
+        const fromPlanet = await world.contract.planets(LVL6_SPACETIME.id);
+        const planetArrivals = await world.contract.getPlanetArrivals(to.id);
+        const arrival = planetArrivals[0];
+
+        const expectedTime = Math.floor(
+          Math.floor((dist * 100) / speedBoosts[i + 1]) / fromPlanet.speed.toNumber()
+        );
+
+        expect(arrival.arrivalTime.sub(arrival.departureTime).toNumber()).to.be.equal(expectedTime);
+
+        const range = (fromPlanet.range.toNumber() * rangeBoosts[i + 1]) / 100;
+        const popCap = fromPlanet.populationCap.toNumber();
+        const decayFactor = Math.pow(2, dist / range);
+        const approxArriving = forces / decayFactor - 0.05 * popCap;
+
+        expect(planetArrivals[0].popArriving.toNumber()).to.be.above(approxArriving - 1000);
+        expect(planetArrivals[0].popArriving.toNumber()).to.be.below(approxArriving + 1000);
+
+        // Confirm photoid is burned
+        expect((await getArtifactsOnPlanet(world, LVL6_SPACETIME.id)).length).to.equal(0);
+        expect((await world.user1Core.getActiveArtifactOnPlanet(LVL6_SPACETIME.id)).id).to.equal(0);
+        expect(await world.user1Core.getArtifactActivationTimeOnPlanet(LVL6_SPACETIME.id)).to.equal(
+          0
+        );
+      }
     });
   });
 });

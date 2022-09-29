@@ -1,4 +1,4 @@
-import { ArtifactType } from '@dfdao/types';
+import { ArtifactType, PlanetType } from '@dfdao/types';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import {
@@ -6,6 +6,7 @@ import {
   increaseBlockchainTime,
   makeInitArgs,
   makeMoveArgs,
+  prettyPrintToken,
 } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import {
@@ -103,6 +104,47 @@ describe('DarkForestSpaceShips', function () {
       await world.contract.refreshPlanet(LVL1_ASTEROID_1.id);
       const currentPlanet = await world.contract.planets(LVL1_ASTEROID_1.id);
       expect(currentPlanet.population).to.be.equal(currentPlanet.populationCap);
+    });
+  });
+
+  describe('using the Crescent', function () {
+    it.only('turns planet into an asteroid and burns crescent', async function () {
+      const crescent = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (a) => a.artifactType === ArtifactType.ShipCrescent
+      );
+      if (!crescent) throw new Error('crescent not found');
+      prettyPrintToken(crescent);
+
+      // Move Crescent to planet
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_PLANET_DEEP_SPACE, 1000, 0, 0, crescent.id)
+      );
+
+      await increaseBlockchainTime();
+      await world.contract.refreshPlanet(LVL1_PLANET_DEEP_SPACE.id);
+
+      const crescentNewLocId = (
+        await world.contract.getArtifactsOnPlanet(LVL1_PLANET_DEEP_SPACE.id)
+      )[0].id;
+      expect(crescentNewLocId).to.equal(crescent?.id);
+
+      const planetBeforeActivate = await world.contract.planets(LVL1_PLANET_DEEP_SPACE.id);
+      await world.user1Core.activateArtifact(LVL1_PLANET_DEEP_SPACE.id, crescent.id, 0);
+      const planetAfterActivate = await world.contract.planets(LVL1_PLANET_DEEP_SPACE.id);
+      // Silver is higher
+      expect(planetBeforeActivate.silverGrowth).to.be.lessThan(planetAfterActivate.silverGrowth);
+      // Crescent is no longer on planet.
+      expect(
+        (await world.contract.getArtifactsOnPlanet(LVL1_PLANET_DEEP_SPACE.id)).length
+      ).to.equal(0);
+      // Planet was planet
+      expect(planetBeforeActivate.planetType).to.equal(PlanetType.PLANET);
+      // Planet is now asteroid.
+      expect(planetAfterActivate.planetType).to.equal(PlanetType.SILVER_MINE);
+      // Cannot activate again.
+      await expect(
+        world.user1Core.activateArtifact(LVL1_PLANET_DEEP_SPACE.id, crescent.id, 0)
+      ).to.be.revertedWith("can't active an artifact on a planet it's not on");
     });
   });
 

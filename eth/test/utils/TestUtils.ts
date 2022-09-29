@@ -320,6 +320,13 @@ export async function getArtifactsOwnedBy(contract: DarkForest, addr: string) {
   );
 }
 
+// Gets Artifacts but not Spaceships
+export async function getArtifactsOnPlanet(world: World, locationId: BigNumberish) {
+  return (await world.contract.getArtifactsOnPlanet(locationId)).filter(
+    (artifact) => artifact.artifactType < ArtifactType.ShipMothership
+  );
+}
+
 export async function createArtifact(
   contract: DarkForest,
   owner: string,
@@ -332,7 +339,6 @@ export async function createArtifact(
   biome ||= Biome.FOREST;
 
   const tokenId = await contract.encodeArtifact(collectionType, rarity, type, biome);
-  console.log(`tokenId`, tokenId);
   await contract.adminGiveArtifact({
     tokenId,
     discoverer: owner,

@@ -413,15 +413,12 @@ library LibGameUtils {
 
     function _takeArtifactOffPlanet(uint256 locationId, uint256 artifactId) public {
         uint256 artifactsOnThisPlanet = gs().planetArtifacts[locationId].length;
+        console.log("removing %s from %s", artifactId, locationId);
         console.log("%s artifacts on %s", artifactsOnThisPlanet, locationId);
         bool hadTheArtifact = false;
 
         for (uint256 i = 0; i < artifactsOnThisPlanet; i++) {
             if (gs().planetArtifacts[locationId][i] == artifactId) {
-                ArtifactProperties memory artifact = DFArtifactFacet(address(this)).getArtifact(
-                    gs().planetArtifacts[locationId][i]
-                );
-
                 require(
                     !isActivatedERC1155(locationId, artifactId),
                     "you cannot take an activated artifact off a planet"
@@ -449,10 +446,10 @@ library LibGameUtils {
     }
 
     function isActivatedERC1155(uint256 locationId, uint256 artifactId) public view returns (bool) {
-        return (gs().planetActiveArtifact[locationId] > 0);
+        return (gs().planetActiveArtifact[locationId] == artifactId);
     }
 
-    function isArtifactOnPlanet(uint256 locationId, uint256 artifactId) public returns (bool) {
+    function isArtifactOnPlanet(uint256 locationId, uint256 artifactId) public view returns (bool) {
         for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
             if (gs().planetArtifacts[locationId][i] == artifactId) {
                 return true;

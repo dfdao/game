@@ -6,6 +6,7 @@ import { ethers } from 'hardhat';
 import {
   conquerUnownedPlanet,
   createArtifact,
+  getArtifactsOnPlanet,
   increaseBlockchainTime,
   makeInitArgs,
   makeMoveArgs,
@@ -99,7 +100,7 @@ describe('DarkForestMove', function () {
       ).to.be.revertedWith('you can only move your own ships');
     });
 
-    it.skip('should not consume a photoid if moving a ship off a planet with one activated', async function () {
+    it('should not consume a photoid if moving a ship off a planet with one activated', async function () {
       const artifactId = await createArtifact(
         world.contract,
         world.user1.address,
@@ -108,18 +109,23 @@ describe('DarkForestMove', function () {
       );
 
       await world.user1Core.activateArtifact(SPAWN_PLANET_1.id, artifactId, 0);
+      expect((await world.contract.getActiveArtifactOnPlanet(SPAWN_PLANET_1.id)).id).to.equal(
+        artifactId
+      );
+
       await increaseBlockchainTime();
 
-      const shipId = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id))[0].id;
+      const ship = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).filter(
+        (a) => a.artifactType === ArtifactType.ShipGear
+      )[0];
+      console.log(`gear id`, ship?.id);
 
       await world.user1Core.move(
-        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 100, 0, 0, shipId)
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 100, 0, 0, ship?.id)
       );
 
       await world.contract.refreshPlanet(SPAWN_PLANET_1.id);
-      const activePhotoid = (await world.contract.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).filter(
-        (a) => a.artifactType === ArtifactType.PhotoidCannon
-      )[0];
+      const activePhotoid = await getArtifactsOnPlanet(world, SPAWN_PLANET_1.id);
       // If the photoid is not there, it was used during ship move
       expect(activePhotoid).to.not.eq(undefined);
     });

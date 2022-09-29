@@ -418,6 +418,14 @@ contract DFMoveFacet is WithStorage {
     function _createArrival(DFPCreateArrivalArgs memory args) private {
         // enter the arrival data for event id
         Planet memory planet = gs().planets[args.oldLoc];
+        // console.log(
+        //     "pop moved: %s dist %s range %s",
+        //     args.popMoved,
+        //     args.effectiveDistTimesHundred,
+        //     uint256(planet.range)
+        // );
+        // console.logUint(planet.populationCap);
+
         uint256 popArriving = _getDecayedPop(
             args.popMoved,
             args.effectiveDistTimesHundred,
@@ -427,7 +435,9 @@ contract DFMoveFacet is WithStorage {
         bool isSpaceship = LibArtifactUtils.isSpaceship(
             DFArtifactFacet(address(this)).decodeArtifact(args.movedArtifactId).artifactType
         );
+        // console.log("pop arriving: %s from %s", popArriving, args.oldLoc);
         // space ship moves are implemented as 0-energy moves
+        console.log("isSpaceship: ", isSpaceship);
         require(popArriving > 0 || isSpaceship, "Not enough forces to make move");
         require(isSpaceship ? args.popMoved == 0 : true, "spaceship moves must be 0 energy moves");
         gs().planetArrivals[gs().planetEventsCount] = ArrivalData({
