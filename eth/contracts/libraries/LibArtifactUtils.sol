@@ -113,7 +113,7 @@ library LibArtifactUtils {
         ArtifactRarity rarity = LibGameUtils.artifactRarityFromPlanetLevel(
             levelBonus + planet.planetLevel
         );
-
+        uint128 id = uint128(gs().miscNonce++);
         uint256 tokenId = encodeArtifact(
             uint8(CollectionType.Artifact),
             uint8(rarity),
@@ -122,7 +122,7 @@ library LibArtifactUtils {
         );
 
         DFTCreateArtifactArgs memory createArtifactArgs = DFTCreateArtifactArgs(
-            tokenId,
+            tokenId + id,
             msg.sender, // discoverer
             args.planetId,
             rarity,
