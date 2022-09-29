@@ -14,7 +14,7 @@ import {LibArtifactUtils} from "./LibArtifactUtils.sol";
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
 // Type imports
-import {ArtifactType, ArtifactProperties, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetType, RevealedCoords, SpaceType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
+import {ArtifactType, Artifact, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetType, RevealedCoords, SpaceType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 library LibPlanet {
@@ -289,7 +289,7 @@ library LibPlanet {
 
         for (uint256 i = 0; i < artifactsToAdd.length; i++) {
             // artifactsToAdd[i]
-            ArtifactProperties memory artifact = LibArtifactUtils.decodeArtifact(artifactsToAdd[i]);
+            Artifact memory artifact = LibArtifactUtils.decodeArtifact(artifactsToAdd[i]);
 
             planet = applySpaceshipArrive(artifact, planet);
         }
@@ -299,7 +299,7 @@ library LibPlanet {
         return (planet, eventsToRemove, artifactsToAdd);
     }
 
-    function applySpaceshipArrive(ArtifactProperties memory artifact, Planet memory planet)
+    function applySpaceshipArrive(Artifact memory artifact, Planet memory planet)
         public
         pure
         returns (Planet memory)

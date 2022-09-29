@@ -13,7 +13,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 import {DFArtifactFacet} from "./DFArtifactFacet.sol";
 
 // Type imports
-import {ArtifactProperties, SpaceType, DFPInitPlanetArgs, AdminCreatePlanetArgs, DFTCreateArtifactArgs, ArtifactType, Player, Planet} from "../DFTypes.sol";
+import {Artifact, SpaceType, DFPInitPlanetArgs, AdminCreatePlanetArgs, DFTCreateArtifactArgs, ArtifactType, Player, Planet} from "../DFTypes.sol";
 
 contract DFAdminFacet is WithStorage {
     event AdminOwnershipChanged(uint256 loc, address newOwner);
@@ -145,7 +145,7 @@ contract DFAdminFacet is WithStorage {
         require(LibArtifactUtils.isSpaceship(artifactType), "artifact type must be a space ship");
 
         uint256 shipId = LibArtifactUtils.createAndPlaceSpaceship(locationId, owner, artifactType);
-        ArtifactProperties memory artifact = LibArtifactUtils.decodeArtifact(shipId);
+        Artifact memory artifact = LibArtifactUtils.decodeArtifact(shipId);
         Planet memory planet = gs().planets[locationId];
 
         planet = LibPlanet.applySpaceshipArrive(artifact, planet);
@@ -166,7 +166,7 @@ contract DFAdminFacet is WithStorage {
     }
 
     function adminGiveArtifact(DFTCreateArtifactArgs memory args) public onlyAdmin {
-        ArtifactProperties memory artifact = DFArtifactFacet(address(this)).createArtifact(args);
+        Artifact memory artifact = DFArtifactFacet(address(this)).createArtifact(args);
         // Don't put artifact on planet if no planetId given.
         if (args.planetId != 0) LibGameUtils._putArtifactOnPlanet(args.planetId, artifact.id);
         emit AdminArtifactCreated(args.owner, artifact.id, args.planetId);

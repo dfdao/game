@@ -7,12 +7,13 @@ import {DFGetterFacet} from "../facets/DFGetterFacet.sol";
 
 // Library imports
 import {LibGameUtils} from "./LibGameUtils.sol";
+import {LibUtils} from "./LibUtils.sol";
 
 // Storage imports
 import {LibStorage, GameStorage, GameConstants} from "./LibStorage.sol";
 
 // Type imports
-import {Biome, Planet, PlanetType, ArtifactType, ArtifactRarity, CollectionType, DFPFindArtifactArgs, DFTCreateArtifactArgs, ArtifactProperties, TokenInfo} from "../DFTypes.sol";
+import {Biome, Planet, PlanetType, ArtifactType, ArtifactRarity, TokenType, DFPFindArtifactArgs, DFTCreateArtifactArgs, Artifact, ArtifactInfo} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 library LibArtifactUtils {
@@ -66,7 +67,7 @@ library LibArtifactUtils {
         // require(gs().miscNonce < MAX UINT 128) but won't happen.
         uint128 id = uint128(gs().miscNonce++);
         uint256 tokenId = encodeArtifact(
-            uint8(CollectionType.Spaceship),
+            uint8(TokenType.Spaceship),
             uint8(ArtifactRarity.Unknown),
             uint8(shipType),
             uint8(Biome.Unknown)
@@ -82,7 +83,7 @@ library LibArtifactUtils {
             // Only used for spaceships
             controller: owner
         });
-        ArtifactProperties memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
+        Artifact memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
             createArtifactArgs
         );
         LibGameUtils._putArtifactOnPlanet(planetId, foundArtifact.id);
@@ -115,7 +116,7 @@ library LibArtifactUtils {
         );
         uint128 id = uint128(gs().miscNonce++);
         uint256 tokenId = encodeArtifact(
-            uint8(CollectionType.Artifact),
+            uint8(TokenType.Artifact),
             uint8(rarity),
             uint8(artifactType),
             uint8(biome)
@@ -132,7 +133,7 @@ library LibArtifactUtils {
             address(0)
         );
 
-        ArtifactProperties memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
+        Artifact memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
             createArtifactArgs
         );
 
@@ -152,7 +153,7 @@ library LibArtifactUtils {
         uint256 wormholeTo
     ) public {
         Planet storage planet = gs().planets[locationId];
-        ArtifactProperties memory artifact = decodeArtifact(artifactId);
+        Artifact memory artifact = decodeArtifact(artifactId);
 
         require(
             LibGameUtils.isArtifactOnPlanet(locationId, artifactId),
@@ -170,7 +171,7 @@ library LibArtifactUtils {
         uint256 locationId,
         uint256 artifactId,
         Planet storage planet,
-        ArtifactProperties memory artifact
+        Artifact memory artifact
     ) private {
         if (artifact.artifactType == ArtifactType.ShipCrescent) {
             require(
@@ -209,21 +210,21 @@ library LibArtifactUtils {
         uint256 artifactId,
         uint256 wormholeTo,
         Planet storage planet,
-        ArtifactProperties memory artifact
+        Artifact memory artifact
     ) private {
         require(
             planet.owner == msg.sender,
             "you must own the planet you are activating an artifact on"
         );
         require(
-            getActiveArtifact(locationId).collectionType == CollectionType.Unknown,
+            getActiveArtifact(locationId).tokenType == TokenType.Unknown,
             "there is already an active artifact on this planet"
         );
         require(!planet.destroyed, "planet is destroyed");
 
         uint256 length = gs().planetArtifacts[locationId].length;
         require(
-            getPlanetArtifact(locationId, artifactId).collectionType != CollectionType.Unknown,
+            getPlanetArtifact(locationId, artifactId).tokenType != TokenType.Unknown,
             "this artifact is not on this planet"
         );
 
@@ -282,10 +283,10 @@ library LibArtifactUtils {
 
         require(!gs().planets[locationId].destroyed, "planet is destroyed");
 
-        ArtifactProperties memory artifact = getActiveArtifact(locationId);
+        Artifact memory artifact = getActiveArtifact(locationId);
 
         require(
-            artifact.collectionType != CollectionType.Unknown,
+            artifact.tokenType != TokenType.Unknown,
             "this artifact is not activated on this planet"
         );
 
@@ -322,7 +323,7 @@ library LibArtifactUtils {
         );
         require(planet.owner == msg.sender, "you can only deposit on a planet you own");
 
-        ArtifactProperties memory artifact = decodeArtifact(artifactId);
+        Artifact memory artifact = decodeArtifact(artifactId);
         require(
             planet.planetLevel > uint256(artifact.rarity),
             "spacetime rip not high enough level to deposit this artifact"
@@ -345,12 +346,9 @@ library LibArtifactUtils {
         );
         require(!gs().planets[locationId].destroyed, "planet is destroyed");
         require(planet.owner == msg.sender, "you can only withdraw from a planet you own");
-        ArtifactProperties memory artifact = getPlanetArtifact(locationId, artifactId);
+        Artifact memory artifact = getPlanetArtifact(locationId, artifactId);
         // TODO: Write is initialized function.
-        require(
-            artifact.collectionType != CollectionType.Unknown,
-            "this artifact is not on this planet"
-        );
+        require(artifact.tokenType != TokenType.Unknown, "this artifact is not on this planet");
 
         require(
             planet.planetLevel > uint256(artifact.rarity),
@@ -382,7 +380,7 @@ library LibArtifactUtils {
         uint256[] memory artifactIds = gs().planetArtifacts[locationId];
 
         for (uint256 i = 0; i < artifactIds.length; i++) {
-            ArtifactProperties memory artifact = decodeArtifact(artifactIds[i]);
+            Artifact memory artifact = decodeArtifact(artifactIds[i]);
             if (
                 // TODO: Gear is broken
                 artifact.artifactType == ArtifactType.ShipGear // && msg.sender == artifact.controller
@@ -400,22 +398,6 @@ library LibArtifactUtils {
     }
 
     /**
-     * @notice calculate amount of bits to shift left
-     * @param index number of 1 byte words to shift from left
-     * @return shift length of left shift
-     */
-    function calcBitShift(uint8 index) internal pure returns (uint8) {
-        uint8 maxVal = 32;
-
-        require(index <= maxVal, "shift index is too high");
-        require(index > 0, "shift index is too low");
-
-        uint256 bin = 8;
-        uint256 shift = 256;
-        return uint8(shift - (bin * index));
-    }
-
-    /**
      * @notice Create the collection ID for a given artifact
      * @param _collectionType type of artifact
      * @param _rarity rarity of artifact
@@ -429,34 +411,35 @@ library LibArtifactUtils {
         uint256 _artifactType,
         uint256 _biome
     ) public pure returns (uint256) {
-        uint256 collectionType = _collectionType << calcBitShift(uint8(TokenInfo.CollectionType));
-        uint256 rarity = _rarity << calcBitShift(uint8(TokenInfo.ArtifactRarity));
-        uint256 artifactType = _artifactType << calcBitShift(uint8(TokenInfo.ArtifactType));
-        uint256 biome = _biome << calcBitShift(uint8(TokenInfo.Biome));
-        return collectionType + rarity + artifactType + biome;
+        uint256 tokenType = _collectionType << LibUtils.calcBitShift(uint8(ArtifactInfo.TokenType));
+        uint256 rarity = _rarity << LibUtils.calcBitShift(uint8(ArtifactInfo.ArtifactRarity));
+        uint256 artifactType = _artifactType <<
+            LibUtils.calcBitShift(uint8(ArtifactInfo.ArtifactType));
+        uint256 biome = _biome << LibUtils.calcBitShift(uint8(ArtifactInfo.Biome));
+        return tokenType + rarity + artifactType + biome;
     }
 
     /**
-     * @notice Fetch the ArtifactProperties for the given id
+     * @notice Fetch the Artifact for the given id
      * @param artifactId type of artifact
      */
-    function decodeArtifact(uint256 artifactId) public pure returns (ArtifactProperties memory) {
+    function decodeArtifact(uint256 artifactId) public pure returns (Artifact memory) {
         bytes memory _b = abi.encodePacked(artifactId);
-        // 0 is left most element. 0 is given the property Unknown in TokenInfo.
+        // 0 is left most element. 0 is given the property Unknown in ArtifactInfo.
 
-        // Note: Bit shifting requires an index greater than zero. This is why the TokenInfo has
-        // Unknown as the zero property, so calcBitShift(TokenInfo.Level) is correct.
+        // Note: Bit shifting requires an index greater than zero. This is why the ArtifactInfo has
+        // Unknown as the zero property, so calcBitShift(ArtifactInfo.Level) is correct.
         // As a consequence, we need to
         // offset fetching the relevant byte from the artifactId by 1.
         // However
-        uint8 collectionType = uint8(_b[uint8(TokenInfo.CollectionType) - 1]);
-        uint8 rarity = uint8(_b[uint8(TokenInfo.ArtifactRarity) - 1]);
-        uint8 artifactType = uint8(_b[uint8(TokenInfo.ArtifactType) - 1]);
-        uint8 biome = uint8(_b[uint8(TokenInfo.Biome) - 1]);
+        uint8 tokenType = uint8(_b[uint8(ArtifactInfo.TokenType) - 1]);
+        uint8 rarity = uint8(_b[uint8(ArtifactInfo.ArtifactRarity) - 1]);
+        uint8 artifactType = uint8(_b[uint8(ArtifactInfo.ArtifactType) - 1]);
+        uint8 biome = uint8(_b[uint8(ArtifactInfo.Biome) - 1]);
 
-        ArtifactProperties memory a = ArtifactProperties({
+        Artifact memory a = Artifact({
             id: artifactId,
-            collectionType: CollectionType(collectionType),
+            tokenType: TokenType(tokenType),
             rarity: ArtifactRarity(rarity),
             artifactType: ArtifactType(artifactType),
             planetBiome: Biome(biome)
@@ -467,18 +450,18 @@ library LibArtifactUtils {
 
     // if the given planet has an activated artifact on it, then return the artifact
     // otherwise, return a 'null artifact'
-    function getActiveArtifact(uint256 locationId) public view returns (ArtifactProperties memory) {
+    function getActiveArtifact(uint256 locationId) public view returns (Artifact memory) {
         uint256 artifactId = gs().planetActiveArtifact[locationId];
         if (artifactId != 0) return decodeArtifact(artifactId);
 
         return _nullArtifactProperties();
     }
 
-    function _nullArtifactProperties() private pure returns (ArtifactProperties memory) {
+    function _nullArtifactProperties() private pure returns (Artifact memory) {
         return
-            ArtifactProperties(
+            Artifact(
                 0,
-                CollectionType.Unknown,
+                TokenType.Unknown,
                 ArtifactRarity.Unknown,
                 ArtifactType.Unknown,
                 Biome.Unknown
@@ -490,7 +473,7 @@ library LibArtifactUtils {
     function getPlanetArtifact(uint256 locationId, uint256 artifactId)
         public
         view
-        returns (ArtifactProperties memory)
+        returns (Artifact memory)
     {
         for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
             if (gs().planetArtifacts[locationId][i] == artifactId) {
