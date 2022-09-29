@@ -89,21 +89,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         return LibArtifactUtils.encodeArtifact(_collectionType, _rarity, _artifactType, _biome);
     }
 
-    // function getArtifactAtIndex(uint256 idx) public view returns (Artifact memory) {
-    //     return gs().artifacts[tokenByIndex(idx)];
-    // }
-
-    // TODO: Add enumerable
-    // function getPlayerArtifactIds(address playerId) public view returns (uint256[] memory) {
-    //     uint256 balance = balanceOf(playerId);
-    //     uint256[] memory results = new uint256[](balance);
-
-    //     for (uint256 idx = 0; idx < balance; idx++) {
-    //         results[idx] = tokenOfOwnerByIndex(playerId, idx);
-    //     }
-
-    //     return results;
-    // }
+    // TODO: Add ERC1155 Enumerable Wrappers
 
     // This calls the low level _transfer call which doesn't check if the msg.sender actually owns
     // the tokenId. TODO: See if this is a problem.

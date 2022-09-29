@@ -113,7 +113,6 @@ contract DFMoveFacet is WithStorage {
         ArrivalType arrivalType = ArrivalType.Normal;
         Upgrade memory temporaryUpgrade = LibGameUtils.defaultUpgrade();
 
-        // TODO: Add back wormhole
         (bool wormholePresent, uint256 distModifier) = _checkWormhole(args);
         if (wormholePresent) {
             effectiveDistTimesHundred /= distModifier;
@@ -121,7 +120,6 @@ contract DFMoveFacet is WithStorage {
         }
 
         if (!_isSpaceshipMove(args)) {
-            // TODO: Add back photoid
             (bool photoidPresent, Upgrade memory newTempUpgrade) = _checkPhotoid(args);
             if (photoidPresent) {
                 temporaryUpgrade = newTempUpgrade;
@@ -280,7 +278,6 @@ contract DFMoveFacet is WithStorage {
     }
 
     /**
-        TODO: Fix wormhole functionality.
         If an active wormhole is present on the origin planet,
         return the modified distance between the origin and target
         planet.

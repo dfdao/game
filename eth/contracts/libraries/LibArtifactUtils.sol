@@ -71,7 +71,6 @@ library LibArtifactUtils {
             uint8(shipType),
             uint8(Biome.Unknown)
         );
-        // TODO: Use struct naming convention for readability
         DFTCreateArtifactArgs memory createArtifactArgs = DFTCreateArtifactArgs({
             tokenId: tokenId + id,
             discoverer: msg.sender,
@@ -161,13 +160,10 @@ library LibArtifactUtils {
         );
 
         if (isSpaceship(artifact.artifactType)) {
-            // TODO: fix Crescent functionality
             activateSpaceshipArtifact(locationId, artifactId, planet, artifact);
         } else {
             activateNonSpaceshipArtifact(locationId, artifactId, wormholeTo, planet, artifact);
         }
-
-        // artifact.activations++;
     }
 
     function activateSpaceshipArtifact(
@@ -177,9 +173,6 @@ library LibArtifactUtils {
         ArtifactProperties memory artifact
     ) private {
         if (artifact.artifactType == ArtifactType.ShipCrescent) {
-            // Burn the goddam crescent
-            // require(artifact.activations == 0, "crescent cannot be activated more than once");
-
             require(
                 planet.planetType != PlanetType.SILVER_MINE,
                 "cannot turn a silver mine into a silver mine"
@@ -240,8 +233,6 @@ library LibArtifactUtils {
         gs().planetActiveArtifact[locationId] = artifactId;
         emit ArtifactActivated(msg.sender, locationId, artifactId);
 
-        // TODO: Wormhole is broken
-
         if (artifact.artifactType == ArtifactType.Wormhole) {
             require(wormholeTo != 0, "you must provide a wormholeTo to activate a wormhole");
 
@@ -250,8 +241,6 @@ library LibArtifactUtils {
                 "you can only create a wormhole to a planet you own"
             );
             require(!gs().planets[wormholeTo].destroyed, "planet destroyed");
-            // TODO: Store some way to remember where a wormhole is. Maybe new data structure.
-            // artifact.wormholeTo = wormholeTo;
             gs().planetWormholes[locationId] = wormholeTo;
         } else if (artifact.artifactType == ArtifactType.BloomFilter) {
             require(

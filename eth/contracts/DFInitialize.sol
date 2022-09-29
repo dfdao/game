@@ -108,8 +108,7 @@ contract DFInitialize is WithStorage {
         string memory artifactBaseURI,
         InitArgs memory initArgs
     ) external {
-        // Setup the ERC721 metadata
-        // TODO(#1925): Add name and symbol for the artifact tokens
+        // Setup the ERC1155 metadata
         ERC1155MetadataStorage.layout().baseURI = artifactBaseURI;
 
         gs().diamondAddress = address(this);
