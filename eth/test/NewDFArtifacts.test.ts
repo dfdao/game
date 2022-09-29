@@ -910,11 +910,49 @@ describe('DarkForestArtifacts', function () {
   });
 
   describe('planetary shield', function () {
-    // TODO ...
+    it.only('activates planetary shield, + defense, - range, then burns shield', async function () {
+      await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL3_SPACETIME_1);
+
+      const newTokenId = await createArtifact(
+        world.contract,
+        world.user1.address,
+        LVL3_SPACETIME_1,
+        ArtifactType.PlanetaryShield,
+        CollectionType.Artifact,
+        { rarity: ArtifactRarity.Rare as ArtifactRarity, biome: Biome.OCEAN }
+      );
+      prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
+
+      const planetBeforeActivation = await world.user1Core.planets(LVL3_SPACETIME_1.id);
+      const activateTx = await world.user1Core.activateArtifact(LVL3_SPACETIME_1.id, newTokenId, 0);
+      const activateRct = await activateTx.wait();
+      const planetAfterActivation = await world.user1Core.planets(LVL3_SPACETIME_1.id);
+
+      const block = await hre.ethers.provider.getBlock(activateRct.blockNumber);
+      expect(await world.user1Core.getArtifactActivationTimeOnPlanet(LVL3_SPACETIME_1.id)).to.equal(
+        block.timestamp
+      );
+      expect((await world.user1Core.getActiveArtifactOnPlanet(LVL3_SPACETIME_1.id)).id).to.equal(
+        newTokenId
+      );
+      // Boosts are applied
+      expect(planetBeforeActivation.defense).to.be.lessThan(planetAfterActivation.defense);
+      expect(planetBeforeActivation.range).to.be.greaterThan(planetAfterActivation.range);
+      expect(planetBeforeActivation.speed).to.be.greaterThan(planetAfterActivation.speed);
+
+      // Burned on deactivate
+      await world.user1Core.deactivateArtifact(LVL3_SPACETIME_1.id);
+
+      expect((await getArtifactsOnPlanet(world, LVL3_SPACETIME_1.id)).length).to.equal(0);
+      expect((await world.user1Core.getActiveArtifactOnPlanet(LVL3_SPACETIME_1.id)).id).to.equal(0);
+      expect(await world.user1Core.getArtifactActivationTimeOnPlanet(LVL3_SPACETIME_1.id)).to.equal(
+        0
+      );
+    });
   });
 
   describe('photoid cannon', function () {
-    it('activates photoid cannon, increases move speed and rage, then burns photoid', async function () {
+    it('activates photoid cannon, increases move speed and range, then burns photoid', async function () {
       await conquerUnownedPlanet(world, world.user1Core, LVL3_SPACETIME_1, LVL6_SPACETIME);
       await increaseBlockchainTime();
 
