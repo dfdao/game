@@ -108,7 +108,7 @@ describe('DarkForestSpaceShips', function () {
   });
 
   describe('using the Crescent', function () {
-    it.only('turns planet into an asteroid and burns crescent', async function () {
+    it('turns planet into an asteroid and burns crescent', async function () {
       const crescent = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
         (a) => a.artifactType === ArtifactType.ShipCrescent
       );
