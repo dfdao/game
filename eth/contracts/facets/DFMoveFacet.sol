@@ -435,9 +435,7 @@ contract DFMoveFacet is WithStorage {
         bool isSpaceship = LibArtifactUtils.isSpaceship(
             DFArtifactFacet(address(this)).decodeArtifact(args.movedArtifactId).artifactType
         );
-        // console.log("pop arriving: %s from %s", popArriving, args.oldLoc);
         // space ship moves are implemented as 0-energy moves
-        console.log("isSpaceship: ", isSpaceship);
         require(popArriving > 0 || isSpaceship, "Not enough forces to make move");
         require(isSpaceship ? args.popMoved == 0 : true, "spaceship moves must be 0 energy moves");
         gs().planetArrivals[gs().planetEventsCount] = ArrivalData({
