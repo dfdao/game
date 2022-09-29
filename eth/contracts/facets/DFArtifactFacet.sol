@@ -2,6 +2,8 @@
 pragma solidity ^0.8.0;
 
 // Contract imports
+import {ERC1155BaseInternal} from "@solidstate/contracts/token/ERC1155/base/ERC1155Base.sol";
+import {ERC1155EnumerableInternal} from "@solidstate/contracts/token/ERC1155/enumerable/ERC1155EnumerableInternal.sol";
 import {DFVerifierFacet} from "./DFVerifierFacet.sol";
 import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
 import {DFToken} from "../DFToken.sol";
@@ -17,6 +19,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
 import {Artifact, ArtifactType, DFTCreateArtifactArgs, DFPFindArtifactArgs, ArtifactProperties} from "../DFTypes.sol";
+
 import "hardhat/console.sol";
 
 contract DFArtifactFacet is WithStorage, DFToken {
@@ -113,6 +116,8 @@ contract DFArtifactFacet is WithStorage, DFToken {
     //     return results;
     // }
 
+    // This calls the low level _transfer call which doesn't check if the msg.sender actually owns
+    // the tokenId. TODO: See if this is a problem.
     function transferArtifact(
         uint256 tokenId,
         address owner,
@@ -122,7 +127,7 @@ contract DFArtifactFacet is WithStorage, DFToken {
             // account, id, amount.
             _burn(owner, tokenId, 1);
         } else {
-            // operator sender receiver id amount data
+            // sender receiver id amount data
             _transfer(owner, owner, newOwner, tokenId, 1, "");
         }
     }
@@ -290,5 +295,23 @@ contract DFArtifactFacet is WithStorage, DFToken {
         }
 
         gs().players[msg.sender].claimedShips = true;
+    }
+
+    function _beforeTokenTransfer(
+        address operator,
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal virtual override {
+        uint256 length = ids.length;
+        for (uint256 i = 0; i < length; i++) {
+            ArtifactProperties memory artifact = decodeArtifact(ids[i]);
+            // Only core contract can transfer Spaceships
+            if (LibArtifactUtils.isSpaceship(artifact.artifactType)) {
+                require(msg.sender == gs().diamondAddress, "player cannot transfer a Spaceship");
+            }
+        }
     }
 }

@@ -372,3 +372,13 @@ export async function activateAndConfirm(
   expect(await contract.getArtifactActivationTimeOnPlanet(locationId)).to.equal(block.timestamp);
   expect((await contract.getActiveArtifactOnPlanet(locationId)).id).to.equal(tokenId);
 }
+
+export async function getArtifactOnPlanetByType(
+  contract: DarkForest,
+  locationId: BigNumber,
+  artifactType: ArtifactType
+) {
+  return (await contract.getArtifactsOnPlanet(locationId)).filter(
+    (artifact) => (artifact.artifactType as ArtifactType) === artifactType
+  )[0];
+}
