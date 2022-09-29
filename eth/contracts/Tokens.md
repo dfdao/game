@@ -150,4 +150,13 @@ We could easily turn off this check if we wanted players to be able to buy and s
 
 ## Activating
 
+Every Artifact and one Spaceship (Crescent) must be activated on a planet to be used.
+
 ## Deactiving
+
+# Next Steps
+
+## Silver
+
+We can give silver a `tokenId` as well. This would be useful it silver was a fungible resource that
+could be used to buy multiple things in game. Easy enough to make it non-transferrable as well.

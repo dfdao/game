@@ -79,7 +79,35 @@ describe('DarkForestArtifacts', function () {
     world = await loadFixture(worldFixture);
   });
 
-  describe('it tests basic artifact actions', function () {
+  describe.only('it tests basic artifact actions', function () {
+    it('logs bits for artifact', async function () {
+      // Must be valid options
+      const _collectionType = '0x01';
+      const _rarity = ArtifactRarity.Legendary;
+      const _artifactType = ArtifactType.Colossus;
+      const _biome = Biome.DESERT;
+      const res = await world.contract.encodeArtifact(
+        _collectionType,
+        _rarity,
+        _artifactType,
+        _biome
+      );
+      const { collectionType, rarity, planetBiome, artifactType } =
+        await world.contract.decodeArtifact(res);
+      expect(collectionType).to.equal(Number(_collectionType));
+      expect(rarity).to.equal(Number(_rarity));
+      expect(planetBiome).to.equal(Number(_biome));
+      expect(artifactType).to.equal(Number(_artifactType));
+    });
+    it('logs bits for spaceship', async function () {
+      // Must be valid options
+      const _collectionType = '0x02'; // TODO: add CollectionType to @dfdao/types
+      const _artifactType = ArtifactType.ShipGear;
+      const res = await world.contract.encodeArtifact(_collectionType, 0, _artifactType, 0);
+      const { collectionType, artifactType } = await world.contract.decodeArtifact(res);
+      expect(collectionType).to.equal(Number(_collectionType));
+      expect(artifactType).to.equal(Number(_artifactType));
+    });
     // This test will fail if the artifact is special.
     it('be able to mint artifact on ruins, activate/buff, deactivate/debuff', async function () {
       const statSumInitial = getStatSum(await world.contract.planets(ARTIFACT_PLANET_1.id));
