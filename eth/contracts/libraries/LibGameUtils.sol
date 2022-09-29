@@ -6,11 +6,12 @@ import {DFArtifactFacet} from "../facets/DFArtifactFacet.sol";
 
 // Library imports
 import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
+import {LibUtils} from "./LibUtils.sol";
 
 // Storage imports
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
-import {Biome, SpaceType, Planet, PlanetType, PlanetEventType, ArtifactProperties, ArtifactType, CollectionType, ArtifactRarity, Upgrade, PlanetDefaultStats} from "../DFTypes.sol";
+import {Biome, SpaceType, Planet, PlanetType, PlanetEventType, Artifact, ArtifactType, TokenType, ArtifactRarity, Upgrade, PlanetDefaultStats} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 library LibGameUtils {
@@ -24,17 +25,6 @@ library LibGameUtils {
 
     function snarkConstants() internal pure returns (SnarkConstants storage) {
         return LibStorage.snarkConstants();
-    }
-
-    // inclusive on both ends
-    function _calculateByteUInt(
-        bytes memory _b,
-        uint256 _startByte,
-        uint256 _endByte
-    ) public pure returns (uint256 _byteUInt) {
-        for (uint256 i = _startByte; i <= _endByte; i++) {
-            _byteUInt += uint256(uint8(_b[i])) * (256**(_endByte - i));
-        }
     }
 
     function _locationIdValid(uint256 _loc) public view returns (bool) {
@@ -88,7 +78,7 @@ library LibGameUtils {
         bytes memory _b = abi.encodePacked(_location);
 
         // get the uint value of byte 4 - 6
-        uint256 _planetLevelUInt = _calculateByteUInt(_b, 4, 6);
+        uint256 _planetLevelUInt = LibUtils.calculateByteUInt(_b, 4, 6);
         uint256 level;
 
         // reverse-iterate thresholds and return planet type accordingly
@@ -237,11 +227,7 @@ library LibGameUtils {
             });
     }
 
-    function timeDelayUpgrade(ArtifactProperties memory artifact)
-        public
-        pure
-        returns (Upgrade memory)
-    {
+    function timeDelayUpgrade(Artifact memory artifact) public pure returns (Upgrade memory) {
         if (artifact.artifactType == ArtifactType.PhotoidCannon) {
             uint256[6] memory range = [uint256(100), 200, 200, 200, 200, 200];
             uint256[6] memory speedBoosts = [uint256(100), 500, 1000, 1500, 2000, 2500];
@@ -272,11 +258,7 @@ library LibGameUtils {
             });
     }
 
-    function _getUpgradeForArtifact(ArtifactProperties memory artifact)
-        public
-        pure
-        returns (Upgrade memory)
-    {
+    function _getUpgradeForArtifact(Artifact memory artifact) public pure returns (Upgrade memory) {
         if (artifact.artifactType == ArtifactType.PlanetaryShield) {
             uint256[6] memory defenseMultipliersPerRarity = [uint256(100), 150, 200, 300, 450, 650];
 

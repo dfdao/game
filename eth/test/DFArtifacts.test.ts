@@ -1,4 +1,4 @@
-import { ArtifactRarity, ArtifactType, Biome, CollectionType } from '@dfdao/types';
+import { ArtifactRarity, ArtifactType, Biome, TokenType } from '@dfdao/types';
 import { loadFixture, mine } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import hre from 'hardhat';
@@ -80,7 +80,7 @@ describe('DarkForestArtifacts', function () {
   });
 
   describe('it tests basic artifact actions', function () {
-    it('logs bits for artifact', async function () {
+    it.only('logs bits for artifact old', async function () {
       // Must be valid options
       const _collectionType = '0x01';
       const _rarity = ArtifactRarity.Legendary;
@@ -92,21 +92,46 @@ describe('DarkForestArtifacts', function () {
         _artifactType,
         _biome
       );
-      const { collectionType, rarity, planetBiome, artifactType } =
-        await world.contract.getArtifact(res);
-      expect(collectionType).to.equal(Number(_collectionType));
+      const { tokenType, rarity, planetBiome, artifactType } = await world.contract.getArtifact(
+        res
+      );
+      expect(tokenType).to.equal(Number(_collectionType));
       expect(rarity).to.equal(Number(_rarity));
       expect(planetBiome).to.equal(Number(_biome));
       expect(artifactType).to.equal(Number(_artifactType));
     });
-    it('logs bits for spaceship', async function () {
+    it('encodes and decodes artifact', async function () {
       // Must be valid options
-      const _collectionType = '0x02'; // TODO: add CollectionType to @dfdao/types
-      const _artifactType = ArtifactType.ShipGear;
-      const res = await world.contract.encodeArtifact(_collectionType, 0, _artifactType, 0);
-      const { collectionType, artifactType } = await world.contract.getArtifact(res);
-      expect(collectionType).to.equal(Number(_collectionType));
-      expect(artifactType).to.equal(Number(_artifactType));
+      const tokenType = TokenType.Artifact;
+      const rarity = ArtifactRarity.Legendary;
+      const artifactType = ArtifactType.Colossus;
+      const planetBiome = Biome.DESERT;
+      const res = await world.contract.testEncodeArtifact({
+        id: 0,
+        tokenType,
+        rarity,
+        artifactType,
+        planetBiome,
+      });
+      const a = await world.contract.getArtifact(res);
+      expect(tokenType).to.equal(Number(a.tokenType));
+      expect(rarity).to.equal(Number(a.rarity));
+      expect(artifactType).to.equal(Number(a.artifactType));
+      expect(planetBiome).to.equal(Number(a.planetBiome));
+    });
+    it('encodes and decodes spaceship', async function () {
+      // Must be valid options
+      const tokenType = TokenType.Spaceship;
+      const spaceshipType = 2;
+      const res = await world.contract.testEncodeSpaceship({
+        id: 0,
+        tokenType,
+        spaceshipType,
+      });
+      const a = await world.contract.testDecodeSpaceship(res);
+      console.log(a);
+      expect(tokenType).to.equal(Number(a.tokenType));
+      expect(spaceshipType).to.equal(Number(a.spaceshipType));
     });
     // This test will fail if the artifact is special.
     it('be able to mint artifact on ruins, activate/buff, deactivate/debuff', async function () {

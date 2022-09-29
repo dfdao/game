@@ -206,6 +206,16 @@ enum ArtifactType {
     PhotoidCannon,
     BloomFilter,
     BlackDomain,
+    // TODO; remove this
+    ShipMothership,
+    ShipCrescent,
+    ShipWhale,
+    ShipGear,
+    ShipTitan
+}
+
+enum SpaceshipType {
+    Unknown,
     ShipMothership,
     ShipCrescent,
     ShipWhale,
@@ -223,14 +233,14 @@ enum ArtifactRarity {
 }
 
 // for artifact getters
-struct ArtifactWithMetadata {
-    ArtifactProperties artifact;
-    Upgrade upgrade;
-    Upgrade timeDelayedUpgrade; // for photoid canons specifically.
-    address owner;
-    uint256 locationId; // 0 if planet is not deposited into contract or is on a voyage
-    uint256 voyageId; // 0 is planet is not deposited into contract or is on a planet
-}
+// struct ArtifactWithMetadata {
+//     Artifact artifact;
+//     Upgrade upgrade;
+//     Upgrade timeDelayedUpgrade; // for photoid canons specifically.
+//     address owner;
+//     uint256 locationId; // 0 if planet is not deposited into contract or is on a voyage
+//     uint256 voyageId; // 0 is planet is not deposited into contract or is on a planet
+// }
 
 enum Biome {
     Unknown,
@@ -246,24 +256,45 @@ enum Biome {
     Corrupted
 }
 
-enum TokenInfo {
-    Unknown,
-    CollectionType, // Each bin of tokens gets an id (spaceships, artifacts, etc...)
-    ArtifactRarity,
-    ArtifactType,
-    Biome
-}
+// enum TokenInfo {
+//     Unknown,
+//     TokenType, // Each bin of tokens gets an id (spaceships, artifacts, etc...)
+//     ArtifactRarity,
+//     ArtifactType,
+//     Biome
+// }
 
-enum CollectionType {
+enum TokenType {
     Unknown,
     Artifact,
     Spaceship
 }
 
-struct ArtifactProperties {
+enum ArtifactInfo {
+    Unknown,
+    TokenType,
+    ArtifactRarity,
+    ArtifactType,
+    Biome
+}
+
+struct Artifact {
     uint256 id;
-    CollectionType collectionType;
+    TokenType tokenType;
     ArtifactRarity rarity;
     ArtifactType artifactType;
     Biome planetBiome;
+}
+
+// Used for accessing properties of spaceship tokenId
+enum SpaceshipInfo {
+    Unknown,
+    TokenType,
+    SpaceshipType
+}
+
+struct Spaceship {
+    uint256 id;
+    TokenType tokenType;
+    SpaceshipType spaceshipType;
 }

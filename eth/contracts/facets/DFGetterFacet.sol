@@ -13,7 +13,7 @@ import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 import {WithStorage, SnarkConstants, GameConstants} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {RevealedCoords, ArtifactProperties, ArrivalData, Planet, PlanetEventType, PlanetEventMetadata, PlanetDefaultStats, PlanetData, Player, ArtifactWithMetadata, Upgrade} from "../DFTypes.sol";
+import {RevealedCoords, Artifact, ArrivalData, Planet, PlanetEventType, PlanetEventMetadata, PlanetDefaultStats, PlanetData, Player, Upgrade} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 contract DFGetterFacet is WithStorage {
@@ -340,13 +340,9 @@ contract DFGetterFacet is WithStorage {
     //     });
     // }
 
-    function getArtifactsOnPlanet(uint256 locationId)
-        public
-        view
-        returns (ArtifactProperties[] memory ret)
-    {
+    function getArtifactsOnPlanet(uint256 locationId) public view returns (Artifact[] memory ret) {
         uint256[] memory artifactIds = gs().planetArtifacts[locationId];
-        ret = new ArtifactProperties[](artifactIds.length);
+        ret = new Artifact[](artifactIds.length);
         for (uint256 i = 0; i < artifactIds.length; i++) {
             ret[i] = LibArtifactUtils.decodeArtifact(artifactIds[i]);
         }
@@ -369,7 +365,7 @@ contract DFGetterFacet is WithStorage {
     function getActiveArtifactOnPlanet(uint256 locationId)
         public
         view
-        returns (ArtifactProperties memory ret)
+        returns (Artifact memory ret)
     {
         uint256 artifactId = gs().planetActiveArtifact[locationId];
         return LibArtifactUtils.decodeArtifact(artifactId);
@@ -398,7 +394,7 @@ contract DFGetterFacet is WithStorage {
     //     ret = new ArtifactWithMetadata[](ids.length);
 
     //     for (uint256 i = 0; i < ids.length; i++) {
-    //         ArtifactProperties memory artifact = LibArtifactUtils.decodeArtifact(ids[i]);
+    //         Artifact memory artifact = LibArtifactUtils.decodeArtifact(ids[i]);
 
     //         address owner;
 

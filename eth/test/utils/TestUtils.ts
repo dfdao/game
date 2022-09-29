@@ -1,5 +1,5 @@
 import type { DarkForest } from '@dfdao/contracts/typechain';
-import { ArtifactPropertiesStructOutput } from '@dfdao/contracts/typechain/contracts/DFToken';
+import { ArtifactStructOutput } from '@dfdao/contracts/typechain/hardhat-diamond-abi/HardhatDiamondABI.sol/DarkForest';
 import { modPBigInt } from '@dfdao/hashing';
 import {
   buildContractCallArgs,
@@ -15,8 +15,8 @@ import {
   ArtifactTypeNames,
   Biome,
   BiomeNames,
-  CollectionType,
-  CollectionTypeNames,
+  TokenType,
+  TokenTypeNames,
 } from '@dfdao/types';
 import { bigIntFromKey } from '@dfdao/whitelist';
 import { mine, time } from '@nomicfoundation/hardhat-network-helpers';
@@ -45,9 +45,9 @@ export function hexToBigNumber(hex: string): BigNumber {
   return BigNumber.from(`0x${hex}`);
 }
 
-export function prettyPrintToken(token: ArtifactPropertiesStructOutput) {
+export function prettyPrintToken(token: ArtifactStructOutput) {
   console.log(
-    `~Token~\nCollection: ${CollectionTypeNames[token.collectionType]}\nRarity: ${
+    `~Token~\nCollection: ${TokenTypeNames[token.tokenType]}\nRarity: ${
       ArtifactRarityNames[token.rarity]
     }\nType: ${ArtifactTypeNames[token.artifactType]}\nBiome: ${BiomeNames[token.planetBiome]}`
   );
@@ -333,7 +333,7 @@ export async function createArtifact(
   owner: string,
   planet: TestLocation,
   type: ArtifactType,
-  collectionType = CollectionType.Artifact,
+  collectionType = TokenType.Artifact,
   { rarity, biome }: { rarity?: ArtifactRarity; biome?: Biome } = {}
 ) {
   rarity ||= ArtifactRarity.Common;

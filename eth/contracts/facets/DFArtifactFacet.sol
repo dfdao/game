@@ -10,13 +10,16 @@ import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
 import {LibPermissions} from "../libraries/LibPermissions.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
+import {LibArtifact} from "../libraries/LibArtifact.sol";
+import {LibSpaceship} from "../libraries/LibSpaceship.sol";
+
 import {LibPlanet} from "../libraries/LibPlanet.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {ArtifactRarity, ArtifactType, Biome, CollectionType, DFTCreateArtifactArgs, DFPFindArtifactArgs, ArtifactProperties, TokenInfo} from "../DFTypes.sol";
+import {Artifact, ArtifactRarity, ArtifactType, Biome, TokenType, DFTCreateArtifactArgs, DFPFindArtifactArgs, Spaceship} from "../DFTypes.sol";
 
 import "hardhat/console.sol";
 
@@ -66,7 +69,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
     function createArtifact(DFTCreateArtifactArgs memory args)
         public
         onlyAdminOrCore
-        returns (ArtifactProperties memory)
+        returns (Artifact memory)
     {
         require(args.tokenId >= 1, "artifact id must be positive");
 
@@ -76,7 +79,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         return getArtifact(args.tokenId);
     }
 
-    function getArtifact(uint256 tokenId) public pure returns (ArtifactProperties memory) {
+    function getArtifact(uint256 tokenId) public pure returns (Artifact memory) {
         return LibArtifactUtils.decodeArtifact(tokenId);
     }
 
@@ -87,6 +90,23 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         uint256 _biome
     ) public pure returns (uint256) {
         return LibArtifactUtils.encodeArtifact(_collectionType, _rarity, _artifactType, _biome);
+    }
+
+    function testEncodeSpaceship(Spaceship memory spaceship) public pure returns (uint256) {
+        return LibSpaceship.encode(spaceship);
+    }
+
+    function testDecodeSpaceship(uint256 shipId) public view returns (Spaceship memory) {
+        return LibSpaceship.decode(shipId);
+    }
+
+    function testEncodeArtifact(Artifact memory artifact) public view returns (uint256) {
+        console.log("biome input", uint8(artifact.planetBiome));
+        return LibArtifact.encode(artifact);
+    }
+
+    function testDecodeArtifact(uint256 artifactId) public pure returns (Artifact memory) {
+        return LibArtifact.decode(artifactId);
     }
 
     // TODO: Add ERC1155 Enumerable Wrappers
@@ -272,7 +292,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
     ) internal virtual override {
         uint256 length = ids.length;
         for (uint256 i = 0; i < length; i++) {
-            ArtifactProperties memory artifact = getArtifact(ids[i]);
+            Artifact memory artifact = getArtifact(ids[i]);
             // Only core contract can transfer Spaceships
             if (LibArtifactUtils.isSpaceship(artifact.artifactType)) {
                 require(msg.sender == gs().diamondAddress, "player cannot transfer a Spaceship");

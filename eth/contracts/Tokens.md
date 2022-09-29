@@ -31,7 +31,7 @@ In `DFTypes.sol`, the `TokenInfo` enum looks like this:
 ```js
 enum TokenInfo {
     Unknown,
-    CollectionType,
+    TokenType,
     ArtifactRarity,
     ArtifactType,
     Biome
@@ -40,7 +40,7 @@ enum TokenInfo {
 
 Each index in `TokenInfo` refers to a chunk in the `tokenId`.
 
-> | CollectionType | ArtifactRarity | ArtifactType | Biome | chunk5 | ... chunk 32 |
+> | TokenType | ArtifactRarity | ArtifactType | Biome | chunk5 | ... chunk 32 |
 
 Each of these chunks has 256 options. So you can have 256 Artifact Rarities, Types, Biomes etc...
 This should be plenty, but if you need more you just use another chunk.
@@ -52,7 +52,7 @@ sell either one and they have the same buffs for planets.
 
 Thus, we can represent in this information with the following encoding:
 
-> | CollectionType.Artifact | ArtifactRarity.Epic | ArtifactType.Monolith | Biome.Ocean | ... |
+> | TokenType.Artifact | ArtifactRarity.Epic | ArtifactType.Monolith | Biome.Ocean | ... |
 
 In hex:
 
@@ -114,7 +114,7 @@ recommended in the ERC1155 Proposal.
 
 A Mothership Spaceship is represented like so
 
-> | CollectionType.Spaceship | ArtifactRarity.Unknown | ArtifactType.ShipMothership | Biome.Unknown
+> | TokenType.Spaceship | ArtifactRarity.Unknown | ArtifactType.ShipMothership | Biome.Unknown
 > | ... chunk 16 | uniqueId (16 chunks) |
 
 In hex:
@@ -138,7 +138,7 @@ If Velorum mints their own Mothership, it would have id: `<0x02000a00><0x02>`.
 Velorum's Mothership has the same TokenInfo, but a unique identifier at the end. This means the
 contract stores my Mothership and Velorum's Mothership as completely different collections.
 However, because our ships share the same first 128 bits, we can still calculate the information
-about the Spaceship (ArtifactType, CollectionType) just by feeding the `decodeArtifact` function the `tokenId`.
+about the Spaceship (ArtifactType, TokenType) just by feeding the `decodeArtifact` function the `tokenId`.
 
 ### Transferring
 

@@ -15,7 +15,7 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {ArrivalData, ArrivalType, ArtifactProperties, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetEventMetadata, PlanetEventType, Upgrade} from "../DFTypes.sol";
+import {ArrivalData, ArrivalType, Artifact, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetEventMetadata, PlanetEventType, Upgrade} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 contract DFMoveFacet is WithStorage {
@@ -233,7 +233,7 @@ contract DFMoveFacet is WithStorage {
         }
     }
 
-    function applySpaceshipDepart(ArtifactProperties memory artifact, Planet memory planet)
+    function applySpaceshipDepart(Artifact memory artifact, Planet memory planet)
         public
         view
         returns (Planet memory)
@@ -270,9 +270,7 @@ contract DFMoveFacet is WithStorage {
         Undo the spaceship effects that were applied when the ship arrived on the planet.
      */
     function _removeSpaceshipEffectsFromOriginPlanet(DFPMoveArgs memory args) private {
-        ArtifactProperties memory movedArtifact = LibArtifactUtils.decodeArtifact(
-            args.movedArtifactId
-        );
+        Artifact memory movedArtifact = LibArtifactUtils.decodeArtifact(args.movedArtifactId);
         Planet memory planet = applySpaceshipDepart(movedArtifact, gs().planets[args.oldLoc]);
         gs().planets[args.oldLoc] = planet;
     }
@@ -289,13 +287,9 @@ contract DFMoveFacet is WithStorage {
     {
         wormholePresent = false;
 
-        ArtifactProperties memory relevantWormhole;
-        ArtifactProperties memory activeArtifactFrom = LibArtifactUtils.getActiveArtifact(
-            args.oldLoc
-        );
-        ArtifactProperties memory activeArtifactTo = LibArtifactUtils.getActiveArtifact(
-            args.newLoc
-        );
+        Artifact memory relevantWormhole;
+        Artifact memory activeArtifactFrom = LibArtifactUtils.getActiveArtifact(args.oldLoc);
+        Artifact memory activeArtifactTo = LibArtifactUtils.getActiveArtifact(args.newLoc);
         // TODO: take the greater rarity of these, or disallow wormholes between planets that
         // already have a wormhole between them
         if (
@@ -327,9 +321,7 @@ contract DFMoveFacet is WithStorage {
         private
         returns (bool photoidPresent, Upgrade memory temporaryUpgrade)
     {
-        ArtifactProperties memory activeArtifactFrom = LibArtifactUtils.getActiveArtifact(
-            args.oldLoc
-        );
+        Artifact memory activeArtifactFrom = LibArtifactUtils.getActiveArtifact(args.oldLoc);
         if (
             activeArtifactFrom.artifactType == ArtifactType.PhotoidCannon &&
             block.timestamp - gs().planetArtifactActivationTime[args.oldLoc] >=
@@ -450,7 +442,7 @@ contract DFMoveFacet is WithStorage {
             distance: args.actualDist
         });
         // Photoids are burned _checkPhotoid, so don't remove twice
-        ArtifactProperties memory artifact = LibArtifactUtils.decodeArtifact(args.movedArtifactId);
+        Artifact memory artifact = LibArtifactUtils.decodeArtifact(args.movedArtifactId);
         if (args.movedArtifactId != 0 && artifact.artifactType != ArtifactType.PhotoidCannon) {
             LibGameUtils._takeArtifactOffPlanet(args.oldLoc, args.movedArtifactId);
         }
