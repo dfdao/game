@@ -6,14 +6,16 @@ import {DFArtifactFacet} from "../facets/DFArtifactFacet.sol";
 import {DFGetterFacet} from "../facets/DFGetterFacet.sol";
 
 // Library imports
+import {LibArtifact} from "./LibArtifact.sol";
 import {LibGameUtils} from "./LibGameUtils.sol";
+import {LibSpaceship} from "./LibSpaceship.sol";
 import {LibUtils} from "./LibUtils.sol";
 
 // Storage imports
 import {LibStorage, GameStorage, GameConstants} from "./LibStorage.sol";
 
 // Type imports
-import {Biome, Planet, PlanetType, ArtifactType, ArtifactRarity, TokenType, DFPFindArtifactArgs, DFTCreateArtifactArgs, Artifact, ArtifactInfo} from "../DFTypes.sol";
+import {Biome, Planet, PlanetType, ArtifactType, ArtifactRarity, TokenType, DFPFindArtifactArgs, DFTCreateArtifactArgs, Artifact, ArtifactInfo, Spaceship, SpaceshipType} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 library LibArtifactUtils {
@@ -61,34 +63,22 @@ library LibArtifactUtils {
     function createAndPlaceSpaceship(
         uint256 planetId,
         address owner,
-        ArtifactType shipType
+        SpaceshipType shipType
     ) public returns (uint256) {
-        require(shipType <= ArtifactType.ShipTitan && shipType >= ArtifactType.ShipMothership);
+        require(shipType != SpaceshipType.Unknown, "incorrect ship type");
         // require(gs().miscNonce < MAX UINT 128) but won't happen.
         uint128 id = uint128(gs().miscNonce++);
-        uint256 tokenId = encodeArtifact(
-            uint8(TokenType.Spaceship),
-            uint8(ArtifactRarity.Unknown),
-            uint8(shipType),
-            uint8(Biome.Unknown)
+        uint256 tokenId = LibSpaceship.encode(
+            Spaceship({id: 0, tokenType: TokenType.Spaceship, spaceshipType: shipType})
         );
-        DFTCreateArtifactArgs memory createArtifactArgs = DFTCreateArtifactArgs({
-            tokenId: tokenId + id,
-            discoverer: msg.sender,
-            planetId: planetId,
-            rarity: ArtifactRarity.Unknown,
-            biome: Biome.Unknown,
-            artifactType: shipType,
-            owner: owner,
-            // Only used for spaceships
-            controller: owner
-        });
-        Artifact memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
-            createArtifactArgs
-        );
-        LibGameUtils._putArtifactOnPlanet(planetId, foundArtifact.id);
 
-        return tokenId;
+        Spaceship memory spaceship = DFArtifactFacet(address(this)).createSpaceship(
+            tokenId + id, // Make each ship unique
+            owner
+        );
+        LibGameUtils._putSpaceshipOnPlanet(planetId, spaceship.id);
+
+        return spaceship.id;
     }
 
     function findArtifact(DFPFindArtifactArgs memory args) public returns (uint256 artifactId) {
@@ -114,27 +104,19 @@ library LibArtifactUtils {
         ArtifactRarity rarity = LibGameUtils.artifactRarityFromPlanetLevel(
             levelBonus + planet.planetLevel
         );
-        uint128 id = uint128(gs().miscNonce++);
-        uint256 tokenId = encodeArtifact(
-            uint8(TokenType.Artifact),
-            uint8(rarity),
-            uint8(artifactType),
-            uint8(biome)
-        );
-
-        DFTCreateArtifactArgs memory createArtifactArgs = DFTCreateArtifactArgs(
-            tokenId + id,
-            msg.sender, // discoverer
-            args.planetId,
-            rarity,
-            biome,
-            artifactType,
-            args.coreAddress, // owner
-            address(0)
+        uint256 tokenId = LibArtifact.encode(
+            Artifact({
+                id: 0,
+                tokenType: TokenType.Artifact,
+                rarity: rarity,
+                artifactType: artifactType,
+                planetBiome: biome
+            })
         );
 
         Artifact memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
-            createArtifactArgs
+            tokenId,
+            args.coreAddress
         );
 
         LibGameUtils._putArtifactOnPlanet(args.planetId, foundArtifact.id);
@@ -155,25 +137,28 @@ library LibArtifactUtils {
         Planet storage planet = gs().planets[locationId];
         Artifact memory artifact = decodeArtifact(artifactId);
 
-        require(
-            LibGameUtils.isArtifactOnPlanet(locationId, artifactId),
-            "can't active an artifact on a planet it's not on"
-        );
-
-        if (isSpaceship(artifact.artifactType)) {
-            activateSpaceshipArtifact(locationId, artifactId, planet, artifact);
+        if (LibSpaceship.isShip(artifactId)) {
+            require(
+                LibGameUtils.isSpaceshipOnPlanet(locationId, artifactId),
+                "can't activate a ship on a planet it's not on"
+            );
+            activateSpaceshipArtifact(locationId, artifactId, planet);
         } else {
+            require(
+                LibGameUtils.isArtifactOnPlanet(locationId, artifactId),
+                "can't activate an artifact on a planet it's not on"
+            );
             activateNonSpaceshipArtifact(locationId, artifactId, wormholeTo, planet, artifact);
         }
     }
 
     function activateSpaceshipArtifact(
         uint256 locationId,
-        uint256 artifactId,
-        Planet storage planet,
-        Artifact memory artifact
+        uint256 shipId,
+        Planet storage planet
     ) private {
-        if (artifact.artifactType == ArtifactType.ShipCrescent) {
+        Spaceship memory s = LibSpaceship.decode(shipId);
+        if (s.spaceshipType == SpaceshipType.ShipCrescent) {
             require(
                 planet.planetType != PlanetType.SILVER_MINE,
                 "cannot turn a silver mine into a silver mine"
@@ -196,12 +181,12 @@ library LibArtifactUtils {
             }
 
             planet.planetType = PlanetType.SILVER_MINE;
-            emit ArtifactActivated(msg.sender, locationId, artifactId);
+            emit ArtifactActivated(msg.sender, locationId, shipId);
 
             // TODO: Why not actually burn?
             // burn it after use. will be owned by contract but not on a planet anyone can control
-            LibGameUtils._takeArtifactOffPlanet(locationId, artifactId);
-            emit ArtifactDeactivated(msg.sender, locationId, artifactId);
+            LibGameUtils._takeSpaceshipOffPlanet(locationId, shipId);
+            emit ArtifactDeactivated(msg.sender, locationId, shipId);
         }
     }
 
@@ -222,7 +207,6 @@ library LibArtifactUtils {
         );
         require(!planet.destroyed, "planet is destroyed");
 
-        uint256 length = gs().planetArtifacts[locationId].length;
         require(
             getPlanetArtifact(locationId, artifactId).tokenType != TokenType.Unknown,
             "this artifact is not on this planet"
@@ -318,7 +302,7 @@ library LibArtifactUtils {
         require(!gs().planets[locationId].destroyed, "planet is destroyed");
         require(planet.planetType == PlanetType.TRADING_POST, "can only deposit on trading posts");
         require(
-            DFArtifactFacet(address(this)).balanceOf(msg.sender, artifactId) > 0,
+            DFArtifactFacet(address(this)).tokenExists(msg.sender, artifactId),
             "you can only deposit artifacts you own"
         );
         require(planet.owner == msg.sender, "you can only deposit on a planet you own");
@@ -328,9 +312,12 @@ library LibArtifactUtils {
             planet.planetLevel > uint256(artifact.rarity),
             "spacetime rip not high enough level to deposit this artifact"
         );
-        require(!isSpaceship(artifact.artifactType), "cannot deposit spaceships");
+        require(!LibSpaceship.isShip(artifactId), "cannot deposit spaceships");
 
-        require(gs().planetArtifacts[locationId].length < 5, "too many artifacts on this planet");
+        require(
+            gs().planetArtifacts[locationId].length + gs().planetSpaceships[locationId].length < 5,
+            "too many tokens on this planet"
+        );
 
         LibGameUtils._putArtifactOnPlanet(locationId, artifactId);
         // artifactId, curr owner, new owner
@@ -347,8 +334,6 @@ library LibArtifactUtils {
         require(!gs().planets[locationId].destroyed, "planet is destroyed");
         require(planet.owner == msg.sender, "you can only withdraw from a planet you own");
         Artifact memory artifact = getPlanetArtifact(locationId, artifactId);
-        // TODO: Write is initialized function.
-        require(artifact.tokenType != TokenType.Unknown, "this artifact is not on this planet");
 
         require(
             planet.planetLevel > uint256(artifact.rarity),
@@ -377,13 +362,12 @@ library LibArtifactUtils {
     }
 
     function containsGear(uint256 locationId) public view returns (bool) {
-        uint256[] memory artifactIds = gs().planetArtifacts[locationId];
-
-        for (uint256 i = 0; i < artifactIds.length; i++) {
-            Artifact memory artifact = decodeArtifact(artifactIds[i]);
+        uint256[] memory tokenIds = gs().planetSpaceships[locationId];
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            Spaceship memory spaceship = LibSpaceship.decode(tokenIds[i]);
             if (
-                // TODO: Gear is broken
-                artifact.artifactType == ArtifactType.ShipGear // && msg.sender == artifact.controller
+                spaceship.spaceshipType == SpaceshipType.ShipGear &&
+                DFArtifactFacet(address(this)).tokenExists(msg.sender, tokenIds[i])
             ) {
                 return true;
             }
@@ -473,14 +457,17 @@ library LibArtifactUtils {
     function getPlanetArtifact(uint256 locationId, uint256 artifactId)
         public
         view
-        returns (Artifact memory)
+        returns (Artifact memory a)
     {
+        bool found = false;
         for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
             if (gs().planetArtifacts[locationId][i] == artifactId) {
-                return decodeArtifact(artifactId);
+                a = decodeArtifact(artifactId);
+                found = true;
+                return a;
             }
         }
 
-        return _nullArtifactProperties();
+        require(found, "artifact not found");
     }
 }

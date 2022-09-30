@@ -6,10 +6,12 @@ import {DFVerifierFacet} from "./DFVerifierFacet.sol";
 import {DFArtifactFacet} from "./DFArtifactFacet.sol";
 
 // Library imports
+import {LibArtifact} from "../libraries/LibArtifact.sol";
 import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 import {LibPlanet} from "../libraries/LibPlanet.sol";
+import {LibSpaceship} from "../libraries/LibSpaceship.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
@@ -200,8 +202,7 @@ contract DFMoveFacet is WithStorage {
             require(args.popMoved == 0, "ship moves must move 0 energy");
             require(args.silverMoved == 0, "ship moves must move 0 silver");
             require(
-                // TODO: better name for doesArtifactExist function
-                DFArtifactFacet(address(this)).doesArtifactExist(msg.sender, args.movedArtifactId),
+                DFArtifactFacet(address(this)).tokenExists(msg.sender, args.movedArtifactId),
                 "you can only move your own ships"
             );
         } else {
@@ -227,8 +228,10 @@ contract DFMoveFacet is WithStorage {
 
         if (args.movedArtifactId != 0) {
             require(
-                gs().planetArtifacts[args.newLoc].length < 5,
-                "too many artifacts on this planet"
+                gs().planetArtifacts[args.newLoc].length +
+                    gs().planetSpaceships[args.newLoc].length <
+                    5,
+                "too many tokens on this planet"
             );
         }
     }
@@ -405,11 +408,8 @@ contract DFMoveFacet is WithStorage {
         }
     }
 
-    function _isSpaceshipMove(DFPMoveArgs memory args) private view returns (bool) {
-        return
-            LibArtifactUtils.isSpaceship(
-                LibArtifactUtils.decodeArtifact(args.movedArtifactId).artifactType
-            );
+    function _isSpaceshipMove(DFPMoveArgs memory args) private pure returns (bool) {
+        return LibSpaceship.isShip(args.movedArtifactId);
     }
 
     function _createArrival(DFPCreateArrivalArgs memory args) private {
@@ -422,9 +422,9 @@ contract DFMoveFacet is WithStorage {
             planet.range,
             planet.populationCap
         );
-        bool isSpaceship = LibArtifactUtils.isSpaceship(
-            LibArtifactUtils.decodeArtifact(args.movedArtifactId).artifactType
-        );
+
+        bool isSpaceship = LibSpaceship.isShip(args.movedArtifactId);
+
         // space ship moves are implemented as 0-energy moves
         require(popArriving > 0 || isSpaceship, "Not enough forces to make move");
         require(isSpaceship ? args.popMoved == 0 : true, "spaceship moves must be 0 energy moves");
@@ -441,10 +441,16 @@ contract DFMoveFacet is WithStorage {
             carriedArtifactId: args.movedArtifactId,
             distance: args.actualDist
         });
-        // Photoids are burned _checkPhotoid, so don't remove twice
-        Artifact memory artifact = LibArtifactUtils.decodeArtifact(args.movedArtifactId);
-        if (args.movedArtifactId != 0 && artifact.artifactType != ArtifactType.PhotoidCannon) {
-            LibGameUtils._takeArtifactOffPlanet(args.oldLoc, args.movedArtifactId);
+        // Photoids are burned in _checkPhotoid, so don't remove twice
+        if (args.movedArtifactId != 0) {
+            if (isSpaceship) {
+                LibGameUtils._takeSpaceshipOffPlanet(args.oldLoc, args.movedArtifactId);
+            } else {
+                Artifact memory artifact = LibArtifact.decode(args.movedArtifactId);
+                if (artifact.artifactType != ArtifactType.PhotoidCannon) {
+                    LibGameUtils._takeArtifactOffPlanet(args.oldLoc, args.movedArtifactId);
+                }
+            }
         }
     }
 

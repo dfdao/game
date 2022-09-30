@@ -43,8 +43,9 @@ struct GameStorage {
     mapping(uint256 => PlanetEventMetadata[]) planetEvents;
     // maps event id to arrival data
     mapping(uint256 => ArrivalData) planetArrivals;
-    // Artifact stuff
+    // Token stuff
     mapping(uint256 => uint256[]) planetArtifacts;
+    mapping(uint256 => uint256[]) planetSpaceships;
     mapping(uint256 => uint256) planetActiveArtifact;
     // wormhole from => to. planetWormHoles[from] = to;
     mapping(uint256 => uint256) planetWormholes;

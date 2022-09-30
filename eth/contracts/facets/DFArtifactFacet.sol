@@ -19,7 +19,7 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {Artifact, ArtifactRarity, ArtifactType, Biome, TokenType, DFTCreateArtifactArgs, DFPFindArtifactArgs, Spaceship} from "../DFTypes.sol";
+import {Artifact, ArtifactRarity, ArtifactType, Biome, TokenType, DFTCreateArtifactArgs, DFPFindArtifactArgs, Spaceship, SpaceshipType} from "../DFTypes.sol";
 
 import "hardhat/console.sol";
 
@@ -66,21 +66,39 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         _;
     }
 
-    function createArtifact(DFTCreateArtifactArgs memory args)
+    function createArtifact(uint256 tokenId, address owner)
         public
         onlyAdminOrCore
         returns (Artifact memory)
     {
-        require(args.tokenId >= 1, "artifact id must be positive");
-
+        require(tokenId >= 1, "token id must be positive");
+        require(LibArtifact.isArtifact(tokenId), "wrong token type");
         // Account, Id, Amount, Data
-        _mint(args.owner, args.tokenId, 1, "");
+        _mint(owner, tokenId, 1, "");
 
-        return getArtifact(args.tokenId);
+        return getArtifact(tokenId);
     }
 
-    function getArtifact(uint256 tokenId) public pure returns (Artifact memory) {
-        return LibArtifactUtils.decodeArtifact(tokenId);
+    function createSpaceship(uint256 tokenId, address owner)
+        public
+        onlyAdminOrCore
+        returns (Spaceship memory)
+    {
+        require(tokenId >= 1, "token id must be positive");
+        require(LibSpaceship.isShip(tokenId), "wrong token type");
+
+        // Account, Id, Amount, Data
+        _mint(owner, tokenId, 1, "");
+
+        return getSpaceship(tokenId);
+    }
+
+    function getArtifact(uint256 artifactId) public pure returns (Artifact memory) {
+        return LibArtifact.decode(artifactId);
+    }
+
+    function getSpaceship(uint256 shipId) public pure returns (Spaceship memory) {
+        return LibSpaceship.decode(shipId);
     }
 
     function encodeArtifact(
@@ -96,12 +114,11 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         return LibSpaceship.encode(spaceship);
     }
 
-    function testDecodeSpaceship(uint256 shipId) public view returns (Spaceship memory) {
+    function testDecodeSpaceship(uint256 shipId) public pure returns (Spaceship memory) {
         return LibSpaceship.decode(shipId);
     }
 
-    function testEncodeArtifact(Artifact memory artifact) public view returns (uint256) {
-        console.log("biome input", uint8(artifact.planetBiome));
+    function testEncodeArtifact(Artifact memory artifact) public pure returns (uint256) {
         return LibArtifact.encode(artifact);
     }
 
@@ -127,7 +144,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         }
     }
 
-    function doesArtifactExist(address owner, uint256 tokenId) public view returns (bool) {
+    function tokenExists(address owner, uint256 tokenId) public view returns (bool) {
         return balanceOf(owner, tokenId) > 0;
     }
 
@@ -237,7 +254,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
             uint256 id1 = LibArtifactUtils.createAndPlaceSpaceship(
                 locationId,
                 owner,
-                ArtifactType.ShipMothership
+                SpaceshipType.ShipMothership
             );
             emit ArtifactFound(msg.sender, id1, locationId);
         }
@@ -246,7 +263,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
             uint256 id2 = LibArtifactUtils.createAndPlaceSpaceship(
                 locationId,
                 owner,
-                ArtifactType.ShipCrescent
+                SpaceshipType.ShipCrescent
             );
             emit ArtifactFound(msg.sender, id2, locationId);
         }
@@ -255,7 +272,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
             uint256 id3 = LibArtifactUtils.createAndPlaceSpaceship(
                 locationId,
                 owner,
-                ArtifactType.ShipWhale
+                SpaceshipType.ShipWhale
             );
             emit ArtifactFound(msg.sender, id3, locationId);
         }
@@ -264,7 +281,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
             uint256 id4 = LibArtifactUtils.createAndPlaceSpaceship(
                 locationId,
                 owner,
-                ArtifactType.ShipGear
+                SpaceshipType.ShipGear
             );
             emit ArtifactFound(msg.sender, id4, locationId);
         }
@@ -273,7 +290,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
             uint256 id5 = LibArtifactUtils.createAndPlaceSpaceship(
                 locationId,
                 owner,
-                ArtifactType.ShipTitan
+                SpaceshipType.ShipTitan
             );
 
             emit ArtifactFound(msg.sender, id5, locationId);
@@ -292,9 +309,8 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
     ) internal virtual override {
         uint256 length = ids.length;
         for (uint256 i = 0; i < length; i++) {
-            Artifact memory artifact = getArtifact(ids[i]);
             // Only core contract can transfer Spaceships
-            if (LibArtifactUtils.isSpaceship(artifact.artifactType)) {
+            if (LibSpaceship.isShip(ids[i])) {
                 require(msg.sender == gs().diamondAddress, "player cannot transfer a Spaceship");
             }
         }

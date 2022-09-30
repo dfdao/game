@@ -5,15 +5,17 @@ pragma solidity ^0.8.0;
 import {DFArtifactFacet} from "./DFArtifactFacet.sol";
 
 // Library imports
-import {LibPermissions} from "../libraries/LibPermissions.sol";
-import {LibGameUtils} from "../libraries/LibGameUtils.sol";
+import {LibArtifact} from "../libraries/LibArtifact.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
+import {LibGameUtils} from "../libraries/LibGameUtils.sol";
+import {LibPermissions} from "../libraries/LibPermissions.sol";
+import {LibSpaceship} from "../libraries/LibSpaceship.sol";
 
 // Storage imports
 import {WithStorage, SnarkConstants, GameConstants} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {RevealedCoords, Artifact, ArrivalData, Planet, PlanetEventType, PlanetEventMetadata, PlanetDefaultStats, PlanetData, Player, Upgrade} from "../DFTypes.sol";
+import {RevealedCoords, Artifact, ArrivalData, Planet, PlanetEventType, PlanetEventMetadata, PlanetDefaultStats, PlanetData, Player, Upgrade, Spaceship} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 contract DFGetterFacet is WithStorage {
@@ -92,6 +94,10 @@ contract DFGetterFacet is WithStorage {
 
     function planetArtifacts(uint256 key) public view returns (uint256[] memory) {
         return gs().planetArtifacts[key];
+    }
+
+    function planetSpaceships(uint256 key) public view returns (uint256[] memory) {
+        return gs().planetSpaceships[key];
     }
 
     // ADDITIONAL UTILITY GETTERS
@@ -344,22 +350,36 @@ contract DFGetterFacet is WithStorage {
         uint256[] memory artifactIds = gs().planetArtifacts[locationId];
         ret = new Artifact[](artifactIds.length);
         for (uint256 i = 0; i < artifactIds.length; i++) {
-            ret[i] = LibArtifactUtils.decodeArtifact(artifactIds[i]);
+            ret[i] = LibArtifact.decode(artifactIds[i]);
         }
         return ret;
     }
 
-    function artifactExistsOnPlanet(uint256 locationId, uint256 artifactId)
+    function getSpaceshipsOnPlanet(uint256 locationId)
         public
         view
-        returns (bool)
+        returns (Spaceship[] memory ret)
     {
-        bool hasArtifact = false;
+        uint256[] memory tokenIds = gs().planetSpaceships[locationId];
+        ret = new Spaceship[](tokenIds.length);
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            ret[i] = LibSpaceship.decode(tokenIds[i]);
+        }
+        return ret;
+    }
+
+    // Combo on Ships and Artifacts
+    function tokenExistsOnPlanet(uint256 locationId, uint256 tokenId) public view returns (bool) {
+        bool hasToken = false;
         uint256[] memory artifactIds = gs().planetArtifacts[locationId];
         for (uint256 i = 0; i < artifactIds.length; i++) {
-            if (artifactIds[i] == artifactId) hasArtifact = true;
+            if (artifactIds[i] == tokenId) hasToken = true;
         }
-        return hasArtifact;
+        uint256[] memory shipIds = gs().planetSpaceships[locationId];
+        for (uint256 i = 0; i < shipIds.length; i++) {
+            if (shipIds[i] == tokenId) hasToken = true;
+        }
+        return hasToken;
     }
 
     function getActiveArtifactOnPlanet(uint256 locationId)

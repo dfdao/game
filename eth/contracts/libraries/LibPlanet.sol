@@ -6,15 +6,17 @@ import {DFVerifierFacet} from "../facets/DFVerifierFacet.sol";
 import {DFArtifactFacet} from "../facets/DFArtifactFacet.sol";
 
 // Library imports
+import {LibArtifact} from "./LibArtifact.sol";
+import {LibArtifactUtils} from "./LibArtifactUtils.sol";
 import {LibGameUtils} from "./LibGameUtils.sol";
 import {LibLazyUpdate} from "./LibLazyUpdate.sol";
-import {LibArtifactUtils} from "./LibArtifactUtils.sol";
+import {LibSpaceship} from "./LibSpaceship.sol";
 
 // Storage imports
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
 // Type imports
-import {ArtifactType, Artifact, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetType, RevealedCoords, SpaceType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
+import {ArtifactType, Artifact, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetType, RevealedCoords, SpaceType, Spaceship, SpaceshipType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 library LibPlanet {
@@ -288,10 +290,11 @@ library LibPlanet {
         }
 
         for (uint256 i = 0; i < artifactsToAdd.length; i++) {
-            // artifactsToAdd[i]
-            Artifact memory artifact = LibArtifactUtils.decodeArtifact(artifactsToAdd[i]);
-
-            planet = applySpaceshipArrive(artifact, planet);
+            // Only apply Spaceship arrival if ship is a spaceship.
+            if (LibSpaceship.isShip(artifactsToAdd[i])) {
+                Spaceship memory spaceship = LibSpaceship.decode(artifactsToAdd[i]);
+                planet = applySpaceshipArrive(spaceship, planet);
+            }
         }
 
         planet = LibLazyUpdate.updatePlanet(timestamp, planet);
@@ -299,7 +302,7 @@ library LibPlanet {
         return (planet, eventsToRemove, artifactsToAdd);
     }
 
-    function applySpaceshipArrive(Artifact memory artifact, Planet memory planet)
+    function applySpaceshipArrive(Spaceship memory spaceship, Planet memory planet)
         public
         pure
         returns (Planet memory)
@@ -308,17 +311,17 @@ library LibPlanet {
             return planet;
         }
 
-        if (artifact.artifactType == ArtifactType.ShipMothership) {
+        if (spaceship.spaceshipType == SpaceshipType.ShipMothership) {
             if (planet.energyGroDoublers == 0) {
                 planet.populationGrowth *= 2;
             }
             planet.energyGroDoublers++;
-        } else if (artifact.artifactType == ArtifactType.ShipWhale) {
+        } else if (spaceship.spaceshipType == SpaceshipType.ShipWhale) {
             if (planet.silverGroDoublers == 0) {
                 planet.silverGrowth *= 2;
             }
             planet.silverGroDoublers++;
-        } else if (artifact.artifactType == ArtifactType.ShipTitan) {
+        } else if (spaceship.spaceshipType == SpaceshipType.ShipTitan) {
             planet.pausers++;
         }
 
@@ -331,7 +334,7 @@ library LibPlanet {
         (
             Planet memory planet,
             uint256[12] memory eventsToRemove,
-            uint256[12] memory artifactIdsToAddToPlanet
+            uint256[12] memory tokenIdsToAddToPlanet
         ) = getRefreshedPlanet(location, block.timestamp);
 
         gs().planets[location] = planet;
@@ -348,8 +351,12 @@ library LibPlanet {
         }
 
         for (uint256 i = 0; i < 12; i++) {
-            if (artifactIdsToAddToPlanet[i] != 0) {
-                LibGameUtils._putArtifactOnPlanet(location, artifactIdsToAddToPlanet[i]);
+            if (tokenIdsToAddToPlanet[i] != 0) {
+                if (LibSpaceship.isShip(tokenIdsToAddToPlanet[i])) {
+                    LibGameUtils._putSpaceshipOnPlanet(location, tokenIdsToAddToPlanet[i]);
+                } else if (LibArtifact.isArtifact(tokenIdsToAddToPlanet[i])) {
+                    LibGameUtils._putArtifactOnPlanet(location, tokenIdsToAddToPlanet[i]);
+                }
             }
         }
     }

@@ -15,6 +15,7 @@ import {
   ArtifactTypeNames,
   Biome,
   BiomeNames,
+  SpaceshipType,
   TokenType,
   TokenTypeNames,
 } from '@dfdao/types';
@@ -380,5 +381,15 @@ export async function getArtifactOnPlanetByType(
 ) {
   return (await contract.getArtifactsOnPlanet(locationId)).filter(
     (artifact) => (artifact.artifactType as ArtifactType) === artifactType
+  )[0];
+}
+
+export async function getSpaceshipOnPlanetByType(
+  contract: DarkForest,
+  locationId: BigNumber,
+  shipType: SpaceshipType
+) {
+  return (await contract.getSpaceshipsOnPlanet(locationId)).filter(
+    (s) => (s.spaceshipType as SpaceshipType) === shipType
   )[0];
 }
