@@ -1,18 +1,18 @@
 import { Abstract } from './utility';
 
-export type CollectionType = Abstract<number, 'CollectionType'>;
+export type TokenType = Abstract<number, 'TokenType'>;
 
-export const CollectionType = {
-  Unknown: 0 as CollectionType,
-  Artifact: 1 as CollectionType,
-  Spaceship: 2 as CollectionType,
+export const TokenType = {
+  Unknown: 0 as TokenType,
+  Artifact: 1 as TokenType,
+  Spaceship: 2 as TokenType,
 } as const;
 
 /**
- * Mapping from CollectionType to pretty-printed names.
+ * Mapping from TokenType to pretty-printed names.
  */
-export const CollectionTypeNames = {
-  [CollectionType.Unknown]: 'Unknown',
-  [CollectionType.Artifact]: 'Artifact',
-  [CollectionType.Spaceship]: 'Spaceship',
+export const TokenTypeNames = {
+  [TokenType.Unknown]: 'Unknown',
+  [TokenType.Artifact]: 'Artifact',
+  [TokenType.Spaceship]: 'Spaceship',
 } as const;
