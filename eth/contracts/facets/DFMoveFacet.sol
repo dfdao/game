@@ -17,7 +17,7 @@ import {LibSpaceship} from "../libraries/LibSpaceship.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {ArrivalData, ArrivalType, Artifact, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetEventMetadata, PlanetEventType, Upgrade} from "../DFTypes.sol";
+import {ArrivalData, ArrivalType, Artifact, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetEventMetadata, PlanetEventType, Spaceship, SpaceshipType, Upgrade} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 contract DFMoveFacet is WithStorage {
@@ -236,7 +236,7 @@ contract DFMoveFacet is WithStorage {
         }
     }
 
-    function applySpaceshipDepart(Artifact memory artifact, Planet memory planet)
+    function applySpaceshipDepart(Spaceship memory spaceship, Planet memory planet)
         public
         view
         returns (Planet memory)
@@ -245,21 +245,21 @@ contract DFMoveFacet is WithStorage {
             return planet;
         }
 
-        if (artifact.artifactType == ArtifactType.ShipMothership) {
+        if (spaceship.spaceshipType == SpaceshipType.ShipMothership) {
             if (planet.energyGroDoublers == 1) {
                 planet.energyGroDoublers--;
                 planet.populationGrowth /= 2;
             } else if (planet.energyGroDoublers > 1) {
                 planet.energyGroDoublers--;
             }
-        } else if (artifact.artifactType == ArtifactType.ShipWhale) {
+        } else if (spaceship.spaceshipType == SpaceshipType.ShipWhale) {
             if (planet.silverGroDoublers == 1) {
                 planet.silverGroDoublers--;
                 planet.silverGrowth /= 2;
             } else if (planet.silverGroDoublers > 1) {
                 planet.silverGroDoublers--;
             }
-        } else if (artifact.artifactType == ArtifactType.ShipTitan) {
+        } else if (spaceship.spaceshipType == SpaceshipType.ShipTitan) {
             // so that updating silver/energy starts from the current time,
             // as opposed to the last time that the planet was updated
             planet.lastUpdated = block.timestamp;
@@ -273,8 +273,9 @@ contract DFMoveFacet is WithStorage {
         Undo the spaceship effects that were applied when the ship arrived on the planet.
      */
     function _removeSpaceshipEffectsFromOriginPlanet(DFPMoveArgs memory args) private {
-        Artifact memory movedArtifact = LibArtifactUtils.decodeArtifact(args.movedArtifactId);
-        Planet memory planet = applySpaceshipDepart(movedArtifact, gs().planets[args.oldLoc]);
+        if (!LibSpaceship.isShip(args.movedArtifactId)) return;
+        Spaceship memory spaceship = LibSpaceship.decode(args.movedArtifactId);
+        Planet memory planet = applySpaceshipDepart(spaceship, gs().planets[args.oldLoc]);
         gs().planets[args.oldLoc] = planet;
     }
 

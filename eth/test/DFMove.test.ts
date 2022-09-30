@@ -119,7 +119,6 @@ describe('DarkForestMove', function () {
       const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id)).filter(
         (s) => s.spaceshipType === SpaceshipType.ShipGear
       )[0];
-      console.log(`gear id`, ship?.id);
 
       await world.user1Core.move(
         ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 100, 0, 0, ship?.id)

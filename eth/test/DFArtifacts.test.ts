@@ -75,7 +75,6 @@ describe('DarkForestArtifacts', function () {
   }
 
   beforeEach('load fixture', async function () {
-    console.log(`loading world...`);
     this.timeout(0);
     world = await loadFixture(worldFixture);
   });
@@ -130,7 +129,6 @@ describe('DarkForestArtifacts', function () {
         spaceshipType,
       });
       const a = await world.contract.testDecodeSpaceship(res);
-      console.log(a);
       expect(tokenType).to.equal(Number(a.tokenType));
       expect(spaceshipType).to.equal(Number(a.spaceshipType));
     });
