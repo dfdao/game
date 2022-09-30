@@ -1,4 +1,4 @@
-import { ArtifactRarity, ArtifactType, Biome, TokenType } from '@dfdao/types';
+import { ArtifactRarity, ArtifactType, Biome, SpaceshipType, TokenType } from '@dfdao/types';
 import { loadFixture, mine } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import hre from 'hardhat';
@@ -56,9 +56,10 @@ describe('DarkForestArtifacts', function () {
     await increaseBlockchainTime();
 
     // Move the Gear ship into position
-    const gearShip = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
-      (artifact) => artifact.artifactType === ArtifactType.ShipGear
+    const gearShip = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id)).find(
+      (ship) => ship.spaceshipType === SpaceshipType.ShipGear
     );
+
     const gearId = gearShip?.id;
     await world.user1Core.move(
       ...makeMoveArgs(SPAWN_PLANET_1, ARTIFACT_PLANET_1, 100, 0, 0, gearId)
@@ -80,7 +81,7 @@ describe('DarkForestArtifacts', function () {
   });
 
   describe('it tests basic artifact actions', function () {
-    it.only('logs bits for artifact old', async function () {
+    it('logs bits for artifact old', async function () {
       // Must be valid options
       const _collectionType = '0x01';
       const _rarity = ArtifactRarity.Legendary;
@@ -562,7 +563,7 @@ describe('DarkForestArtifacts', function () {
       // should not be able to withdraw newArtifactId from LVL3_SPACETIME_1
       await expect(
         world.user1Core.withdrawArtifact(LVL3_SPACETIME_1.id, newArtifactId)
-      ).to.be.revertedWith('this artifact is not on this planet');
+      ).to.be.revertedWith('artifact not found');
     });
 
     it('should not be able to withdraw/deposit onto a planet that is not a trading post', async function () {
@@ -597,7 +598,7 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         ZERO_PLANET,
         ArtifactType.Monolith,
-        CollectionType.Artifact,
+        TokenType.Artifact,
         { rarity: ArtifactRarity.Legendary, biome: Biome.OCEAN }
       );
 
@@ -647,7 +648,7 @@ describe('DarkForestArtifacts', function () {
           world.user1.address,
           from,
           ArtifactType.Wormhole,
-          CollectionType.Artifact,
+          TokenType.Artifact,
           { rarity: artifactRarities[i] as ArtifactRarity, biome: Biome.OCEAN }
         );
         prettyPrintToken(await world.contract.getArtifact(artifactId));
@@ -717,13 +718,13 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         from,
         ArtifactType.Wormhole,
-        CollectionType.Artifact,
+        TokenType.Artifact,
         { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
       );
 
       // Move gear bc too many artifacts on SPAWN_PLANET_1, so can't receive wormhole.
-      const crescentShip = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
-        (artifact) => artifact.artifactType === ArtifactType.ShipCrescent
+      const crescentShip = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (ship) => ship.spaceshipType === SpaceshipType.ShipCrescent
       );
 
       await world.user1Core.move(
@@ -808,7 +809,7 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         ZERO_PLANET,
         ArtifactType.BloomFilter,
-        CollectionType.Artifact,
+        TokenType.Artifact,
         { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
       );
       prettyPrintToken(await world.contract.getArtifact(newTokenId));
@@ -855,7 +856,7 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         ZERO_PLANET,
         ArtifactType.BloomFilter,
-        CollectionType.Artifact,
+        TokenType.Artifact,
         { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
       );
 
@@ -890,7 +891,7 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         ZERO_PLANET,
         ArtifactType.BlackDomain,
-        CollectionType.Artifact,
+        TokenType.Artifact,
         { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
       );
 
@@ -940,7 +941,7 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         ZERO_PLANET,
         ArtifactType.BlackDomain,
-        CollectionType.Artifact,
+        TokenType.Artifact,
         { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
       );
 
@@ -964,7 +965,7 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         LVL3_SPACETIME_1,
         ArtifactType.PlanetaryShield,
-        CollectionType.Artifact,
+        TokenType.Artifact,
         { rarity: ArtifactRarity.Rare as ArtifactRarity, biome: Biome.OCEAN }
       );
       prettyPrintToken(await world.contract.getArtifact(newTokenId));
@@ -1009,7 +1010,7 @@ describe('DarkForestArtifacts', function () {
           world.user1.address,
           ZERO_PLANET,
           ArtifactType.PhotoidCannon,
-          CollectionType.Artifact,
+          TokenType.Artifact,
           { rarity: artifactRarities[i] as ArtifactRarity, biome: Biome.OCEAN }
         );
         prettyPrintToken(await world.contract.getArtifact(newTokenId));

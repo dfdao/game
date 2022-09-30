@@ -21,7 +21,7 @@ library LibArtifact {
      * @notice Create the token ID for a Artifact with the following properties:
      * @param artifact Artifact
      */
-    function encode(Artifact memory artifact) internal view returns (uint256) {
+    function encode(Artifact memory artifact) internal pure returns (uint256) {
         // x << y is equivalent to the mathematical expression x * 2**y
         uint256 tokenType = LibUtils.shiftLeft(
             uint8(artifact.tokenType),
@@ -58,5 +58,12 @@ library LibArtifact {
                 artifactType: ArtifactType(artifactType),
                 planetBiome: Biome(biome)
             });
+    }
+
+    function isArtifact(uint256 tokenId) internal pure returns (bool) {
+        bytes memory _b = abi.encodePacked(tokenId);
+        uint8 tokenIdx = uint8(ArtifactInfo.TokenType) - 1;
+        uint8 tokenType = uint8(LibUtils.calculateByteUInt(_b, tokenIdx, tokenIdx));
+        return (TokenType(tokenType) == TokenType.Artifact);
     }
 }

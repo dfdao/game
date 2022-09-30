@@ -34,21 +34,27 @@ library LibSpaceship {
         return tokenType + shipType;
     }
 
-    function decode(uint256 spaceshipId) internal view returns (Spaceship memory) {
+    function decode(uint256 spaceshipId) internal pure returns (Spaceship memory) {
         bytes memory _b = abi.encodePacked(spaceshipId);
+        // Idx is subtracted by one because each Info enum has Unknown at the zero location.
         uint8 tokenIdx = uint8(SpaceshipInfo.TokenType) - 1;
         uint8 shipInfoIdx = uint8(SpaceshipInfo.SpaceshipType) - 1;
-        console.log("ship info indx", shipInfoIdx);
 
         uint8 tokenType = uint8(LibUtils.calculateByteUInt(_b, tokenIdx, tokenIdx));
         uint8 shipType = uint8(LibUtils.calculateByteUInt(_b, shipInfoIdx, shipInfoIdx));
-        console.log("tokenType", tokenType);
-        console.log("shipType", shipType);
+
         return
             Spaceship({
                 id: spaceshipId,
                 tokenType: TokenType(tokenType),
                 spaceshipType: SpaceshipType(shipType)
             });
+    }
+
+    function isShip(uint256 tokenId) internal pure returns (bool) {
+        bytes memory _b = abi.encodePacked(tokenId);
+        uint8 tokenIdx = uint8(SpaceshipInfo.TokenType) - 1;
+        uint8 tokenType = uint8(LibUtils.calculateByteUInt(_b, tokenIdx, tokenIdx));
+        return (TokenType(tokenType) == TokenType.Spaceship);
     }
 }

@@ -375,7 +375,10 @@ library LibGameUtils {
     // put on. note that this function does not transfer the artifact.
     function _putArtifactOnPlanet(uint256 locationId, uint256 artifactId) public {
         gs().planetArtifacts[locationId].push(artifactId);
-        uint256 length = gs().planetArtifacts[locationId].length;
+    }
+
+    function _putSpaceshipOnPlanet(uint256 locationId, uint256 spaceshipId) public {
+        gs().planetSpaceships[locationId].push(spaceshipId);
     }
 
     // TODO: Why not burn ?
@@ -416,6 +419,31 @@ library LibGameUtils {
         gs().planetArtifacts[locationId].pop();
     }
 
+    function _takeSpaceshipOffPlanet(uint256 locationId, uint256 spaceshipId) public {
+        uint256 shipsOnThisPlanet = gs().planetSpaceships[locationId].length;
+
+        bool hadTheShip = false;
+
+        for (uint256 i = 0; i < shipsOnThisPlanet; i++) {
+            if (gs().planetSpaceships[locationId][i] == spaceshipId) {
+                require(
+                    !isActivated(locationId, spaceshipId),
+                    "you cannot take an activated spaceship off a planet"
+                );
+
+                gs().planetSpaceships[locationId][i] = gs().planetSpaceships[locationId][
+                    shipsOnThisPlanet - 1
+                ];
+
+                hadTheShip = true;
+                break;
+            }
+        }
+
+        require(hadTheShip, "this ship was not present on this planet");
+        gs().planetSpaceships[locationId].pop();
+    }
+
     // an artifact is only considered 'activated' if this method returns true.
     // we do not have an `isActive` field on artifact; the times that the
     // artifact was last activated and deactivated are sufficent to determine
@@ -428,6 +456,16 @@ library LibGameUtils {
     function isArtifactOnPlanet(uint256 locationId, uint256 artifactId) public view returns (bool) {
         for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
             if (gs().planetArtifacts[locationId][i] == artifactId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function isSpaceshipOnPlanet(uint256 locationId, uint256 shipId) public view returns (bool) {
+        for (uint256 i; i < gs().planetSpaceships[locationId].length; i++) {
+            if (gs().planetSpaceships[locationId][i] == shipId) {
                 return true;
             }
         }

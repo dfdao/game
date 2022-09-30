@@ -42,6 +42,7 @@ export * from './plugin';
 export * from './renderer';
 export * from './reveal';
 export * from './setting';
+export * from './spaceship';
 export * from './token';
 export * from './transaction';
 export * from './transactions';

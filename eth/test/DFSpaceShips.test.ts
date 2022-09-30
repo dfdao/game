@@ -1,13 +1,12 @@
-import { ArtifactType, PlanetType } from '@dfdao/types';
+import { PlanetType, SpaceshipType } from '@dfdao/types';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import {
   conquerUnownedPlanet,
-  getArtifactOnPlanetByType,
+  getSpaceshipOnPlanetByType,
   increaseBlockchainTime,
   makeInitArgs,
   makeMoveArgs,
-  prettyPrintToken,
 } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import {
@@ -41,7 +40,9 @@ describe('DarkForestSpaceShips', function () {
 
   describe('spawning your ships', function () {
     it('gives you 5 space ships', async function () {
-      expect((await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).length).to.be.equal(5);
+      expect((await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id)).length).to.be.equal(
+        5
+      );
     });
 
     it('can only be done once per player', async function () {
@@ -61,10 +62,10 @@ describe('DarkForestSpaceShips', function () {
 
   describe('ship transfers', function () {
     it('cannot transfer your own spaceship', async function () {
-      const motherShip = await getArtifactOnPlanetByType(
+      const motherShip = await getSpaceshipOnPlanetByType(
         world.contract,
         SPAWN_PLANET_1.id,
-        ArtifactType.ShipMothership
+        SpaceshipType.ShipMothership
       );
       // Player owns ship.
       expect(await world.contract.balanceOf(world.user1.address, motherShip.id)).to.equal(1);
@@ -81,10 +82,10 @@ describe('DarkForestSpaceShips', function () {
     it('cannot transfer other players spaceship', async function () {
       await world.user2Core.giveSpaceShips(SPAWN_PLANET_2.id);
 
-      const motherShip = await getArtifactOnPlanetByType(
+      const motherShip = await getSpaceshipOnPlanetByType(
         world.contract,
         SPAWN_PLANET_2.id,
-        ArtifactType.ShipMothership
+        SpaceshipType.ShipMothership
       );
       // Other Player owns ship.
       expect(await world.contract.balanceOf(world.user2.address, motherShip.id)).to.equal(1);
@@ -104,8 +105,10 @@ describe('DarkForestSpaceShips', function () {
     this.timeout(0);
 
     it('pauses energy regeneration on planets', async function () {
-      const titan = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
-        (a) => a.artifactType === ArtifactType.ShipTitan
+      const titan = await getSpaceshipOnPlanetByType(
+        world.contract,
+        SPAWN_PLANET_1.id,
+        SpaceshipType.ShipTitan
       );
 
       // Move Titan to planet
@@ -151,11 +154,11 @@ describe('DarkForestSpaceShips', function () {
 
   describe('using the Crescent', function () {
     it('turns planet into an asteroid and burns crescent', async function () {
-      const crescent = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
-        (a) => a.artifactType === ArtifactType.ShipCrescent
+      const crescent = await getSpaceshipOnPlanetByType(
+        world.contract,
+        SPAWN_PLANET_1.id,
+        SpaceshipType.ShipCrescent
       );
-      if (!crescent) throw new Error('crescent not found');
-      prettyPrintToken(crescent);
 
       // Move Crescent to planet
       await world.user1Core.move(
@@ -166,7 +169,7 @@ describe('DarkForestSpaceShips', function () {
       await world.contract.refreshPlanet(LVL1_PLANET_DEEP_SPACE.id);
 
       const crescentNewLocId = (
-        await world.contract.getArtifactsOnPlanet(LVL1_PLANET_DEEP_SPACE.id)
+        await world.contract.getSpaceshipsOnPlanet(LVL1_PLANET_DEEP_SPACE.id)
       )[0].id;
       expect(crescentNewLocId).to.equal(crescent?.id);
 
@@ -177,7 +180,7 @@ describe('DarkForestSpaceShips', function () {
       expect(planetBeforeActivate.silverGrowth).to.be.lessThan(planetAfterActivate.silverGrowth);
       // Crescent is no longer on planet.
       expect(
-        (await world.contract.getArtifactsOnPlanet(LVL1_PLANET_DEEP_SPACE.id)).length
+        (await world.contract.getSpaceshipsOnPlanet(LVL1_PLANET_DEEP_SPACE.id)).length
       ).to.equal(0);
       // Planet was planet
       expect(planetBeforeActivate.planetType).to.equal(PlanetType.PLANET);
@@ -186,7 +189,7 @@ describe('DarkForestSpaceShips', function () {
       // Cannot activate again.
       await expect(
         world.user1Core.activateArtifact(LVL1_PLANET_DEEP_SPACE.id, crescent.id, 0)
-      ).to.be.revertedWith("can't active an artifact on a planet it's not on");
+      ).to.be.revertedWith("can't activate a ship on a planet it's not on");
     });
   });
 
