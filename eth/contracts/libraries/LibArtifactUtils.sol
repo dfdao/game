@@ -339,7 +339,7 @@ library LibArtifactUtils {
             planet.planetLevel > uint256(artifact.rarity),
             "spacetime rip not high enough level to withdraw this artifact"
         );
-        require(!isSpaceship(artifact.artifactType), "cannot withdraw spaceships");
+        require(!LibSpaceship.isShip(artifactId), "cannot withdraw spaceships");
         LibGameUtils._takeArtifactOffPlanet(locationId, artifactId);
 
         // artifactId, curr owner, new owner
@@ -374,11 +374,6 @@ library LibArtifactUtils {
         }
 
         return false;
-    }
-
-    function isSpaceship(ArtifactType artifactType) public pure returns (bool) {
-        return
-            artifactType >= ArtifactType.ShipMothership && artifactType <= ArtifactType.ShipTitan;
     }
 
     /**

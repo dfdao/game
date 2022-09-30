@@ -126,8 +126,6 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         return LibArtifact.decode(artifactId);
     }
 
-    // TODO: Add ERC1155 Enumerable Wrappers
-
     // This calls the low level _transfer call which doesn't check if the msg.sender actually owns
     // the tokenId. TODO: See if this is a problem.
     function transferArtifact(

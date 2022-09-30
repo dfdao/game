@@ -205,13 +205,7 @@ enum ArtifactType {
     PlanetaryShield,
     PhotoidCannon,
     BloomFilter,
-    BlackDomain,
-    // TODO; remove this
-    ShipMothership,
-    ShipCrescent,
-    ShipWhale,
-    ShipGear,
-    ShipTitan
+    BlackDomain
 }
 
 enum SpaceshipType {
