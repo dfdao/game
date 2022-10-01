@@ -2,13 +2,11 @@ import { ArtifactRarity, ArtifactType, Biome, SpaceshipType, TokenType } from '@
 import { loadFixture, mine } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import hre from 'hardhat';
-import { TestLocation } from './utils/TestLocation';
 import {
   activateAndConfirm,
   conquerUnownedPlanet,
   createArtifact,
   getArtifactsOnPlanet,
-  getArtifactsOwnedBy,
   getCurrentTime,
   getStatSum,
   increaseBlockchainTime,
@@ -30,7 +28,6 @@ import {
   LVL3_UNOWNED_NEBULA,
   LVL4_UNOWNED_DEEP_SPACE,
   LVL6_SPACETIME,
-  SPACE_PERLIN,
   SPAWN_PLANET_1,
   SPAWN_PLANET_2,
   ZERO_PLANET,
@@ -346,79 +343,6 @@ describe('DarkForestArtifacts', function () {
       await expect(world.user1Core.prospectPlanet(SPAWN_PLANET_1.id)).to.be.revertedWith(
         "you can't find an artifact on this planet"
       );
-    });
-    // TODO: Why do we need this test?
-    it.skip('should mint randomly', async function () {
-      // This can take upwards of 90000ms in CI
-      this.timeout(0);
-
-      await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL3_SPACETIME_1);
-
-      /* eslint-disable @typescript-eslint/no-explicit-any */
-      let artifacts: any;
-      let prevLocation = SPAWN_PLANET_1;
-
-      for (let i = 0; i < 20; i++) {
-        // byte #8 is 18_16 = 24_10 so it's a ruins planet
-        const randomHex =
-          `00007c2512896efb182d462faee0000fb33d58930eb9e6b4fbae6d048e9c44` +
-          (i >= 10 ? i.toString()[0] : 0) +
-          '' +
-          (i % 10);
-
-        const planetWithArtifactLoc = new TestLocation({
-          hex: randomHex,
-          perlin: SPACE_PERLIN,
-          distFromOrigin: 1998,
-        });
-
-        await world.contract.adminInitializePlanet(
-          planetWithArtifactLoc.id,
-          planetWithArtifactLoc.perlin
-        );
-
-        await world.contract.adminGiveSpaceShip(
-          planetWithArtifactLoc.id,
-          world.user1.address,
-          ArtifactType.ShipGear
-        );
-
-        await increaseBlockchainTime();
-
-        await world.user1Core.move(
-          ...makeMoveArgs(prevLocation, planetWithArtifactLoc, 0, 80000, 0)
-        ); // move 80000 from asteroids but 160000 from ruins since ruins are higher level
-        await increaseBlockchainTime();
-
-        await world.user1Core.prospectPlanet(planetWithArtifactLoc.id);
-        await increaseBlockchainTime();
-
-        await world.user1Core.findArtifact(...makeFindArtifactArgs(planetWithArtifactLoc));
-        await increaseBlockchainTime();
-
-        const artifactsOnPlanet = await getArtifactsOnPlanet(world, planetWithArtifactLoc.id);
-        const artifactId = artifactsOnPlanet[0].id;
-
-        await world.user1Core.move(
-          ...makeMoveArgs(planetWithArtifactLoc, LVL3_SPACETIME_1, 0, 40000, 0, artifactId)
-        );
-        await world.user1Core.withdrawArtifact(LVL3_SPACETIME_1.id, artifactId);
-        artifacts = await getArtifactsOwnedBy(world.contract, world.user1.address);
-
-        expect(artifacts[artifacts.length - 1].planetBiome).to.eq(4); // tundra
-        expect(artifacts[artifacts.length - 1].discoverer).to.eq(world.user1.address);
-        expect(artifacts[artifacts.length - 1].rarity).to.be.at.least(1);
-
-        prevLocation = planetWithArtifactLoc;
-      }
-
-      const artifactTypeSet = new Set();
-
-      for (let i = 0; i < artifacts.length; i++) {
-        artifactTypeSet.add(artifacts[i].artifactType);
-      }
-
-      expect(artifactTypeSet.size).to.be.greaterThan(1);
     });
 
     it('should not mint an artifact on the same planet twice', async function () {

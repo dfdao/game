@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 // Contract imports
-import {SolidStateERC1155} from "@solidstate/contracts/token/ERC1155/SolidStateERC1155.sol";
 import {DFVerifierFacet} from "./DFVerifierFacet.sol";
 import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
+import {DFTokenFacet} from "./DFTokenFacet.sol";
 
 // Library Imports
 import {LibPermissions} from "../libraries/LibPermissions.sol";
@@ -23,7 +23,7 @@ import {Artifact, ArtifactRarity, ArtifactType, Biome, TokenType, DFTCreateArtif
 
 import "hardhat/console.sol";
 
-contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
+contract DFArtifactFacet is WithStorage {
     event PlanetProspected(address player, uint256 loc);
     event ArtifactFound(address player, uint256 artifactId, uint256 loc);
     event ArtifactDeposited(address player, uint256 artifactId, uint256 loc);
@@ -50,18 +50,18 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         _;
     }
 
-    modifier onlyAdminOrCore() {
-        require(
-            msg.sender == gs().diamondAddress || msg.sender == LibPermissions.contractOwner(),
-            "Only the Core or Admin addresses can fiddle with artifacts."
-        );
-        _;
-    }
-
     modifier onlyAdmin() {
         require(
             msg.sender == LibPermissions.contractOwner(),
             "Only Admin address can perform this action."
+        );
+        _;
+    }
+
+    modifier onlyAdminOrCore() {
+        require(
+            msg.sender == gs().diamondAddress || msg.sender == LibPermissions.contractOwner(),
+            "Only the Core or Admin addresses can fiddle with artifacts."
         );
         _;
     }
@@ -74,9 +74,13 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         require(tokenId >= 1, "token id must be positive");
         require(LibArtifact.isArtifact(tokenId), "token must be Artifact");
         // Account, Id, Amount, Data
-        _mint(owner, tokenId, 1, "");
+        DFTokenFacet(address(this)).mint(owner, tokenId, 1);
 
         return LibArtifact.decode(tokenId);
+    }
+
+    function tokenIsOwnedBy(address owner, uint256 tokenId) public view returns (bool) {
+        return DFTokenFacet(address(this)).balanceOf(owner, tokenId) > 0;
     }
 
     function createSpaceship(uint256 tokenId, address owner)
@@ -88,7 +92,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         require(LibSpaceship.isShip(tokenId), "token must be Spaceship");
 
         // Account, Id, Amount, Data
-        _mint(owner, tokenId, 1, "");
+        DFTokenFacet(address(this)).mint(owner, tokenId, 1);
 
         return getSpaceship(tokenId);
     }
@@ -122,15 +126,11 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
     ) public onlyAdminOrCore {
         if (newOwner == address(0)) {
             // account, id, amount.
-            _burn(owner, tokenId, 1);
+            DFTokenFacet(address(this)).burn(owner, tokenId, 1);
         } else {
             // sender receiver id amount data
-            _transfer(owner, owner, newOwner, tokenId, 1, "");
+            DFTokenFacet(address(this)).transfer(owner, owner, newOwner, tokenId, 1, "");
         }
-    }
-
-    function tokenExists(address owner, uint256 tokenId) public view returns (bool) {
-        return balanceOf(owner, tokenId) > 0;
     }
 
     function findArtifact(
@@ -282,45 +282,5 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         }
 
         gs().players[msg.sender].claimedShips = true;
-    }
-
-    function _beforeTokenTransfer(
-        address operator,
-        address from,
-        address to,
-        uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
-    ) internal virtual override {
-        uint256 length = ids.length;
-        for (uint256 i = 0; i < length; i++) {
-            // Only core contract can transfer Spaceships
-            if (LibSpaceship.isShip(ids[i])) {
-                require(msg.sender == gs().diamondAddress, "player cannot transfer a Spaceship");
-            }
-        }
-    }
-
-    /**
-     * @notice set per-token metadata URI
-     * @param tokenId token whose metadata URI to set
-     * @param tokenURI per-token URI
-     */
-    function setTokenURI(uint256 tokenId, string memory tokenURI) public {
-        _setTokenURI(tokenId, tokenURI);
-    }
-
-    /**
-     * @notice ERC1155 mint
-     * @param owner of new tokens
-     * @param tokenId tokenId to mint
-     * @param amount amount of tokens to mint
-     */
-    function mint(
-        address owner,
-        uint256 tokenId,
-        uint256 amount
-    ) public onlyAdminOrCore {
-        _mint(owner, tokenId, amount, "");
     }
 }
