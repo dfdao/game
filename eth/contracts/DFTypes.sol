@@ -250,14 +250,6 @@ enum Biome {
     Corrupted
 }
 
-// enum TokenInfo {
-//     Unknown,
-//     TokenType, // Each bin of tokens gets an id (spaceships, artifacts, etc...)
-//     ArtifactRarity,
-//     ArtifactType,
-//     Biome
-// }
-
 enum TokenType {
     Unknown,
     Artifact,
