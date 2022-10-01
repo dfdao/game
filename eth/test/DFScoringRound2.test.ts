@@ -4,7 +4,7 @@ import { conquerUnownedPlanet, feedSilverToCap, makeInitArgs } from './utils/Tes
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import { LVL1_ASTEROID_1, LVL3_SPACETIME_1, SPAWN_PLANET_1 } from './utils/WorldConstants';
 
-describe('DFScoringRound2', async function () {
+describe.only('DFScoringRound2', async function () {
   // Bump the time out so that the test doesn't timeout during
   // initial fixture creation
   this.timeout(1000 * 60);

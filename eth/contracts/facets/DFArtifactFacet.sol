@@ -309,4 +309,18 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
     function setTokenURI(uint256 tokenId, string memory tokenURI) public {
         _setTokenURI(tokenId, tokenURI);
     }
+
+    /**
+     * @notice ERC1155 mint
+     * @param owner of new tokens
+     * @param tokenId tokenId to mint
+     * @param amount amount of tokens to mint
+     */
+    function mint(
+        address owner,
+        uint256 tokenId,
+        uint256 amount
+    ) public onlyAdminOrCore {
+        _mint(owner, tokenId, amount, "");
+    }
 }
