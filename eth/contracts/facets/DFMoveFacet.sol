@@ -201,7 +201,7 @@ contract DFMoveFacet is WithStorage {
             require(args.popMoved == 0, "ship moves must move 0 energy");
             require(args.silverMoved == 0, "ship moves must move 0 silver");
             require(
-                DFArtifactFacet(address(this)).tokenExists(msg.sender, args.movedArtifactId),
+                DFArtifactFacet(address(this)).tokenIsOwnedBy(msg.sender, args.movedArtifactId),
                 "you can only move your own ships"
             );
         } else {
