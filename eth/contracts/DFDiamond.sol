@@ -13,9 +13,9 @@ import {ERC165, IERC165, ERC165Storage} from "@solidstate/contracts/introspectio
 import {DiamondBase, DiamondBaseStorage} from "@solidstate/contracts/proxy/diamond/base/DiamondBase.sol";
 import {DiamondReadable, IDiamondReadable} from "@solidstate/contracts/proxy/diamond/readable/DiamondReadable.sol";
 import {DiamondWritable, IDiamondWritable} from "@solidstate/contracts/proxy/diamond/writable/DiamondWritable.sol";
-import {IERC721} from "@solidstate/contracts/token/ERC721/IERC721.sol";
-import {IERC721Metadata} from "@solidstate/contracts/token/ERC721/metadata/IERC721Metadata.sol";
-import {IERC721Enumerable} from "@solidstate/contracts/token/ERC721/enumerable/IERC721Enumerable.sol";
+import {IERC1155} from "@solidstate/contracts/token/ERC1155/IERC1155.sol";
+import {IERC1155Metadata} from "@solidstate/contracts/token/ERC1155/metadata/IERC1155Metadata.sol";
+import {IERC1155Enumerable} from "@solidstate/contracts/token/ERC1155/enumerable/IERC1155Enumerable.sol";
 
 /**
  * @title SolidState "Diamond" proxy reference implementation
@@ -58,9 +58,9 @@ contract DFDiamond is DiamondBase, DiamondReadable, DiamondWritable, Ownable, ER
         erc165.setSupportedInterface(type(IERC173).interfaceId, true);
 
         // Store ERC721 interface
-        erc165.setSupportedInterface(type(IERC721).interfaceId, true);
-        erc165.setSupportedInterface(type(IERC721Metadata).interfaceId, true);
-        erc165.setSupportedInterface(type(IERC721Enumerable).interfaceId, true);
+        erc165.setSupportedInterface(type(IERC1155).interfaceId, true);
+        erc165.setSupportedInterface(type(IERC1155Metadata).interfaceId, true);
+        erc165.setSupportedInterface(type(IERC1155Enumerable).interfaceId, true);
 
         // register Diamond
 

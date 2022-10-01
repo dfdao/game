@@ -246,6 +246,7 @@ export async function deployAndCut(
   const coreFacet = await deployCoreFacet({}, libraries, hre);
   const moveFacet = await deployMoveFacet({}, libraries, hre);
   const captureFacet = await deployCaptureFacet({}, libraries, hre);
+  const tokenFacet = await deployTokenFacet({}, libraries, hre);
   const artifactFacet = await deployArtifactFacet(
     { diamondAddress: diamond.address },
     libraries,
@@ -270,6 +271,7 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFAdminFacet', adminFacet),
     ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
     ...changes.getFacetCuts('DFRewardFacet', rewardFacet),
+    ...changes.getFacetCuts('DFTokenFacet', tokenFacet),
   ];
 
   if (isDev) {
@@ -366,6 +368,16 @@ export async function deployVerifierFacet({}, {}: Libraries, hre: HardhatRuntime
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log(`DFVerifierFacet deployed to: ${contract.address}`);
+  return contract;
+}
+
+export async function deployTokenFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
+  const factory = await hre.ethers.getContractFactory('DFTokenFacet', {
+    libraries: {},
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFTokenFacet deployed to: ${contract.address}`);
   return contract;
 }
 

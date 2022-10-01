@@ -303,7 +303,7 @@ library LibArtifactUtils {
         require(!gs().planets[locationId].destroyed, "planet is destroyed");
         require(planet.planetType == PlanetType.TRADING_POST, "can only deposit on trading posts");
         require(
-            DFArtifactFacet(address(this)).tokenExists(msg.sender, artifactId),
+            DFArtifactFacet(address(this)).tokenIsOwnedBy(msg.sender, artifactId),
             "you can only deposit artifacts you own"
         );
         require(planet.owner == msg.sender, "you can only deposit on a planet you own");
@@ -368,7 +368,7 @@ library LibArtifactUtils {
             Spaceship memory spaceship = LibSpaceship.decode(tokenIds[i]);
             if (
                 spaceship.spaceshipType == SpaceshipType.ShipGear &&
-                DFArtifactFacet(address(this)).tokenExists(msg.sender, tokenIds[i])
+                DFArtifactFacet(address(this)).tokenIsOwnedBy(msg.sender, tokenIds[i])
             ) {
                 return true;
             }
