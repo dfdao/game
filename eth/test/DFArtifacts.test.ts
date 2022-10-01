@@ -80,40 +80,20 @@ describe('DarkForestArtifacts', function () {
   });
 
   describe('it tests basic artifact actions', function () {
-    it('logs bits for artifact old', async function () {
-      // Must be valid options
-      const _collectionType = '0x01';
-      const _rarity = ArtifactRarity.Legendary;
-      const _artifactType = ArtifactType.Colossus;
-      const _biome = Biome.DESERT;
-      const res = await world.contract.encodeArtifact(
-        _collectionType,
-        _rarity,
-        _artifactType,
-        _biome
-      );
-      const { tokenType, rarity, planetBiome, artifactType } = await world.contract.getArtifact(
-        res
-      );
-      expect(tokenType).to.equal(Number(_collectionType));
-      expect(rarity).to.equal(Number(_rarity));
-      expect(planetBiome).to.equal(Number(_biome));
-      expect(artifactType).to.equal(Number(_artifactType));
-    });
     it('encodes and decodes artifact', async function () {
       // Must be valid options
       const tokenType = TokenType.Artifact;
       const rarity = ArtifactRarity.Legendary;
       const artifactType = ArtifactType.Colossus;
       const planetBiome = Biome.DESERT;
-      const res = await world.contract.testEncodeArtifact({
+      const res = await world.contract.encodeArtifact({
         id: 0,
         tokenType,
         rarity,
         artifactType,
         planetBiome,
       });
-      const a = await world.contract.getArtifact(res);
+      const a = await world.contract.decodeArtifact(res);
       expect(tokenType).to.equal(Number(a.tokenType));
       expect(rarity).to.equal(Number(a.rarity));
       expect(artifactType).to.equal(Number(a.artifactType));
@@ -123,12 +103,12 @@ describe('DarkForestArtifacts', function () {
       // Must be valid options
       const tokenType = TokenType.Spaceship;
       const spaceshipType = 2;
-      const res = await world.contract.testEncodeSpaceship({
+      const res = await world.contract.encodeSpaceship({
         id: 0,
         tokenType,
         spaceshipType,
       });
-      const a = await world.contract.testDecodeSpaceship(res);
+      const a = await world.contract.decodeSpaceship(res);
       expect(tokenType).to.equal(Number(a.tokenType));
       expect(spaceshipType).to.equal(Number(a.spaceshipType));
     });
@@ -144,10 +124,9 @@ describe('DarkForestArtifacts', function () {
       );
 
       const statSumAfterFound = getStatSum(await world.contract.planets(ARTIFACT_PLANET_1.id));
-
       await world.user1Core.activateArtifact(ARTIFACT_PLANET_1.id, artifactId, 0);
 
-      prettyPrintToken(await world.user1Core.getArtifact(artifactId));
+      prettyPrintToken(await world.user1Core.decodeArtifact(artifactId));
 
       // artifact and gear should be on planet. Gear is 0 and Artifact is 1.
       const artifactsOnPlanet = await getArtifactsOnPlanet(world, ARTIFACT_PLANET_1.id);
@@ -475,7 +454,7 @@ describe('DarkForestArtifacts', function () {
       await increaseBlockchainTime();
 
       // move artifact
-      world.user1Core.move(
+      await world.user1Core.move(
         ...makeMoveArgs(ARTIFACT_PLANET_1, SPAWN_PLANET_1, 10, 50000, 0, newArtifactId)
       );
 
@@ -491,7 +470,7 @@ describe('DarkForestArtifacts', function () {
         world.user1Core.move(
           ...makeMoveArgs(ARTIFACT_PLANET_1, SPAWN_PLANET_1, 10, 50000, 0, 12345)
         )
-      ).to.be.revertedWith('this artifact was not present on this planet');
+      ).to.be.revertedWith('cannot move token of this type');
     });
   });
 
@@ -649,7 +628,7 @@ describe('DarkForestArtifacts', function () {
           TokenType.Artifact,
           { rarity: artifactRarities[i] as ArtifactRarity, biome: Biome.OCEAN }
         );
-        prettyPrintToken(await world.contract.getArtifact(artifactId));
+        prettyPrintToken(await world.contract.decodeArtifact(artifactId));
 
         activateAndConfirm(world.user1Core, from.id, artifactId, to.id);
 
@@ -810,7 +789,7 @@ describe('DarkForestArtifacts', function () {
         TokenType.Artifact,
         { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
       );
-      prettyPrintToken(await world.contract.getArtifact(newTokenId));
+      prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
 
       await increaseBlockchainTime(); // so that trading post can fill up to max energy
       await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, newTokenId);
@@ -858,7 +837,7 @@ describe('DarkForestArtifacts', function () {
         { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
       );
 
-      prettyPrintToken(await world.contract.getArtifact(newTokenId));
+      prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
       await increaseBlockchainTime(); // so that trading post can fill up to max energy
       await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, newTokenId);
       await world.user1Core.move(
@@ -966,7 +945,7 @@ describe('DarkForestArtifacts', function () {
         TokenType.Artifact,
         { rarity: ArtifactRarity.Rare as ArtifactRarity, biome: Biome.OCEAN }
       );
-      prettyPrintToken(await world.contract.getArtifact(newTokenId));
+      prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
 
       const planetBeforeActivation = await world.user1Core.planets(LVL3_SPACETIME_1.id);
       await activateAndConfirm(world.user1Core, LVL3_SPACETIME_1.id, newTokenId);
@@ -1011,7 +990,7 @@ describe('DarkForestArtifacts', function () {
           TokenType.Artifact,
           { rarity: artifactRarities[i] as ArtifactRarity, biome: Biome.OCEAN }
         );
-        prettyPrintToken(await world.contract.getArtifact(newTokenId));
+        prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
 
         await world.user1Core.depositArtifact(LVL6_SPACETIME.id, newTokenId);
 

@@ -76,7 +76,7 @@ library LibArtifactUtils {
             tokenId + id, // Make each ship unique
             owner
         );
-        LibGameUtils._putSpaceshipOnPlanet(planetId, spaceship.id);
+        LibSpaceship.putSpaceshipOnPlanet(planetId, spaceship.id);
 
         return spaceship.id;
     }
@@ -98,10 +98,10 @@ library LibArtifactUtils {
             )
         );
 
-        (ArtifactType artifactType, uint256 levelBonus) = LibGameUtils
-            ._randomArtifactTypeAndLevelBonus(artifactSeed, biome, planet.spaceType);
+        (ArtifactType artifactType, uint256 levelBonus) = LibArtifact
+            .randomArtifactTypeAndLevelBonus(artifactSeed, biome, planet.spaceType);
 
-        ArtifactRarity rarity = LibGameUtils.artifactRarityFromPlanetLevel(
+        ArtifactRarity rarity = LibArtifact.artifactRarityFromPlanetLevel(
             levelBonus + planet.planetLevel
         );
         uint256 tokenId = LibArtifact.encode(
@@ -119,7 +119,7 @@ library LibArtifactUtils {
             args.coreAddress
         );
 
-        LibGameUtils._putArtifactOnPlanet(args.planetId, foundArtifact.id);
+        LibArtifact.putArtifactOnPlanet(args.planetId, foundArtifact.id);
 
         planet.hasTriedFindingArtifact = true;
         gs().players[msg.sender].score += gameConstants().ARTIFACT_POINT_VALUES[
@@ -135,20 +135,22 @@ library LibArtifactUtils {
         uint256 wormholeTo
     ) public {
         Planet storage planet = gs().planets[locationId];
-        Artifact memory artifact = decodeArtifact(artifactId);
+        Artifact memory artifact = LibArtifact.decode(artifactId);
 
         if (LibSpaceship.isShip(artifactId)) {
             require(
-                LibGameUtils.isSpaceshipOnPlanet(locationId, artifactId),
+                LibSpaceship.isSpaceshipOnPlanet(locationId, artifactId),
                 "can't activate a ship on a planet it's not on"
             );
             activateSpaceshipArtifact(locationId, artifactId, planet);
-        } else {
+        } else if (LibArtifact.isArtifact(artifactId)) {
             require(
-                LibGameUtils.isArtifactOnPlanet(locationId, artifactId),
+                LibArtifact.isArtifactOnPlanet(locationId, artifactId),
                 "can't activate an artifact on a planet it's not on"
             );
             activateNonSpaceshipArtifact(locationId, artifactId, wormholeTo, planet, artifact);
+        } else {
+            require(false, "token cannot be activated");
         }
     }
 
@@ -185,7 +187,7 @@ library LibArtifactUtils {
 
             // TODO: Why not actually burn?
             // burn it after use. will be owned by contract but not on a planet anyone can control
-            LibGameUtils._takeSpaceshipOffPlanet(locationId, shipId);
+            LibSpaceship.takeSpaceshipOffPlanet(locationId, shipId);
             emit ArtifactDeactivated(msg.sender, locationId, shipId);
         }
     }
@@ -202,13 +204,13 @@ library LibArtifactUtils {
             "you must own the planet you are activating an artifact on"
         );
         require(
-            getActiveArtifact(locationId).tokenType == TokenType.Unknown,
+            !LibArtifact.hasActiveArtifact(locationId),
             "there is already an active artifact on this planet"
         );
         require(!planet.destroyed, "planet is destroyed");
 
         require(
-            getPlanetArtifact(locationId, artifactId).tokenType != TokenType.Unknown,
+            LibArtifact.getPlanetArtifact(locationId, artifactId).tokenType != TokenType.Unknown,
             "this artifact is not on this planet"
         );
 
@@ -250,11 +252,11 @@ library LibArtifactUtils {
 
             emit ArtifactDeactivated(msg.sender, locationId, artifactId);
             // burn it after use. will be owned by contract but not on a planet anyone can control
-            LibGameUtils._takeArtifactOffPlanet(locationId, artifactId);
+            LibArtifact.takeArtifactOffPlanet(locationId, artifactId);
         }
         // this is fine even tho some artifacts are immediately deactivated, because
         // those artifacts do not buff the planet.
-        LibGameUtils._buffPlanet(locationId, LibGameUtils._getUpgradeForArtifact(artifact));
+        LibGameUtils._buffPlanet(locationId, LibArtifact.getUpgradeForArtifact(artifact));
     }
 
     function deactivateArtifact(uint256 locationId) public {
@@ -267,15 +269,14 @@ library LibArtifactUtils {
 
         require(!gs().planets[locationId].destroyed, "planet is destroyed");
 
-        Artifact memory artifact = getActiveArtifact(locationId);
-
         require(
-            artifact.tokenType != TokenType.Unknown,
-            "this artifact is not activated on this planet"
+            LibArtifact.hasActiveArtifact(locationId),
+            "there is no artifact to deactivate on this planet"
         );
 
-        // artifact.lastDeactivated = block.timestamp;
-        // LOL just pretend there is a wormhole.
+        Artifact memory artifact = LibArtifact.getActiveArtifact(locationId);
+
+        // In case just pretend there is a wormhole.
         gs().planetWormholes[locationId] = 0;
         gs().planetActiveArtifact[locationId] = 0;
         gs().planetArtifactActivationTime[locationId] = 0;
@@ -286,10 +287,10 @@ library LibArtifactUtils {
             artifact.artifactType == ArtifactType.PhotoidCannon;
         if (shouldBurn) {
             // burn it after use. will be owned by contract but not on a planet anyone can control
-            LibGameUtils._takeArtifactOffPlanet(locationId, artifact.id);
+            LibArtifact.takeArtifactOffPlanet(locationId, artifact.id);
         }
 
-        LibGameUtils._debuffPlanet(locationId, LibGameUtils._getUpgradeForArtifact(artifact));
+        LibGameUtils._debuffPlanet(locationId, LibArtifact.getUpgradeForArtifact(artifact));
     }
 
     function depositArtifact(
@@ -307,7 +308,7 @@ library LibArtifactUtils {
         );
         require(planet.owner == msg.sender, "you can only deposit on a planet you own");
 
-        Artifact memory artifact = decodeArtifact(artifactId);
+        Artifact memory artifact = LibArtifact.decode(artifactId);
         require(
             planet.planetLevel > uint256(artifact.rarity),
             "spacetime rip not high enough level to deposit this artifact"
@@ -319,7 +320,7 @@ library LibArtifactUtils {
             "too many tokens on this planet"
         );
 
-        LibGameUtils._putArtifactOnPlanet(locationId, artifactId);
+        LibArtifact.putArtifactOnPlanet(locationId, artifactId);
         // artifactId, curr owner, new owner
         DFArtifactFacet(address(this)).transferArtifact(artifactId, msg.sender, coreAddress);
     }
@@ -333,14 +334,14 @@ library LibArtifactUtils {
         );
         require(!gs().planets[locationId].destroyed, "planet is destroyed");
         require(planet.owner == msg.sender, "you can only withdraw from a planet you own");
-        Artifact memory artifact = getPlanetArtifact(locationId, artifactId);
+        Artifact memory artifact = LibArtifact.getPlanetArtifact(locationId, artifactId);
 
         require(
             planet.planetLevel > uint256(artifact.rarity),
             "spacetime rip not high enough level to withdraw this artifact"
         );
         require(!LibSpaceship.isShip(artifactId), "cannot withdraw spaceships");
-        LibGameUtils._takeArtifactOffPlanet(locationId, artifactId);
+        LibArtifact.takeArtifactOffPlanet(locationId, artifactId);
 
         // artifactId, curr owner, new owner
         DFArtifactFacet(address(this)).transferArtifact(artifactId, address(this), msg.sender);
@@ -374,95 +375,5 @@ library LibArtifactUtils {
         }
 
         return false;
-    }
-
-    /**
-     * @notice Create the collection ID for a given artifact
-     * @param _collectionType type of artifact
-     * @param _rarity rarity of artifact
-     * @param _artifactType of artifact
-     * @param _biome of artifact
-     * @notice this is not a struct because I can't figure out how to bit shift a uint in a struct.
-     */
-    function encodeArtifact(
-        uint256 _collectionType,
-        uint256 _rarity,
-        uint256 _artifactType,
-        uint256 _biome
-    ) public pure returns (uint256) {
-        uint256 tokenType = _collectionType << LibUtils.calcBitShift(uint8(ArtifactInfo.TokenType));
-        uint256 rarity = _rarity << LibUtils.calcBitShift(uint8(ArtifactInfo.ArtifactRarity));
-        uint256 artifactType = _artifactType <<
-            LibUtils.calcBitShift(uint8(ArtifactInfo.ArtifactType));
-        uint256 biome = _biome << LibUtils.calcBitShift(uint8(ArtifactInfo.Biome));
-        return tokenType + rarity + artifactType + biome;
-    }
-
-    /**
-     * @notice Fetch the Artifact for the given id
-     * @param artifactId type of artifact
-     */
-    function decodeArtifact(uint256 artifactId) public pure returns (Artifact memory) {
-        bytes memory _b = abi.encodePacked(artifactId);
-        // 0 is left most element. 0 is given the property Unknown in ArtifactInfo.
-
-        // Note: Bit shifting requires an index greater than zero. This is why the ArtifactInfo has
-        // Unknown as the zero property, so calcBitShift(ArtifactInfo.Level) is correct.
-        // As a consequence, we need to
-        // offset fetching the relevant byte from the artifactId by 1.
-        // However
-        uint8 tokenType = uint8(_b[uint8(ArtifactInfo.TokenType) - 1]);
-        uint8 rarity = uint8(_b[uint8(ArtifactInfo.ArtifactRarity) - 1]);
-        uint8 artifactType = uint8(_b[uint8(ArtifactInfo.ArtifactType) - 1]);
-        uint8 biome = uint8(_b[uint8(ArtifactInfo.Biome) - 1]);
-
-        Artifact memory a = Artifact({
-            id: artifactId,
-            tokenType: TokenType(tokenType),
-            rarity: ArtifactRarity(rarity),
-            artifactType: ArtifactType(artifactType),
-            planetBiome: Biome(biome)
-        });
-
-        return a;
-    }
-
-    // if the given planet has an activated artifact on it, then return the artifact
-    // otherwise, return a 'null artifact'
-    function getActiveArtifact(uint256 locationId) public view returns (Artifact memory) {
-        uint256 artifactId = gs().planetActiveArtifact[locationId];
-        if (artifactId != 0) return decodeArtifact(artifactId);
-
-        return _nullArtifactProperties();
-    }
-
-    function _nullArtifactProperties() private pure returns (Artifact memory) {
-        return
-            Artifact(
-                0,
-                TokenType.Unknown,
-                ArtifactRarity.Unknown,
-                ArtifactType.Unknown,
-                Biome.Unknown
-            );
-    }
-
-    // if the given artifact is on the given planet, then return the artifact
-    // otherwise, return a 'null' artifact
-    function getPlanetArtifact(uint256 locationId, uint256 artifactId)
-        public
-        view
-        returns (Artifact memory a)
-    {
-        bool found = false;
-        for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
-            if (gs().planetArtifacts[locationId][i] == artifactId) {
-                a = decodeArtifact(artifactId);
-                found = true;
-                return a;
-            }
-        }
-
-        require(found, "artifact not found");
     }
 }

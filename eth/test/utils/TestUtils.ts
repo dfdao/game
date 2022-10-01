@@ -333,14 +333,20 @@ export async function createArtifact(
   contract: DarkForest,
   owner: string,
   planet: TestLocation,
-  type: ArtifactType,
-  collectionType = TokenType.Artifact,
+  artifactType: ArtifactType,
+  tokenType = TokenType.Artifact,
   { rarity, biome }: { rarity?: ArtifactRarity; biome?: Biome } = {}
 ) {
   rarity ||= ArtifactRarity.Common;
   biome ||= Biome.FOREST;
 
-  const tokenId = await contract.encodeArtifact(collectionType, rarity, type, biome);
+  const tokenId = await contract.encodeArtifact({
+    id: 0,
+    tokenType,
+    rarity,
+    artifactType,
+    planetBiome: biome,
+  });
   await contract.adminGiveArtifact({
     tokenId,
     discoverer: owner,
@@ -348,7 +354,7 @@ export async function createArtifact(
     planetId: planet.id,
     rarity: rarity.toString(),
     biome: biome.toString(),
-    artifactType: type.toString(),
+    artifactType: artifactType.toString(),
     controller: ZERO_ADDRESS,
   });
 

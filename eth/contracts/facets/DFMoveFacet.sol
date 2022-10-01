@@ -290,10 +290,9 @@ contract DFMoveFacet is WithStorage {
         returns (bool wormholePresent, uint256 effectiveDistModifier)
     {
         wormholePresent = false;
-
         Artifact memory relevantWormhole;
-        Artifact memory activeArtifactFrom = LibArtifactUtils.getActiveArtifact(args.oldLoc);
-        Artifact memory activeArtifactTo = LibArtifactUtils.getActiveArtifact(args.newLoc);
+        Artifact memory activeArtifactFrom = LibArtifact.getActiveArtifact(args.oldLoc);
+        Artifact memory activeArtifactTo = LibArtifact.getActiveArtifact(args.newLoc);
         // TODO: take the greater rarity of these, or disallow wormholes between planets that
         // already have a wormhole between them
         if (
@@ -325,7 +324,7 @@ contract DFMoveFacet is WithStorage {
         private
         returns (bool photoidPresent, Upgrade memory temporaryUpgrade)
     {
-        Artifact memory activeArtifactFrom = LibArtifactUtils.getActiveArtifact(args.oldLoc);
+        Artifact memory activeArtifactFrom = LibArtifact.getActiveArtifact(args.oldLoc);
         if (
             activeArtifactFrom.artifactType == ArtifactType.PhotoidCannon &&
             block.timestamp - gs().planetArtifactActivationTime[args.oldLoc] >=
@@ -445,12 +444,14 @@ contract DFMoveFacet is WithStorage {
         // Photoids are burned in _checkPhotoid, so don't remove twice
         if (args.movedArtifactId != 0) {
             if (isSpaceship) {
-                LibGameUtils._takeSpaceshipOffPlanet(args.oldLoc, args.movedArtifactId);
-            } else {
+                LibSpaceship.takeSpaceshipOffPlanet(args.oldLoc, args.movedArtifactId);
+            } else if (LibArtifact.isArtifact(args.movedArtifactId)) {
                 Artifact memory artifact = LibArtifact.decode(args.movedArtifactId);
                 if (artifact.artifactType != ArtifactType.PhotoidCannon) {
-                    LibGameUtils._takeArtifactOffPlanet(args.oldLoc, args.movedArtifactId);
+                    LibArtifact.takeArtifactOffPlanet(args.oldLoc, args.movedArtifactId);
                 }
+            } else {
+                require(false, "cannot move token of this type");
             }
         }
     }
