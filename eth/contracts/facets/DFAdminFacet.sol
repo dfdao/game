@@ -12,7 +12,9 @@ import {LibSpaceship} from "../libraries/LibSpaceship.sol";
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
 
+// Contract imports
 import {DFArtifactFacet} from "./DFArtifactFacet.sol";
+import "hardhat/console.sol";
 
 // Type imports
 import {Artifact, SpaceType, Spaceship, SpaceshipType, DFPInitPlanetArgs, AdminCreatePlanetArgs, DFTCreateArtifactArgs, ArtifactType, Player, Planet, TokenType} from "../DFTypes.sol";
@@ -181,8 +183,9 @@ contract DFAdminFacet is WithStorage {
             tokenId,
             args.owner
         );
+
         // Don't put artifact on planet if no planetId given.
-        if (args.planetId != 0) LibGameUtils._putArtifactOnPlanet(args.planetId, artifact.id);
+        if (args.planetId != 0) LibArtifact.putArtifactOnPlanet(args.planetId, artifact.id);
         emit AdminArtifactCreated(args.owner, artifact.id, args.planetId);
     }
 }

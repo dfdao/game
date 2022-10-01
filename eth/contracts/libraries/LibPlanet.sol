@@ -353,9 +353,9 @@ library LibPlanet {
         for (uint256 i = 0; i < 12; i++) {
             if (tokenIdsToAddToPlanet[i] != 0) {
                 if (LibSpaceship.isShip(tokenIdsToAddToPlanet[i])) {
-                    LibGameUtils._putSpaceshipOnPlanet(location, tokenIdsToAddToPlanet[i]);
+                    LibSpaceship.putSpaceshipOnPlanet(location, tokenIdsToAddToPlanet[i]);
                 } else if (LibArtifact.isArtifact(tokenIdsToAddToPlanet[i])) {
-                    LibGameUtils._putArtifactOnPlanet(location, tokenIdsToAddToPlanet[i]);
+                    LibArtifact.putArtifactOnPlanet(location, tokenIdsToAddToPlanet[i]);
                 }
             }
         }

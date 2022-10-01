@@ -388,7 +388,7 @@ contract DFGetterFacet is WithStorage {
         returns (Artifact memory ret)
     {
         uint256 artifactId = gs().planetActiveArtifact[locationId];
-        return LibArtifactUtils.decodeArtifact(artifactId);
+        return LibArtifact.decode(artifactId);
     }
 
     // function bulkGetPlanetArtifacts(uint256[] calldata planetIds)

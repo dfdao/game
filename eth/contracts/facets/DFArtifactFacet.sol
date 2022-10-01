@@ -72,11 +72,11 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         returns (Artifact memory)
     {
         require(tokenId >= 1, "token id must be positive");
-        require(LibArtifact.isArtifact(tokenId), "wrong token type");
+        require(LibArtifact.isArtifact(tokenId), "token must be Artifact");
         // Account, Id, Amount, Data
         _mint(owner, tokenId, 1, "");
 
-        return getArtifact(tokenId);
+        return LibArtifact.decode(tokenId);
     }
 
     function createSpaceship(uint256 tokenId, address owner)
@@ -85,7 +85,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         returns (Spaceship memory)
     {
         require(tokenId >= 1, "token id must be positive");
-        require(LibSpaceship.isShip(tokenId), "wrong token type");
+        require(LibSpaceship.isShip(tokenId), "token must be Spaceship");
 
         // Account, Id, Amount, Data
         _mint(owner, tokenId, 1, "");
@@ -93,36 +93,23 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         return getSpaceship(tokenId);
     }
 
-    function getArtifact(uint256 artifactId) public pure returns (Artifact memory) {
-        return LibArtifact.decode(artifactId);
-    }
-
     function getSpaceship(uint256 shipId) public pure returns (Spaceship memory) {
         return LibSpaceship.decode(shipId);
     }
 
-    function encodeArtifact(
-        uint256 _collectionType,
-        uint256 _rarity,
-        uint256 _artifactType,
-        uint256 _biome
-    ) public pure returns (uint256) {
-        return LibArtifactUtils.encodeArtifact(_collectionType, _rarity, _artifactType, _biome);
-    }
-
-    function testEncodeSpaceship(Spaceship memory spaceship) public pure returns (uint256) {
+    function encodeSpaceship(Spaceship memory spaceship) public pure returns (uint256) {
         return LibSpaceship.encode(spaceship);
     }
 
-    function testDecodeSpaceship(uint256 shipId) public pure returns (Spaceship memory) {
+    function decodeSpaceship(uint256 shipId) public pure returns (Spaceship memory) {
         return LibSpaceship.decode(shipId);
     }
 
-    function testEncodeArtifact(Artifact memory artifact) public pure returns (uint256) {
+    function encodeArtifact(Artifact memory artifact) public pure returns (uint256) {
         return LibArtifact.encode(artifact);
     }
 
-    function testDecodeArtifact(uint256 artifactId) public pure returns (Artifact memory) {
+    function decodeArtifact(uint256 artifactId) public pure returns (Artifact memory) {
         return LibArtifact.decode(artifactId);
     }
 

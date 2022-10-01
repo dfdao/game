@@ -12,11 +12,16 @@ import "hardhat/console.sol";
 import {LibUtils} from "./LibUtils.sol";
 
 // Storage imports
+import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
 // Type imports
 import {Spaceship, SpaceshipInfo, SpaceshipType, TokenType} from "../DFTypes.sol";
 
 library LibSpaceship {
+    function gs() internal pure returns (GameStorage storage) {
+        return LibStorage.gameStorage();
+    }
+
     /**
      * @notice Create the token ID for a Spaceship with the following properties:
      * @param spaceship Spaceship
@@ -56,5 +61,38 @@ library LibSpaceship {
         uint8 tokenIdx = uint8(SpaceshipInfo.TokenType) - 1;
         uint8 tokenType = uint8(LibUtils.calculateByteUInt(_b, tokenIdx, tokenIdx));
         return (TokenType(tokenType) == TokenType.Spaceship);
+    }
+
+    function isSpaceshipOnPlanet(uint256 locationId, uint256 shipId) internal view returns (bool) {
+        for (uint256 i; i < gs().planetSpaceships[locationId].length; i++) {
+            if (gs().planetSpaceships[locationId][i] == shipId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function putSpaceshipOnPlanet(uint256 locationId, uint256 spaceshipId) internal {
+        gs().planetSpaceships[locationId].push(spaceshipId);
+    }
+
+    function takeSpaceshipOffPlanet(uint256 locationId, uint256 spaceshipId) internal {
+        uint256 shipsOnThisPlanet = gs().planetSpaceships[locationId].length;
+
+        bool hadTheShip = false;
+
+        for (uint256 i = 0; i < shipsOnThisPlanet; i++) {
+            if (gs().planetSpaceships[locationId][i] == spaceshipId) {
+                gs().planetSpaceships[locationId][i] = gs().planetSpaceships[locationId][
+                    shipsOnThisPlanet - 1
+                ];
+
+                hadTheShip = true;
+                break;
+            }
+        }
+
+        require(hadTheShip, "this ship was not present on this planet");
+        gs().planetSpaceships[locationId].pop();
     }
 }
