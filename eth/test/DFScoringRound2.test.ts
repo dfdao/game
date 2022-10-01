@@ -45,6 +45,12 @@ describe('DFScoringRound2', async function () {
     expect((await world.contract.players(world.user1.address)).score).to.equal(
       withdrawnAmount.div(1000)
     );
+    expect(
+      await world.contract.balanceOf(
+        world.user1.address,
+        '0x0300000000000000000000000000000000000000000000000000000000000000'
+      )
+    ).to.equal(withdrawnAmount.div(1000));
   });
 
   it("doesn't allow player to withdraw more silver than planet has", async function () {
