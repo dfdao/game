@@ -26,24 +26,36 @@ and, more importantly, it allows to create a copy of a token just by using the s
 This concept will become clearer as we examine how these rules are used for Artifacts and
 Spaceships.
 
-In `DFTypes.sol`, the `TokenInfo` enum looks like this:
+Each of these chunks has 256 options. So you can have 256 Artifact Rarities, Types, Biomes etc...
+This should be plenty, but if you need more you just use another chunk.
+
+## General Token Info
+
+Each collection (called a Token) in Dark Forest must have a Library dedicated to it with the naming
+convention `Lib<TokenName>.sol`.
+
+The first byte (from left) of the tokenId **must** correspond to the appropriate value in the
+`TokenType` struct in `DFTypes.sol`
 
 ```js
-enum TokenInfo {
+enum TokenType {
     Unknown,
-    TokenType,
-    ArtifactRarity,
-    ArtifactType,
-    Biome
+    Artifact, // 0x01 = Artifact
+    Spaceship // 0x02 = Spaceship
+    // etc...
 }
 ```
 
-Each index in `TokenInfo` refers to a chunk in the `tokenId`.
+The `Lib<TokenName>.sol`. file **must** have the following methods:
 
-> | TokenType | ArtifactRarity | ArtifactType | Biome | chunk5 | ... chunk 32 |
+1.  `encode(<TokenName>) returns (uint256 tokenId)`
+2.  `decode(uint256 tokenId) returns (<TokenName>)`
+3.  `is<TokenName> returns (bool)`
 
-Each of these chunks has 256 options. So you can have 256 Artifact Rarities, Types, Biomes etc...
-This should be plenty, but if you need more you just use another chunk.
+where `<TokenName>` can be a struct (like Artifacts or Spaceships) or just a uint256 (like Silver).
+
+Additionally methods can be added to each library, but they must be `internal` functions that can be
+inherited by other facets or libraries.
 
 ## Artifacts
 
@@ -59,14 +71,14 @@ In hex:
 > | 0x01 | 0x03| 0x01 | 0x01 | ...
 
 Under the hood, we simply calculate the value of the given property (Epic Artifact = 3), convert it
-to hex (0x03), and place it in the appropriate location (TokenInfo.ArtifactRarity = 2, so place 0x03
+to hex (0x03), and place it in the appropriate location (ArtifactInfo.ArtifactRarity = 2, so place 0x03
 two chunks from the left).
 
 To decode, we just reverse this process. Given the id `0x010301010000.....`, I know that it
 is an Epic Monoliths Artifact from the Ocean Biome.
 
-You can see the actual encoding and decoding take place in `DFToken.sol/encodeArtifact` and
-`DFToken.sol/decode Artifact`.
+You can see the actual encoding and decoding take place in `LibArtifact.sol/encode` and
+`LibArtifact.sol/decode`.
 
 ### Minting
 
@@ -107,6 +119,10 @@ your planet, you cannot control my Mothership. This means that the `planetArtifa
 will fail to enforce this primary rule of Spaceships. To fix this, each Spaceship must have a unique
 id and be owned by the account that minted it.
 
+To differentiate between Spaceships and Artifacts, we have an additional data structure,
+`mapping(uint256 =>uint256[]) planetSpaceships;` in the contract storage that keeps track of which
+spaceships are on which planet.
+
 However, we can still use our `tokenId` chunk system because we don't need all 256 bits to uniquely
 identify a Spaceship. We limit Spaceships to the first 16 chunks (128 bits) and save 128 for a
 unique id. This uses the [Split-Id](https://eips.ethereum.org/EIPS/eip-1155#split-id-bits) method
@@ -114,12 +130,11 @@ recommended in the ERC1155 Proposal.
 
 A Mothership Spaceship is represented like so
 
-> | TokenType.Spaceship | ArtifactRarity.Unknown | ArtifactType.ShipMothership | Biome.Unknown
-> | ... chunk 16 | uniqueId (16 chunks) |
+> | TokenType.Spaceship | SpaceshipType.ShipMothership | ... chunk 16 | uniqueId (16 chunks) |
 
 In hex:
 
-> | 0x02 | 0x00 | 0x0a | 0x00 | ... | uniqueId (16 chunks) |
+> | 0x02 | 0x01 ... | uniqueId (16 chunks) |
 
 A Spaceship's tokenId = `<uint128 tokenInfo><uint128 uniqueId>`
 
@@ -138,7 +153,7 @@ If Velorum mints their own Mothership, it would have id: `<0x02000a00><0x02>`.
 Velorum's Mothership has the same TokenInfo, but a unique identifier at the end. This means the
 contract stores my Mothership and Velorum's Mothership as completely different collections.
 However, because our ships share the same first 128 bits, we can still calculate the information
-about the Spaceship (ArtifactType, TokenType) just by feeding the `decodeArtifact` function the `tokenId`.
+about the Spaceship (SpaceshipType, TokenType) just by feeding the `LibSpaceship.decode` function the `tokenId`.
 
 ### Transferring
 
@@ -150,10 +165,12 @@ We could easily turn off this check if we wanted players to be able to buy and s
 
 ## Activating
 
+### Artifacts
+
 Every Artifact and one Spaceship (Crescent) must be activated on a planet to be used.
 
-The fungible nature of Artifacts creates a challenge: How do we associate data with specific artifacts? How do I know when my
-Epic Monolith is activated?
+The fungible nature of Artifacts creates a challenge: How do we associate data with specific
+artifacts? How do I know when my Epic Monolith is activated?
 
 There are new data structures in `LibStorage.sol` to handle this information. Because Artifact
 activations are always associated with planets, we can store the needed information on the relevant planets
@@ -177,6 +194,15 @@ If I had a Wormhole instead of a Monolith, I would also update `planetWormholes`
 wormhole from `0xA` to `0xB`.
 
 - `planetWormholes[0xA] = 0xB`
+
+### Spaceships
+
+- The only Spaceship that can be activated is the Crescent, and that is burned in the same
+  transaction. This means that a Spaceship Id will never be added or removed to the
+  `planetActiveArtifact` mapping.
+- This defines a fundamental difference between Spaceships and Artifacts: Spaceship effects are
+  always applied on arrival / departure, or are instanenous. There is (at the moment) no concept of
+  activating them.
 
 ## Deactivating
 
