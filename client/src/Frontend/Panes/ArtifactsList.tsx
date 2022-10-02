@@ -1,16 +1,13 @@
 import { isSpaceShip } from '@dfdao/gamelogic';
-import { artifactName, getPlanetName } from '@dfdao/procedural';
+import { artifactName } from '@dfdao/procedural';
 import { Artifact, ArtifactTypeNames, LocationId } from '@dfdao/types';
 import React from 'react';
 import styled from 'styled-components';
-import GameUIManager from '../../Backend/GameLogic/GameUIManager';
 import { CenterBackgroundSubtext, Truncate } from '../Components/CoreUI';
 import { ArtifactRarityLabelAnim } from '../Components/Labels/ArtifactLabels';
 import { Sub } from '../Components/Text';
-import { useUIManager } from '../Utils/AppHooks';
 import { ArtifactLink } from '../Views/ArtifactLink';
 import { ModalHandle } from '../Views/ModalPane';
-import { PlanetLink } from '../Views/PlanetLink';
 import { SortableTable } from '../Views/SortableTable';
 import { TabbedView } from '../Views/TabbedView';
 
@@ -19,20 +16,6 @@ const ArtifactsBody = styled.div`
   max-height: 400px;
   overflow-y: scroll;
 `;
-
-const PlanetName = styled.span`
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100px;
-`;
-
-const planetArtifactName = (a: Artifact, uiManager: GameUIManager): string | undefined => {
-  const onPlanet = uiManager?.getArtifactPlanet(a);
-  if (!onPlanet) return undefined;
-  return getPlanetName(onPlanet);
-};
 
 export function ArtifactsList({
   modal,
@@ -47,7 +30,6 @@ export function ArtifactsList({
   maxRarity?: number;
   noArtifactsMessage?: React.ReactElement;
 }) {
-  const uiManager = useUIManager();
   let nonShipArtifacts = artifacts.filter((a) => !isSpaceShip(a.artifactType));
   if (maxRarity !== undefined) {
     nonShipArtifacts = nonShipArtifacts.filter((a) => a.rarity <= maxRarity);
@@ -61,21 +43,21 @@ export function ArtifactsList({
         {artifactName(artifact)}
       </ArtifactLink>
     ),
-    (artifact: Artifact) => {
-      const planetOn = uiManager.getArtifactPlanet(artifact);
-      const planetOnName = planetArtifactName(artifact, uiManager);
-
-      return (
-        <span>
-          {planetOnName && planetOn ? (
-            <PlanetLink planet={planetOn}>
-              <PlanetName>{planetOnName}</PlanetName>
-            </PlanetLink>
-          ) : (
-            <Sub>wallet</Sub>
-          )}
-        </span>
-      );
+    (_artifact: Artifact) => {
+      // const planetOn = uiManager.getArtifactPlanet(artifact);
+      // const planetOnName = planetArtifactName(artifact, uiManager);
+      // return (
+      //   <span>
+      //     {planetOnName && planetOn ? (
+      //       <PlanetLink planet={planetOn}>
+      //         <PlanetName>{planetOnName}</PlanetName>
+      //       </PlanetLink>
+      //     ) : (
+      //       <Sub>wallet</Sub>
+      //     )}
+      //   </span>
+      // );
+      return <span />;
     },
     (artifact: Artifact) => (
       <Sub>
@@ -87,10 +69,7 @@ export function ArtifactsList({
 
   const sortFunctions = [
     (left: Artifact, right: Artifact) => artifactName(left).localeCompare(artifactName(right)),
-    (left: Artifact, right: Artifact) =>
-      planetArtifactName(left, uiManager)?.localeCompare(
-        planetArtifactName(right, uiManager) || ''
-      ) || 0,
+    (_left: Artifact, _right: Artifact) => 0,
     (left: Artifact, right: Artifact) =>
       ArtifactTypeNames[left.artifactType]?.localeCompare(
         ArtifactTypeNames[right.artifactType] || ''
@@ -133,7 +112,6 @@ export function ShipList({
   depositOn?: LocationId;
   noShipsMessage?: React.ReactElement;
 }) {
-  const uiManager = useUIManager();
   const headers = ['Name', 'Location', 'Type'];
   const alignments: Array<'r' | 'c' | 'l'> = ['l', 'r', 'r', 'r'];
   const shipArtifacts = artifacts.filter((a) => isSpaceShip(a.artifactType));
@@ -144,21 +122,22 @@ export function ShipList({
         {artifactName(artifact)}
       </ArtifactLink>
     ),
-    (artifact: Artifact) => {
-      const planetOn = uiManager.getArtifactPlanet(artifact);
-      const planetOnName = planetArtifactName(artifact, uiManager);
+    (_artifact: Artifact) => {
+      // const planetOn = uiManager.getArtifactPlanet(artifact);
+      // const planetOnName = planetArtifactName(artifact, uiManager);
 
-      return (
-        <span>
-          {planetOnName && planetOn ? (
-            <PlanetLink planet={planetOn}>
-              <PlanetName>{planetOnName}</PlanetName>
-            </PlanetLink>
-          ) : (
-            <Sub>moving</Sub>
-          )}
-        </span>
-      );
+      // return (
+      //   <span>
+      //     {planetOnName && planetOn ? (
+      //       <PlanetLink planet={planetOn}>
+      //         <PlanetName>{planetOnName}</PlanetName>
+      //       </PlanetLink>
+      //     ) : (
+      //       <Sub>moving</Sub>
+      //     )}
+      //   </span>
+      // );
+      return <span />;
     },
     (artifact: Artifact) => (
       <Sub>
@@ -169,10 +148,7 @@ export function ShipList({
 
   const sortFunctions = [
     (left: Artifact, right: Artifact) => artifactName(left).localeCompare(artifactName(right)),
-    (left: Artifact, right: Artifact) =>
-      planetArtifactName(left, uiManager)?.localeCompare(
-        planetArtifactName(right, uiManager) || ''
-      ) || 0,
+    (_left: Artifact, _right: Artifact) => 0,
     (left: Artifact, right: Artifact) =>
       ArtifactTypeNames[left.artifactType]?.localeCompare(
         ArtifactTypeNames[right.artifactType] || ''

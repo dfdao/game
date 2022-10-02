@@ -1,12 +1,13 @@
+import { decodeArtifact } from '@dfdao/serde';
 import { Artifact, ArtifactId } from '@dfdao/types';
+import { ethers } from 'ethers';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import ReaderDataStore from '../../Backend/Storage/ReaderDataStore';
 import { Share } from '../Views/Share';
 
 export function ShareArtifact({ match }: RouteComponentProps<{ artifactId: ArtifactId }>) {
-  function load(dataStore: ReaderDataStore) {
-    return dataStore.loadArtifactFromContract(match.params.artifactId);
+  async function load() {
+    return decodeArtifact(ethers.BigNumber.from(match.params.artifactId));
   }
 
   return (

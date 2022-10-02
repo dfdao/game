@@ -66,9 +66,9 @@ export function PlanetCard({
   standalone?: boolean;
 }) {
   const uiManager = useUIManager();
-  const active = useActiveArtifact(p, uiManager);
+  const active = useActiveArtifact(p);
   const planet = p.value;
-  const artifacts = usePlanetArtifacts(p, uiManager);
+  const artifacts = usePlanetArtifacts(p);
   const spaceJunkEnabled = uiManager.getSpaceJunkEnabled();
   const isAbandoning = useEmitterValue(uiManager.isAbandoning$, uiManager.isAbandoning());
 

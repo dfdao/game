@@ -1,6 +1,5 @@
 import {
   Artifact,
-  ArtifactId,
   ClaimedCoords,
   LocationId,
   Planet,
@@ -31,9 +30,7 @@ export interface InitialGameState {
   allClaimedCoords?: ClaimedCoords[];
   pendingMoves: QueuedArrival[];
   touchedAndLocatedPlanets: Map<LocationId, Planet>;
-  artifactsOnVoyages: Artifact[];
   myArtifacts: Artifact[];
-  heldArtifacts: Artifact[][];
   loadedPlanets: LocationId[];
   revealedCoordsMap: Map<LocationId, RevealedCoords>;
   claimedCoordsMap?: Map<LocationId, ClaimedCoords>;
@@ -88,8 +85,6 @@ export class InitialGameStateDownloader {
 
     const pendingMovesLoadingBar = this.makeProgressListener('Pending Moves');
     const planetsLoadingBar = this.makeProgressListener('Planets');
-    const artifactsOnPlanetsLoadingBar = this.makeProgressListener('Artifacts On Planets');
-    const artifactsInFlightLoadingBar = this.makeProgressListener('Artifacts On Moves');
     const yourArtifactsLoadingBar = this.makeProgressListener('Your Artifacts');
 
     const contractConstants = contractsAPI.getConstants();
@@ -159,22 +154,6 @@ export class InitialGameStateDownloader {
       arrivals.set(arrival.eventId, arrival);
     }
 
-    const artifactIdsOnVoyages: ArtifactId[] = [];
-    for (const arrival of pendingMoves) {
-      if (arrival.artifactId) {
-        artifactIdsOnVoyages.push(arrival.artifactId);
-      }
-    }
-
-    const artifactsOnVoyages = await contractsAPI.bulkGetArtifacts(
-      artifactIdsOnVoyages,
-      artifactsInFlightLoadingBar
-    );
-
-    const heldArtifacts = contractsAPI.bulkGetArtifactsOnPlanets(
-      planetsToLoad,
-      artifactsOnPlanetsLoadingBar
-    );
     const myArtifacts = contractsAPI.getPlayerArtifacts(
       contractsAPI.getAddress(),
       yourArtifactsLoadingBar
@@ -191,9 +170,7 @@ export class InitialGameStateDownloader {
       allRevealedCoords,
       pendingMoves,
       touchedAndLocatedPlanets,
-      artifactsOnVoyages,
       myArtifacts: await myArtifacts,
-      heldArtifacts: await heldArtifacts,
       loadedPlanets: planetsToLoad,
       revealedCoordsMap,
       claimedCoordsMap,

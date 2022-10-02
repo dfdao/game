@@ -1,4 +1,4 @@
-import { EMPTY_ADDRESS, MAX_SPACESHIP_TYPE, MIN_SPACESHIP_TYPE } from '@dfdao/constants';
+import { MAX_SPACESHIP_TYPE, MIN_SPACESHIP_TYPE } from '@dfdao/constants';
 import { hashToInt } from '@dfdao/serde';
 import {
   Abstract,
@@ -47,48 +47,7 @@ export function hasStatBoost(type: ArtifactType | undefined): boolean {
   );
 }
 
-const artifactCooldownHoursMap = {
-  [ArtifactType.Unknown]: 24,
-  [ArtifactType.Monolith]: 0,
-  [ArtifactType.Colossus]: 0,
-  [ArtifactType.Spaceship]: 0,
-  [ArtifactType.Pyramid]: 0,
-  [ArtifactType.Wormhole]: 4,
-  [ArtifactType.PlanetaryShield]: 4,
-  [ArtifactType.PhotoidCannon]: 24,
-  [ArtifactType.BloomFilter]: 24,
-  [ArtifactType.BlackDomain]: 24,
-} as const;
-
 const artifactIsAncientMap: Map<ArtifactId, boolean> = new Map();
-
-export function durationUntilArtifactAvailable(artifact: Artifact) {
-  return artifactAvailableTimestamp(artifact) - Date.now();
-}
-
-export function artifactAvailableTimestamp(artifact: Artifact) {
-  if (artifact.lastDeactivated === 0) {
-    return Date.now();
-  }
-
-  const availableAtTimestampMs =
-    artifact.lastDeactivated * 1000 +
-    artifactCooldownHoursMap[artifact.artifactType] * 60 * 60 * 1000;
-
-  return availableAtTimestampMs;
-}
-
-export function isActivated(artifact: Artifact | undefined) {
-  if (artifact === undefined) {
-    return false;
-  }
-
-  return artifact.lastActivated > artifact.lastDeactivated;
-}
-
-export function getActivatedArtifact(artifacts: Artifact[]): Artifact | undefined {
-  return artifacts.find(isActivated);
-}
 
 export function getArtifactDebugName(a?: Artifact): string {
   if (!a) {
@@ -167,20 +126,20 @@ export function artifactFileName(
 ): string {
   const { artifactType: type, rarity, planetBiome: biome, id } = artifact;
 
-  if (isSpaceShip(type)) {
-    switch (type) {
-      case ArtifactType.ShipWhale:
-        return '64-whale.png';
-      case ArtifactType.ShipMothership:
-        return '64-mothership.png';
-      case ArtifactType.ShipCrescent:
-        return '64-crescent.png';
-      case ArtifactType.ShipGear:
-        return '64-gear.png';
-      case ArtifactType.ShipTitan:
-        return '64-titan.png';
-    }
-  }
+  // if (isSpaceShip(type)) {
+  //   switch (type) {
+  //     case ArtifactType.ShipWhale:
+  //       return '64-whale.png';
+  //     case ArtifactType.ShipMothership:
+  //       return '64-mothership.png';
+  //     case ArtifactType.ShipCrescent:
+  //       return '64-crescent.png';
+  //     case ArtifactType.ShipGear:
+  //       return '64-gear.png';
+  //     case ArtifactType.ShipTitan:
+  //       return '64-titan.png';
+  //   }
+  // }
 
   const size = thumb ? '16' : '64';
   const ext = videoMode ? 'webm' : 'png';
@@ -219,41 +178,22 @@ export function artifactFileName(
 
 export function getActiveBlackDomain(artifacts: Artifact[]): Artifact | undefined {
   for (const artifact of artifacts) {
-    if (artifact.artifactType === ArtifactType.BlackDomain && isActivated(artifact))
-      return artifact;
+    if (artifact.artifactType === ArtifactType.BlackDomain) return artifact;
   }
   return undefined;
 }
 
-export const dateMintedAt = (artifact: Artifact | undefined): string => {
-  if (!artifact) return '00/00/0000';
-  return new Date(artifact.mintedAtTimestamp * 1000).toDateString();
-};
-
 export function canActivateArtifact(
-  artifact: Artifact,
-  planet: Planet | undefined,
-  artifactsOnPlanet: Artifact[]
+  _artifact: Artifact,
+  _planet: Planet | undefined,
+  _artifactsOnPlanet: Artifact[]
 ) {
-  if (isSpaceShip(artifact.artifactType)) {
-    return (
-      planet &&
-      planet.owner === EMPTY_ADDRESS &&
-      artifact.artifactType === ArtifactType.ShipCrescent &&
-      artifact.activations === 0
-    );
-  }
-
-  const available = artifactAvailableTimestamp(artifact);
+  const available = undefined;
   if (available !== undefined) {
     const now = Date.now();
-    const anyArtifactActive = artifactsOnPlanet.some((a) => isActivated(a));
+    const anyArtifactActive = false;
     const waitUntilAvailable = available - now;
-    const availableToActivate =
-      waitUntilAvailable <= -0 &&
-      !anyArtifactActive &&
-      planet?.locationId === artifact.onPlanetId &&
-      !!artifact.onPlanetId;
+    const availableToActivate = waitUntilAvailable <= -0 && !anyArtifactActive;
     return availableToActivate;
   }
 
@@ -266,7 +206,6 @@ export function canWithdrawArtifact(account: EthAddress, artifact: Artifact, pla
     !planet.destroyed &&
     planet.owner === account &&
     planet.planetType === PlanetType.TRADING_POST &&
-    !isActivated(artifact) &&
     !isSpaceShip(artifact.artifactType)
   );
 }
@@ -276,15 +215,6 @@ export function canDepositArtifact(account: EthAddress, artifact: Artifact, plan
     planet &&
     !planet.destroyed &&
     planet.owner === account &&
-    !artifact.onPlanetId &&
     planet.planetType === PlanetType.TRADING_POST
   );
-}
-
-export function getPlayerControlledSpaceships(
-  artifacts: (Artifact | undefined)[] | undefined,
-  owner: EthAddress | undefined
-) {
-  if (!owner) return [];
-  return (artifacts || []).filter((a) => a?.controller === owner);
 }

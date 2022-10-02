@@ -1,4 +1,5 @@
-import type { ArtifactId, EthAddress, LocationId, VoyageId } from './identifier';
+import type { Artifact } from './artifact';
+import type { EthAddress, LocationId, VoyageId } from './identifier';
 import type { Abstract } from './utility';
 
 /**
@@ -11,7 +12,7 @@ export interface QueuedArrival {
   toPlanet: LocationId;
   energyArriving: number;
   silverMoved: number;
-  artifactId?: ArtifactId;
+  artifact?: Artifact;
   departureTime: number;
   distance: number;
   arrivalTime: number;

@@ -14,7 +14,6 @@ import {
 import { getPlanetNameHash } from 'https://cdn.skypack.dev/@dfdao/procedural';
 import {
   locationIdToDecStr,
-  artifactIdFromHexStr,
   locationIdFromDecStr,
   //@ts-ignore
 } from 'https://cdn.skypack.dev/@dfdao/serde';
@@ -80,7 +79,6 @@ async function createArtifact(
     methodName: 'adminGiveArtifact',
   });
   tx.confirmedPromise.then(() => {
-    df.hardRefreshArtifact(artifactIdFromHexStr(tokenId.slice(2)));
     df.hardRefreshPlanet(planet.locationId);
   });
 
