@@ -100,7 +100,9 @@ export class InitialGameStateDownloader {
     const arrivals: Map<VoyageId, QueuedArrival> = new Map();
     const planetVoyageIdMap: Map<LocationId, VoyageId[]> = new Map();
 
-    const minedChunks = Array.from(await persistentChunkStore.allChunks());
+    // Ensure that all chunks have been loaded from indexeddb
+    await persistentChunkStore.chunksLoaded();
+    const minedChunks = Array.from(persistentChunkStore.allChunks());
     const minedPlanetIds = new Set(
       _.flatMap(minedChunks, (c) => c.planetLocations).map((l) => l.hash)
     );

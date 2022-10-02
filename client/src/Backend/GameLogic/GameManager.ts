@@ -593,7 +593,7 @@ class GameManager extends EventEmitter {
 
     terminal.current?.println('Loading game data from disk...');
 
-    const persistentChunkStore = await PersistentChunkStore.create({ account, contractAddress });
+    const persistentChunkStore = new PersistentChunkStore({ account, contractAddress });
     const otherStore = await OtherStore.create({ account, contractAddress });
 
     terminal.current?.println('Downloading data from Ethereum blockchain...');
@@ -2997,7 +2997,7 @@ class GameManager extends EventEmitter {
    * all of the information about those planets from the blockchain.
    */
   addNewChunk(chunk: Chunk): GameManager {
-    this.persistentChunkStore.addChunk(chunk, true);
+    this.persistentChunkStore.addChunk(chunk);
     for (const planetLocation of chunk.planetLocations) {
       this.entityStore.addPlanetLocation(planetLocation);
 
@@ -3026,7 +3026,7 @@ class GameManager extends EventEmitter {
     );
     const planetIdsToUpdate: LocationId[] = [];
     for (const chunk of chunks) {
-      this.persistentChunkStore.addChunk(chunk, true);
+      this.persistentChunkStore.addChunk(chunk);
       for (const planetLocation of chunk.planetLocations) {
         this.entityStore.addPlanetLocation(planetLocation);
 
