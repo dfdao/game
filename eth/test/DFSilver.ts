@@ -67,10 +67,6 @@ describe.only('DFSilver', async function () {
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_DEEP_SPACE);
 
     // await feedSilverToCap(world, world.user1Core, LVL1_ASTEROID_1, LVL3_SPACETIME_2);
-    const ast1 = await world.contract.planets(LVL1_ASTEROID_1.id);
-    const ast2 = await world.contract.planets(LVL1_ASTEROID_2.id);
-    const ast3 = await world.contract.planets(LVL1_ASTEROID_NEBULA.id);
-    const ast4 = await world.contract.planets(LVL1_ASTEROID_DEEP_SPACE.id);
 
     // Let Asteroids fill up
     await increaseBlockchainTime();
@@ -81,13 +77,25 @@ describe.only('DFSilver', async function () {
       LVL1_ASTEROID_NEBULA.id,
       LVL1_ASTEROID_DEEP_SPACE.id,
     ]);
+
     const rct = await tx.wait();
     console.log(`bulk withdraw used ${rct.gasUsed.toNumber() / 4} gas per asteroid`);
+
+    const ast1 = await world.contract.planets(LVL1_ASTEROID_1.id);
+    const ast2 = await world.contract.planets(LVL1_ASTEROID_2.id);
+    const ast3 = await world.contract.planets(LVL1_ASTEROID_NEBULA.id);
+    const ast4 = await world.contract.planets(LVL1_ASTEROID_DEEP_SPACE.id);
+
+    // Confirm all silver has been withdrawn
+    expect(ast1.silver).to.equal(0);
+    expect(ast2.silver).to.equal(0);
+    expect(ast3.silver).to.equal(0);
+    expect(ast4.silver).to.equal(0);
 
     const expectedSilverMint =
       ast1.silverCap.add(ast2.silverCap).add(ast3.silverCap).add(ast4.silverCap).toNumber() /
       CONTRACT_PRECISION;
-    expect(await (await world.contract.getSilverBalance(world.user1.address)).toNumber()).to.equal(
+    expect((await world.contract.getSilverBalance(world.user1.address)).toNumber()).to.equal(
       expectedSilverMint
     );
   });
