@@ -250,7 +250,8 @@ enum Biome {
 enum TokenType {
     Unknown,
     Artifact,
-    Spaceship
+    Spaceship,
+    Silver
 }
 
 enum ArtifactInfo {
