@@ -17,7 +17,6 @@ import {
 } from './utils/WorldConstants';
 
 const CONTRACT_PRECISION = 1_000;
-const SILVER_TOKEN_ID = '0x0300000000000000000000000000000000000000000000000000000000000000';
 
 describe.only('DFSilver', async function () {
   // Bump the time out so that the test doesn't timeout during
@@ -85,11 +84,11 @@ describe.only('DFSilver', async function () {
     const rct = await tx.wait();
     console.log(`bulk withdraw used ${rct.gasUsed.toNumber() / 4} gas per asteroid`);
 
-    expect(
-      await (await world.contract.balanceOf(world.user1.address, SILVER_TOKEN_ID)).toNumber()
-    ).to.equal(
+    const expectedSilverMint =
       ast1.silverCap.add(ast2.silverCap).add(ast3.silverCap).add(ast4.silverCap).toNumber() /
-        CONTRACT_PRECISION
+      CONTRACT_PRECISION;
+    expect(await (await world.contract.getSilverBalance(world.user1.address)).toNumber()).to.equal(
+      expectedSilverMint
     );
   });
 
