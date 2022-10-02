@@ -16,7 +16,8 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {SpaceType, Planet, Player, ArtifactType, DFPInitPlanetArgs, DFPMoveArgs, DFPFindArtifactArgs, AdminCreatePlanetArgs} from "../DFTypes.sol";
+import {SpaceType, Planet, Player, ArtifactType, DFPInitPlanetArgs, DFPMoveArgs, DFPFindArtifactArgs, AdminCreatePlanetArgs, UpgradeBranch} from "../DFTypes.sol";
+import "hardhat/console.sol";
 
 contract DFCoreFacet is WithStorage {
     using ABDKMath64x64 for *;
@@ -28,6 +29,7 @@ contract DFCoreFacet is WithStorage {
     event LocationRevealed(address revealer, uint256 loc, uint256 x, uint256 y);
 
     event PlanetSilverWithdrawn(address player, uint256 loc, uint256 amount);
+    event PlanetBulkSilverWithdrawn(address player, uint256 amount);
 
     //////////////////////
     /// ACCESS CONTROL ///
@@ -164,6 +166,17 @@ contract DFCoreFacet is WithStorage {
         return (_location, _branch);
     }
 
+    // Upgrade all branches of a planet at once
+    function upgradeAll(uint256 _location, UpgradeBranch[] memory branches) public notPaused {
+        // _branch specifies which of the three upgrade branches player is leveling up
+        // 0 improves silver production and capacity
+        // 1 improves population
+        // 2 improves range
+        refreshPlanet(_location);
+        LibPlanet.upgradeAll(_location, branches);
+        // return (_location, _branch);
+    }
+
     function transferPlanet(uint256 _location, address _player) public notPaused {
         require(gameConstants().PLANET_TRANSFER_ENABLED, "planet transferring is disabled");
 
@@ -212,5 +225,16 @@ contract DFCoreFacet is WithStorage {
         refreshPlanet(locationId);
         LibPlanet.withdrawSilver(locationId, amount);
         emit PlanetSilverWithdrawn(msg.sender, locationId, amount);
+    }
+
+    function bulkWithdrawSilver(uint256[] memory locationIds) public notPaused {
+        uint256 numPlanets = locationIds.length;
+        uint256 totalWithdrawn = 0;
+        for (uint256 i = 0; i < numPlanets; i++) {
+            refreshPlanet(locationIds[i]);
+            totalWithdrawn += LibPlanet.withdrawAllSilver(locationIds[i]);
+        }
+
+        emit PlanetBulkSilverWithdrawn(msg.sender, totalWithdrawn);
     }
 }

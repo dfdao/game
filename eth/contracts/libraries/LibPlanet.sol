@@ -238,6 +238,57 @@ library LibPlanet {
         emit PlanetUpgraded(msg.sender, _location, _branch, upgradeBranchCurrentLevel + 1);
     }
 
+    function newUpgradePlanet(uint256 _location, UpgradeBranch _branch) public {
+        Planet storage planet = gs().planets[_location];
+
+        uint256 totalLevel = planet.upgradeState0 + planet.upgradeState1 + planet.upgradeState2;
+        // If Planet SpaceType is wrong for upgrade, just return;
+        // Can only newUpgrade a planet that hasn't been upgraded.
+        if (totalLevel != 0) return;
+        console.log("passed level check");
+        console.log("branch %s", uint256(_branch));
+        Upgrade memory upgrade = LibStorage.maxUpgrades()[uint256(_branch)];
+        // cost is silver * 1000
+        // Full upgrade costs 3x silver cap
+        uint256 upgradeCost = (planet.silverCap * 3) / 1000;
+        uint256 tokenId = 3 << 248;
+        uint256 silverBalance = DFTokenFacet(address(this)).balanceOf(msg.sender, tokenId);
+        console.log("cost %s balance %s", upgradeCost, silverBalance);
+        if (silverBalance < upgradeCost) return;
+        console.log("passed sufficient balance check");
+
+        // Burn the silver that was just used.
+        DFTokenFacet(address(this)).burn(msg.sender, tokenId, upgradeCost);
+        console.log("buffing with popCap %s", upgrade.popCapMultiplier);
+        // do upgrade
+        LibGameUtils._buffPlanet(_location, upgrade);
+        // planet.silver -= upgradeCost;
+        if (_branch == UpgradeBranch.DEFENSE) {
+            planet.upgradeState0 += 5;
+        } else if (_branch == UpgradeBranch.RANGE) {
+            planet.upgradeState1 += 5;
+        } else if (_branch == UpgradeBranch.SPEED) {
+            planet.upgradeState2 += 5;
+        }
+        emit PlanetUpgraded(msg.sender, _location, uint256(_branch), 5);
+    }
+
+    // Upgrade planet according to `upgrades pattern`
+    function upgradeAll(uint256 _location, UpgradeBranch[] memory upgrades) public {
+        Planet storage planet = gs().planets[_location];
+        require(
+            planet.owner == msg.sender,
+            "Only owner account can perform that operation on planet."
+        );
+        uint256 planetLevel = planet.planetLevel;
+        require(planetLevel > 0, "Planet level is not high enough for this upgrade");
+        require(planet.planetType == PlanetType.PLANET, "Can only upgrade regular planets");
+        require(!planet.destroyed, "planet is destroyed");
+        for (uint256 i = 0; i < upgrades.length; i++) {
+            newUpgradePlanet(_location, upgrades[i]);
+        }
+    }
+
     function checkPlayerInit(
         uint256 _location,
         uint256 _perlin,
@@ -385,5 +436,31 @@ library LibPlanet {
         DFTokenFacet(address(this)).mint(msg.sender, tokenId, scoreGained);
         scoreGained = (scoreGained * gameConstants().SILVER_SCORE_VALUE) / 100;
         gs().players[msg.sender].score += scoreGained;
+    }
+
+    // assume withdrawing all silver
+    function withdrawAllSilver(uint256 locationId) public returns (uint256) {
+        uint256 withdrawn = 0;
+        Planet storage planet = gs().planets[locationId];
+
+        if (planet.owner != msg.sender) return withdrawn;
+        if (planet.destroyed) return withdrawn;
+
+        // Don't want to stop the loop if bad input
+
+        withdrawn = planet.silver;
+        planet.silver = 0;
+
+        // Energy and Silver are not stored as floats in the smart contracts,
+        // so any of those values coming from the contracts need to be divided by
+        // `CONTRACT_PRECISION` to get their true integer value.
+        console.log("withdrawn %s", withdrawn);
+        uint256 scoreGained = withdrawn / 1000;
+        // increase silver token count;
+        uint256 tokenId = 3 << 248;
+        DFTokenFacet(address(this)).mint(msg.sender, tokenId, scoreGained);
+        scoreGained = (scoreGained * gameConstants().SILVER_SCORE_VALUE) / 100;
+        gs().players[msg.sender].score += scoreGained;
+        return withdrawn;
     }
 }

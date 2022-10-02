@@ -179,6 +179,7 @@ contract DFInitialize is WithStorage {
 
         initializeDefaults();
         initializeUpgrades();
+        initializeMaxUpgrades();
 
         gs().initializedPlanetCountByLevel = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         for (uint256 i = 0; i < gameConstants().PLANET_LEVEL_THRESHOLDS.length; i += 1) {
@@ -424,6 +425,34 @@ contract DFInitialize is WithStorage {
             popGroMultiplier: 120,
             rangeMultiplier: 100,
             speedMultiplier: 175,
+            defMultiplier: 100
+        });
+    }
+
+    function initializeMaxUpgrades() public {
+        Upgrade[3] storage maxUpgrades = maxUpgrades();
+
+        maxUpgrades[uint256(UpgradeBranch.DEFENSE)] = Upgrade({
+            popCapMultiplier: 250,
+            popGroMultiplier: 250,
+            rangeMultiplier: 100,
+            speedMultiplier: 100,
+            defMultiplier: 250
+        });
+
+        maxUpgrades[uint256(UpgradeBranch.RANGE)] = Upgrade({
+            popCapMultiplier: 250,
+            popGroMultiplier: 250,
+            rangeMultiplier: 250,
+            speedMultiplier: 100,
+            defMultiplier: 100
+        });
+
+        maxUpgrades[uint256(UpgradeBranch.SPEED)] = Upgrade({
+            popCapMultiplier: 250,
+            popGroMultiplier: 250,
+            rangeMultiplier: 100,
+            speedMultiplier: 250,
             defMultiplier: 100
         });
     }

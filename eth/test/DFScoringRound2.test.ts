@@ -1,8 +1,25 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
-import { conquerUnownedPlanet, feedSilverToCap, makeInitArgs } from './utils/TestUtils';
+import { BigNumber } from 'ethers';
+import {
+  conquerUnownedPlanet,
+  feedSilverToCap,
+  increaseBlockchainTime,
+  makeInitArgs,
+} from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
-import { LVL1_ASTEROID_1, LVL3_SPACETIME_1, SPAWN_PLANET_1 } from './utils/WorldConstants';
+import {
+  LVL1_ASTEROID_1,
+  LVL1_ASTEROID_2,
+  LVL1_ASTEROID_DEEP_SPACE,
+  LVL1_ASTEROID_NEBULA,
+  LVL1_PLANET_NEBULA,
+  LVL3_SPACETIME_1,
+  SPAWN_PLANET_1,
+} from './utils/WorldConstants';
+
+const CONTRACT_PRECISION = 1000;
+const SILVER_TOKEN_ID = '0x0300000000000000000000000000000000000000000000000000000000000000';
 
 describe('DFScoringRound2', async function () {
   // Bump the time out so that the test doesn't timeout during
@@ -45,12 +62,75 @@ describe('DFScoringRound2', async function () {
     expect((await world.contract.players(world.user1.address)).score).to.equal(
       withdrawnAmount.div(1000)
     );
+    expect(await world.contract.balanceOf(world.user1.address, SILVER_TOKEN_ID)).to.equal(
+      withdrawnAmount.div(CONTRACT_PRECISION)
+    );
+  });
+
+  it.skip('counts gas for withdrawing silver', async function () {
+    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_2);
+    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_NEBULA);
+    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_DEEP_SPACE);
+
+    // await feedSilverToCap(world, world.user1Core, LVL1_ASTEROID_1, LVL3_SPACETIME_2);
+    const ast1 = await world.contract.planets(LVL1_ASTEROID_1.id);
+    const ast2 = await world.contract.planets(LVL1_ASTEROID_2.id);
+    const ast3 = await world.contract.planets(LVL1_ASTEROID_NEBULA.id);
+    const ast4 = await world.contract.planets(LVL1_ASTEROID_DEEP_SPACE.id);
+
+    await increaseBlockchainTime();
+
+    const tx = await world.user1Core.bulkWithdrawSilver([
+      LVL1_ASTEROID_1.id,
+      LVL1_ASTEROID_2.id,
+      LVL1_ASTEROID_NEBULA.id,
+      LVL1_ASTEROID_DEEP_SPACE.id,
+    ]);
+    const rct = await tx.wait();
+    console.log(`gas used in bulk withdraw ${rct.gasUsed}`);
+
     expect(
-      await world.contract.balanceOf(
-        world.user1.address,
-        '0x0300000000000000000000000000000000000000000000000000000000000000'
-      )
-    ).to.equal(withdrawnAmount.div(1000));
+      await (await world.contract.balanceOf(world.user1.address, SILVER_TOKEN_ID)).toNumber()
+    ).to.equal(
+      ast1.silverCap.add(ast2.silverCap).add(ast3.silverCap).add(ast4.silverCap).toNumber() /
+        CONTRACT_PRECISION
+    );
+  });
+
+  it.only('upgrades all of ', async function () {
+    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_PLANET_NEBULA);
+
+    const tx = await world.user1Core.bulkWithdrawSilver([LVL1_ASTEROID_1.id]);
+    const rct = await tx.wait();
+    console.log(`gas used in bulk withdraw ${rct.gasUsed}`);
+
+    await increaseBlockchainTime();
+    await world.user1Core.bulkWithdrawSilver([LVL1_ASTEROID_1.id]);
+
+    const upgradeablePlanetId = LVL1_PLANET_NEBULA.id;
+    const planetBeforeUpgrade = await world.contract.planets(upgradeablePlanetId);
+
+    const silverCap = planetBeforeUpgrade.silverCap.toNumber();
+    const initialSilver = planetBeforeUpgrade.silver.toNumber();
+    const initialPopulationCap = planetBeforeUpgrade.populationCap;
+    const initialPopulationGrowth = planetBeforeUpgrade.populationGrowth;
+
+    // const uTx = await world.user1Core.upgradeAll(LVL1_PLANET_NEBULA.id, [UpgradeBranchName.Range]);
+    // const uRct = await uTx.wait();
+    // console.log(`gas used in bulk upgrade ${uRct.gasUsed}`);
+
+    await expect(world.user1Core.upgradeAll(upgradeablePlanetId, [1]))
+      .to.emit(world.contract, 'PlanetUpgraded')
+      .withArgs(world.user1.address, upgradeablePlanetId, BigNumber.from(1), BigNumber.from(5));
+
+    const planetAfterUpgrade = await world.contract.planets(upgradeablePlanetId);
+    const newPopulationCap = planetAfterUpgrade.populationCap;
+    const newPopulationGrowth = planetAfterUpgrade.populationGrowth;
+    const newSilver = planetAfterUpgrade.silver.toNumber();
+    console.log(`init ${initialPopulationCap} new ${newPopulationCap}`);
+    // expect(newSilver).to.equal(initialSilver - 0.2 * silverCap);
+    expect(initialPopulationCap).to.be.below(newPopulationCap);
+    expect(initialPopulationGrowth).to.be.below(newPopulationGrowth);
   });
 
   it("doesn't allow player to withdraw more silver than planet has", async function () {

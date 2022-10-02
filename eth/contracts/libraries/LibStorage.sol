@@ -186,6 +186,7 @@ library LibStorage {
     bytes32 constant PLANET_DEFAULT_STATS_POSITION =
         keccak256("darkforest.constants.planetDefaultStats");
     bytes32 constant UPGRADE_POSITION = keccak256("darkforest.constants.upgrades");
+    bytes32 constant MAX_UPGRADE_POSITION = keccak256("darkforest.constants.upgrades.max");
 
     function gameStorage() internal pure returns (GameStorage storage gs) {
         bytes32 position = GAME_STORAGE_POSITION;
@@ -228,6 +229,13 @@ library LibStorage {
             upgrades.slot := position
         }
     }
+
+    function maxUpgrades() internal pure returns (Upgrade[3] storage maxUpgrades) {
+        bytes32 position = MAX_UPGRADE_POSITION;
+        assembly {
+            maxUpgrades.slot := position
+        }
+    }
 }
 
 /**
@@ -262,5 +270,9 @@ contract WithStorage {
 
     function upgrades() internal pure returns (Upgrade[4][3] storage) {
         return LibStorage.upgrades();
+    }
+
+    function maxUpgrades() internal pure returns (Upgrade[3] storage) {
+        return LibStorage.maxUpgrades();
     }
 }
