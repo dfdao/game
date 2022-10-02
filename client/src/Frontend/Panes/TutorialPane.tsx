@@ -1,4 +1,3 @@
-import { Setting } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TutorialManager, {
@@ -12,7 +11,7 @@ import { Icon, IconType } from '../Components/Icons';
 import { White } from '../Components/Text';
 import dfstyles from '../Styles/dfstyles';
 import { useUIManager } from '../Utils/AppHooks';
-import { useBooleanSetting } from '../Utils/SettingsHooks';
+import { useSetting } from '../Utils/SettingsHooks';
 
 function TutorialPaneContent({ tutorialState }: { tutorialState: TutorialState }) {
   const uiManager = useUIManager();
@@ -247,7 +246,7 @@ export function TutorialPane({ tutorialHook }: { tutorialHook: Hook<boolean> }) 
 
   const [tutorialState, setTutorialState] = useState<TutorialState>(TutorialState.None);
   const [tutorialOpen] = tutorialHook;
-  const [completed, setCompleted] = useBooleanSetting(uiManager, Setting.TutorialCompleted);
+  const [completed, setCompleted] = useSetting(uiManager, 'TutorialCompleted');
 
   // sync tutorial state
   useEffect(() => {

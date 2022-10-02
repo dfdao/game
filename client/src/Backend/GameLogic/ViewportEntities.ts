@@ -11,7 +11,7 @@ import {
 } from '@dfdao/types';
 import Viewport from '../../Frontend/Game/Viewport';
 import { planetLevelToAnimationSpeed, sinusoidalAnimation } from '../Utils/Animation';
-import GameManager from './GameManager';
+import { GameObjects } from './GameObjects';
 import GameUIManager from './GameUIManager';
 
 /**
@@ -19,14 +19,14 @@ import GameUIManager from './GameUIManager';
  * visible planet to the mouse.
  */
 export class ViewportEntities {
-  private readonly gameManager: GameManager;
+  private readonly entityStore: GameObjects;
   private readonly uiManager: GameUIManager;
 
   private cachedExploredChunks: Set<Chunk> = new Set();
   private cachedPlanets: Map<LocationId, PlanetRenderInfo> = new Map();
 
-  public constructor(gameManager: GameManager, gameUIManager: GameUIManager) {
-    this.gameManager = gameManager;
+  public constructor(entityStore: GameObjects, gameUIManager: GameUIManager) {
+    this.entityStore = entityStore;
     this.uiManager = gameUIManager;
     this.startRefreshing();
   }
@@ -59,7 +59,7 @@ export class ViewportEntities {
     this.uiManager.updateDiagnostics((d) => {
       d.visibleChunks = this.cachedExploredChunks.size;
       d.visiblePlanets = this.cachedPlanets.size;
-      d.totalPlanets = this.gameManager.getGameObjects().getAllPlanetsMap().size;
+      d.totalPlanets = this.entityStore.getAllPlanetsMap().size;
     });
   }
 
@@ -92,13 +92,14 @@ export class ViewportEntities {
       }
     }
 
-    this.gameManager.refreshServerPlanetStates(planetIds);
+    // TODO: Implement planet emojis as a facet
+    // this.gameManager.refreshServerPlanetStates(planetIds);
   }
 
   private recalculateViewportPlanets(viewport: Viewport) {
     const radii = this.getPlanetRadii(Viewport.getInstance());
 
-    const planetsInViewport = this.gameManager.getPlanetsInWorldRectangle(
+    const planetsInViewport = this.entityStore.getPlanetsInWorldRectangle(
       viewport.getViewportPosition().x - viewport.widthInWorldUnits / 2,
       viewport.getViewportPosition().y - viewport.heightInWorldUnits / 2,
       viewport.widthInWorldUnits,

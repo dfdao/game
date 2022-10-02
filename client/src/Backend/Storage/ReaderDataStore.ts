@@ -16,6 +16,7 @@ import { arrive, updatePlanetToTime } from '../GameLogic/ArrivalUtils';
 import { ContractsAPI, makeContractsAPI } from '../GameLogic/ContractsAPI';
 import { getAllTwitters } from '../Network/UtilityServerAPI';
 import PersistentChunkStore from './PersistentChunkStore';
+import { SettingStore } from './SettingStore';
 
 export const enum SinglePlanetDataStoreEvent {
   REFRESHED_PLANET = 'REFRESHED_PLANET',
@@ -71,7 +72,11 @@ class ReaderDataStore {
     viewer: EthAddress | undefined;
     contractAddress: EthAddress;
   }): Promise<ReaderDataStore> {
-    const contractsAPI = await makeContractsAPI({ connection, contractAddress });
+    const settings = new SettingStore({
+      contractAddress,
+      account: viewer || ('anonymous' as EthAddress),
+    });
+    const contractsAPI = await makeContractsAPI({ connection, contractAddress, settings });
     const addressTwitterMap = await getAllTwitters();
     const contractConstants = await contractsAPI.getConstants();
     const persistentChunkStore =

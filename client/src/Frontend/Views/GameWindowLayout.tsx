@@ -1,4 +1,4 @@
-import { ModalId, ModalName, Setting } from '@dfdao/types';
+import { ModalId, ModalName } from '@dfdao/types';
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { BorderlessPane } from '../Components/CoreUI';
@@ -29,7 +29,7 @@ import { TwitterVerifyPane } from '../Panes/TwitterVerifyPane';
 import { ZoomPane } from '../Panes/ZoomPane';
 import { useSelectedPlanet, useUIManager } from '../Utils/AppHooks';
 import { useOnUp } from '../Utils/KeyEmitters';
-import { useBooleanSetting } from '../Utils/SettingsHooks';
+import { useSetting } from '../Utils/SettingsHooks';
 import { TOGGLE_DIAGNOSTICS_PANE } from '../Utils/ShortcutConstants';
 import { NotificationsPane } from './Notifications';
 import { SidebarPane } from './SidebarPane';
@@ -87,14 +87,14 @@ export function GameWindowLayout({
   const modalsContainerCB = useCallback((node) => {
     setModalsContainer(node);
   }, []);
-  const [onboardingVisible, setOnboardingVisible] = useBooleanSetting(uiManager, Setting.NewPlayer);
-  const tutorialHook = useBooleanSetting(uiManager, Setting.TutorialOpen);
+  const [onboardingVisible, setOnboardingVisible] = useSetting(uiManager, 'NewPlayer');
+  const tutorialHook = useSetting(uiManager, 'TutorialOpen');
   const selected = useSelectedPlanet(uiManager).value;
   const [selectedPlanetVisible, setSelectedPlanetVisible] = useState<boolean>(!!selected);
 
-  const [userTerminalVisibleSetting, setTerminalVisibleSetting] = useBooleanSetting(
+  const [userTerminalVisibleSetting, setTerminalVisibleSetting] = useSetting(
     uiManager,
-    Setting.TerminalVisible
+    'TerminalVisible'
   );
 
   useEffect(() => {
@@ -104,7 +104,7 @@ export function GameWindowLayout({
   const account = uiManager.getAccount();
   useEffect(() => {
     if (uiManager.getAccount()) {
-      setTerminalVisible(uiManager.getBooleanSetting(Setting.TerminalVisible));
+      setTerminalVisible(uiManager.getSettingStore().get('TerminalVisible'));
     }
   }, [account, uiManager, setTerminalVisible]);
 

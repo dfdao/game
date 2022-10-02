@@ -1,5 +1,5 @@
 import { RECOMMENDED_MODAL_WIDTH } from '@dfdao/constants';
-import { ModalName, PluginId, Setting } from '@dfdao/types';
+import { ModalName, PluginId } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import { ReactSortable } from 'react-sortablejs';
 import styled from 'styled-components';
@@ -13,7 +13,7 @@ import { RemoteModal } from '../Components/RemoteModal';
 import { Sub } from '../Components/Text';
 import dfstyles from '../Styles/dfstyles';
 import { useEmitterValue } from '../Utils/EmitterHooks';
-import { getBooleanSetting, setSetting, useBooleanSetting } from '../Utils/SettingsHooks';
+import { useSetting } from '../Utils/SettingsHooks';
 import { ModalPane } from '../Views/ModalPane';
 import { PluginEditorPane } from './PluginEditorPane';
 
@@ -76,17 +76,11 @@ export function PluginLibraryPane({
   const pluginManager = gameUIManager.getPluginManager();
   const modalManager = gameUIManager.getModalManager();
   const plugins = useEmitterValue(pluginManager.plugins$, pluginManager.getLibrary());
-  const contractAddress = gameUIManager.getContractAddress();
-  const account = gameUIManager.getAccount();
-  const config = { contractAddress, account };
   const isAdmin = gameUIManager.isAdmin();
   const [editorIsOpen, setEditorIsOpen] = useState(false);
   const [warningIsOpen, setWarningIsOpen] = useState(false);
   const [clicksUntilHasPlugins, setClicksUntilHasPlugins] = useState(8);
-  const [forceReloadEmbeddedPlugins, _s] = useBooleanSetting(
-    gameUIManager,
-    Setting.ForceReloadEmbeddedPlugins
-  );
+  const [forceReloadEmbeddedPlugins, _s] = useSetting(gameUIManager, 'ForceReloadEmbeddedPlugins');
 
   /**
    * the id of the plugin that the user is currently editing.
@@ -108,7 +102,7 @@ export function PluginLibraryPane({
    * closes the editor.
    */
   function openEditorForPlugin(pluginId?: PluginId) {
-    if (!account || !getBooleanSetting(config, Setting.HasAcceptedPluginRisk)) {
+    if (!gameUIManager.getSettingStore().get('HasAcceptedPluginRisk')) {
       setWarningIsOpen(true);
       return;
     }
@@ -142,7 +136,7 @@ export function PluginLibraryPane({
 
   const onAcceptWarningClick = () => {
     if (clicksUntilHasPlugins === 1) {
-      account && setSetting(config, Setting.HasAcceptedPluginRisk, true + '');
+      gameUIManager.getSettingStore().set('HasAcceptedPluginRisk', true);
       setWarningIsOpen(false);
     }
 

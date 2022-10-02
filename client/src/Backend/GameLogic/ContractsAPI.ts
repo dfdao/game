@@ -36,7 +36,6 @@ import {
   Player,
   QueuedArrival,
   RevealedCoords,
-  Setting,
   Transaction,
   TransactionId,
   TxIntent,
@@ -47,7 +46,6 @@ import { EventEmitter } from 'events';
 import _ from 'lodash';
 import NotificationManager from '../../Frontend/Game/NotificationManager';
 import { openConfirmationWindowForTransaction } from '../../Frontend/Game/Popups';
-import { getSetting } from '../../Frontend/Utils/SettingsHooks';
 import {
   ContractConstants,
   ContractEvent,
@@ -55,10 +53,12 @@ import {
 } from '../../_types/darkforest/api/ContractsAPITypes';
 import { loadDiamondContract } from '../Network/Blockchain';
 import { eventLogger, EventType } from '../Network/EventLogger';
+import { SettingStore } from '../Storage/SettingStore';
 
 interface ContractsApiConfig {
   connection: EthConnection;
   contractAddress: EthAddress;
+  settings: SettingStore;
 }
 
 /**
@@ -98,7 +98,9 @@ export class ContractsAPI extends EventEmitter {
     return this.ethConnection.getContract<DarkForest>(this.contractAddress);
   }
 
-  public constructor({ connection, contractAddress }: ContractsApiConfig) {
+  private settings: SettingStore;
+
+  public constructor({ connection, contractAddress, settings }: ContractsApiConfig) {
     super();
     this.contractCaller = new ContractCaller();
     this.ethConnection = connection;
@@ -110,6 +112,7 @@ export class ContractsAPI extends EventEmitter {
       this.beforeTransaction.bind(this),
       this.afterTransaction.bind(this)
     );
+    this.settings = settings;
 
     this.setupEventListeners();
   }
@@ -127,12 +130,7 @@ export class ContractsAPI extends EventEmitter {
       return '50';
     }
 
-    const config = {
-      contractAddress: this.contractAddress,
-      account: this.ethConnection.getAddress(),
-    };
-
-    return getSetting(config, Setting.GasFeeGwei);
+    return this.settings.get('GasFeeGwei');
   }
 
   /**
@@ -927,8 +925,9 @@ export class ContractsAPI extends EventEmitter {
 export async function makeContractsAPI({
   connection,
   contractAddress,
+  settings,
 }: ContractsApiConfig): Promise<ContractsAPI> {
   await connection.loadContract(contractAddress, loadDiamondContract);
 
-  return new ContractsAPI({ connection, contractAddress });
+  return new ContractsAPI({ connection, contractAddress, settings });
 }

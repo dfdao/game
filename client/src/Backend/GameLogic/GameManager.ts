@@ -65,7 +65,6 @@ import {
   Rectangle,
   RevealedCoords,
   RevealedLocation,
-  Setting,
   SignedMessage,
   SpaceType,
   Transaction,
@@ -99,14 +98,6 @@ import { EventEmitter } from 'events';
 import NotificationManager from '../../Frontend/Game/NotificationManager';
 import { MIN_CHUNK_SIZE } from '../../Frontend/Utils/constants';
 import { Diff, generateDiffEmitter, getDisposableEmitter } from '../../Frontend/Utils/EmitterUtils';
-import {
-  getBooleanSetting,
-  getNumberSetting,
-  pollSetting,
-  setBooleanSetting,
-  setSetting,
-  settingChanged$,
-} from '../../Frontend/Utils/SettingsHooks';
 import { TerminalTextStyle } from '../../Frontend/Utils/TerminalTypes';
 import UIEmitter from '../../Frontend/Utils/UIEmitter';
 import { TerminalHandle } from '../../Frontend/Views/Terminal';
@@ -138,6 +129,7 @@ import {
 import { SerializedPlugin } from '../Plugins/SerializedPlugin';
 import OtherStore from '../Storage/OtherStore';
 import PersistentChunkStore from '../Storage/PersistentChunkStore';
+import { SettingStore } from '../Storage/SettingStore';
 import { easeInAnimation, emojiEaseOutAnimation } from '../Utils/Animation';
 import SnarkArgsHelper from '../Utils/SnarkArgsHelper';
 import { hexifyBigIntNestedArray } from '../Utils/Utils';
@@ -210,6 +202,7 @@ class GameManager extends EventEmitter {
   private readonly persistentChunkStore: PersistentChunkStore;
   // Literally other storage stuff that people dumped into the chunk store
   private readonly otherStore: OtherStore;
+  private readonly settingStore: SettingStore;
 
   /**
    * Responsible for generating snark proofs.
@@ -377,7 +370,8 @@ class GameManager extends EventEmitter {
     useMockHash: boolean,
     artifacts: Map<ArtifactId, Artifact>,
     ethConnection: EthConnection,
-    paused: boolean
+    paused: boolean,
+    settingStore: SettingStore
   ) {
     super();
 
@@ -497,14 +491,12 @@ class GameManager extends EventEmitter {
 
     this.hashRate = 0;
 
-    this.settingsSubscription = settingChanged$.subscribe((setting: Setting) => {
-      if (setting === Setting.MiningCores) {
+    this.settingStore = settingStore;
+    this.settingStore.subscribe((setting) => {
+      console.log('setting', setting);
+      if (setting === 'MiningCores') {
         if (this.minerManager) {
-          const config = {
-            contractAddress: this.getContractAddress(),
-            account: this.account,
-          };
-          const cores = getNumberSetting(config, Setting.MiningCores);
+          const cores = this.settingStore.get('MiningCores');
           this.minerManager.setCores(cores);
         }
       }
@@ -588,13 +580,16 @@ class GameManager extends EventEmitter {
       throw new Error('no account on eth connection');
     }
 
+    const settingStore = new SettingStore({ contractAddress, account });
+
     const gameStateDownloader = new InitialGameStateDownloader(terminal.current);
-    const contractsAPI = await makeContractsAPI({ connection, contractAddress });
+    const contractsAPI = await makeContractsAPI({ connection, contractAddress, settings: settingStore });
 
     terminal.current?.println('Loading game data from disk...');
 
     const persistentChunkStore = new PersistentChunkStore({ account, contractAddress });
     const otherStore = await OtherStore.create({ account, contractAddress });
+
 
     terminal.current?.println('Downloading data from Ethereum blockchain...');
     terminal.current?.println('(the contract is very big. this may take a while)');
@@ -682,16 +677,11 @@ class GameManager extends EventEmitter {
       useMockHash,
       knownArtifacts,
       connection,
-      initialState.paused
+      initialState.paused,
+      settingStore
     );
 
     gameManager.setPlayerTwitters(initialState.twitters);
-
-    const config = {
-      contractAddress,
-      account: gameManager.getAccount(),
-    };
-    pollSetting(config, Setting.AutoApproveNonPurchaseTransactions);
 
     persistentChunkStore.setDiagnosticUpdater(gameManager);
     contractsAPI.setDiagnosticUpdater(gameManager);
@@ -1258,12 +1248,7 @@ class GameManager extends EventEmitter {
       this.useMockHash
     );
 
-    const config = {
-      contractAddress: this.getContractAddress(),
-      account: this.account,
-    };
-
-    this.minerManager.setCores(cores || getNumberSetting(config, Setting.MiningCores));
+    this.minerManager.setCores(cores || this.settingStore.get('MiningCores'));
 
     this.minerManager.on(
       MinerManagerEvent.DiscoveredNewChunk,
@@ -1274,7 +1259,7 @@ class GameManager extends EventEmitter {
       }
     );
 
-    const isMining = getBooleanSetting(config, Setting.IsMining);
+    const isMining = this.settingStore.get('IsMining');
     if (isMining) {
       this.minerManager.startExplore();
     }
@@ -1301,11 +1286,7 @@ class GameManager extends EventEmitter {
    * Set the amount of cores to mine the universe with. More cores equals faster!
    */
   setMinerCores(nCores: number): void {
-    const config = {
-      contractAddress: this.getContractAddress(),
-      account: this.account,
-    };
-    setSetting(config, Setting.MiningCores, nCores + '');
+    this.settingStore.set('MiningCores', nCores);
   }
 
   /**
@@ -1604,6 +1585,9 @@ class GameManager extends EventEmitter {
   getOtherStore(): OtherStore {
     return this.otherStore;
   }
+  getSettingStore(): SettingStore {
+    return this.settingStore;
+  }
 
   /**
    * The perlin value at each coordinate determines the space type. There are four space
@@ -1624,11 +1608,7 @@ class GameManager extends EventEmitter {
    */
   startExplore(): void {
     if (this.minerManager) {
-      const config = {
-        contractAddress: this.getContractAddress(),
-        account: this.account,
-      };
-      setBooleanSetting(config, Setting.IsMining, true);
+      this.settingStore.set('IsMining', true);
       this.minerManager.startExplore();
     }
   }
@@ -1638,11 +1618,7 @@ class GameManager extends EventEmitter {
    */
   stopExplore(): void {
     if (this.minerManager) {
-      const config = {
-        contractAddress: this.getContractAddress(),
-        account: this.account,
-      };
-      setBooleanSetting(config, Setting.IsMining, false);
+      this.settingStore.set('IsMining', false);
       this.hashRate = 0;
       this.minerManager.stopExplore();
     }

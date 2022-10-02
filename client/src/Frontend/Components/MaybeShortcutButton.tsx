@@ -1,7 +1,6 @@
-import { Setting } from '@dfdao/types';
 import React from 'react';
 import { useUIManager } from '../Utils/AppHooks';
-import { useBooleanSetting } from '../Utils/SettingsHooks';
+import { useSetting } from '../Utils/SettingsHooks';
 import { Btn, ShortcutBtn } from './Btn';
 
 /**
@@ -13,7 +12,7 @@ export function MaybeShortcutButton(
   props: React.ComponentProps<typeof Btn> | React.ComponentProps<typeof ShortcutBtn>
 ) {
   const uiManager = useUIManager();
-  const [disableDefaultShortcuts] = useBooleanSetting(uiManager, Setting.DisableDefaultShortcuts);
+  const [disableDefaultShortcuts] = useSetting(uiManager, 'DisableDefaultShortcuts');
 
   if (disableDefaultShortcuts) {
     return <Btn {...props} />;

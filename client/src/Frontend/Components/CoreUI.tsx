@@ -322,34 +322,34 @@ export function SelectFrom({
   style,
   wide,
 }: {
-  values: string[];
-  value: string;
-  setValue: (value: string) => void;
+  values: any[];
+  value: any;
+  setValue: (value: any) => void;
   labels: string[];
   style?: React.CSSProperties;
   wide?: boolean;
 }) {
-  const onChange = useCallback(
-    (e: ChangeEvent<HTMLSelectElement>) => {
-      setValue(e.target.value);
-    },
-    [setValue]
-  );
-
-  const copyOfValues = [...values];
-  const copyOfLabels = [...labels];
-
-  if (!copyOfValues.includes(value)) {
-    copyOfLabels.push(value);
-    copyOfValues.push(value);
+  if (!values.includes(value)) {
+    values = [...values, value];
+    labels = [...labels, value];
   }
 
+  const onChange = useCallback(
+    (e: ChangeEvent<HTMLSelectElement>) => {
+      const idx = parseInt(e.target.value, 10);
+      setValue(values[idx]);
+    },
+    [setValue, values]
+  );
+
+  const idx = values.indexOf(value);
+
   return (
-    <Select wide={wide} style={style} value={value} onChange={onChange}>
-      {copyOfValues.map((value, i) => {
+    <Select wide={wide} style={style} value={idx} onChange={onChange}>
+      {values.map((value, i) => {
         return (
-          <option key={value} value={value}>
-            {copyOfLabels[i]}
+          <option key={value} value={i}>
+            {labels[i]}
           </option>
         );
       })}

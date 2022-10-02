@@ -1,5 +1,5 @@
 import { RECOMMENDED_MODAL_WIDTH } from '@dfdao/constants';
-import { Diagnostics, ModalName, Setting } from '@dfdao/types';
+import { Diagnostics, ModalName } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import { Wrapper } from '../../Backend/Utils/Wrapper';
 import { EmSpacer, Separator, SpreadApart } from '../Components/CoreUI';
@@ -114,7 +114,7 @@ function RenderingTab({ diagnostics }: { diagnostics: Wrapper<Diagnostics> }) {
       <EmSpacer height={0.5} />
       <BooleanSetting
         uiManager={uiManager}
-        setting={Setting.DrawChunkBorders}
+        setting={'DrawChunkBorders'}
         settingDescription='draw chunk borders'
       />
     </>

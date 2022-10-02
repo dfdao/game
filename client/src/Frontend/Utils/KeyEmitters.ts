@@ -1,11 +1,10 @@
 import { SpecialKey } from '@dfdao/constants';
 import { monomitter } from '@dfdao/events';
-import { Setting } from '@dfdao/types';
 import { useEffect, useState } from 'react';
 import { Wrapper } from '../../Backend/Utils/Wrapper';
 import { useUIManager } from './AppHooks';
 import { useEmitterSubscribe } from './EmitterHooks';
-import { useBooleanSetting } from './SettingsHooks';
+import { useSetting } from './SettingsHooks';
 
 export const keyUp$ = monomitter<Wrapper<string>>();
 export const keyDown$ = monomitter<Wrapper<string>>();
@@ -61,10 +60,7 @@ export function useIsDown(key?: string) {
 }
 
 export function useOnUp(key: string, onUp: () => void, deps: React.DependencyList = []) {
-  const [disableDefaultShortcuts] = useBooleanSetting(
-    useUIManager(),
-    Setting.DisableDefaultShortcuts
-  );
+  const [disableDefaultShortcuts] = useSetting(useUIManager(), 'DisableDefaultShortcuts');
 
   useEffect(() => {
     const onKeyUp = (e: KeyboardEvent) => {

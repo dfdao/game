@@ -22,6 +22,7 @@ import {
   submitInterestedEmail,
   submitPlayerEmail,
 } from '../../Backend/Network/UtilityServerAPI';
+import { SettingStore } from '../../Backend/Storage/SettingStore';
 import { getWhitelistArgs } from '../../Backend/Utils/WhitelistSnarkArgsHelper';
 import { ZKArgIdx } from '../../_types/darkforest/api/ContractsAPITypes';
 import {
@@ -539,7 +540,14 @@ export function GameLandingPage({ match, location }: RouteComponentProps<{ contr
         }
       } else {
         if (!ethConnection) throw new Error('no eth connection');
-        const contractsAPI = await makeContractsAPI({ connection: ethConnection, contractAddress });
+        const account = ethConnection.getAddress();
+        if (!account) throw new Error('No account!');
+        const settings = new SettingStore({ contractAddress, account });
+        const contractsAPI = await makeContractsAPI({
+          connection: ethConnection,
+          contractAddress,
+          settings,
+        });
 
         const keyBigInt = bigIntFromKey(key);
         const snarkArgs = await getWhitelistArgs(keyBigInt, address, terminal);

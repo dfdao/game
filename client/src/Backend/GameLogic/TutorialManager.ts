@@ -1,7 +1,5 @@
-import { Setting } from '@dfdao/types';
 import { EventEmitter } from 'events';
 import NotificationManager from '../../Frontend/Game/NotificationManager';
-import { setBooleanSetting } from '../../Frontend/Utils/SettingsHooks';
 import GameUIManager from './GameUIManager';
 
 export const enum TutorialManagerEvent {
@@ -69,21 +67,13 @@ class TutorialManager extends EventEmitter {
   }
 
   reset() {
-    const config = {
-      contractAddress: this.uiManager.getContractAddress(),
-      account: this.uiManager.getAccount(),
-    };
-    setBooleanSetting(config, Setting.TutorialOpen, true);
+    this.uiManager.getSettingStore().set('TutorialOpen', true);
     this.setTutorialState(TutorialState.None);
   }
 
   complete() {
     this.setTutorialState(TutorialState.Completed);
-    const config = {
-      contractAddress: this.uiManager.getContractAddress(),
-      account: this.uiManager.getAccount(),
-    };
-    setBooleanSetting(config, Setting.TutorialCompleted, true);
+    this.uiManager.getSettingStore().set('TutorialCompleted', true);
   }
 
   acceptInput(state: TutorialState) {

@@ -35,7 +35,6 @@ import {
   RendererType,
   RingRendererType,
   RuinsRendererType,
-  Setting,
   SpaceRendererType,
   SpacetimeRipRendererType,
   SpaceType,
@@ -111,8 +110,8 @@ import { UIRenderer } from './UIRenderer';
 import { GameGLManager } from './WebGL/GameGLManager';
 
 export interface RendererGameContext extends DiagnosticUpdater {
-  getStringSetting(setting: Setting): string | undefined;
-  getBooleanSetting(setting: Setting): boolean;
+  // TODO: This is shit
+  getSettingStore(): { get(key: string): any };
   getIsHighPerfMode(): boolean;
   getWorldRadius(): number;
   getMouseDownPlanet(): LocatablePlanet | undefined;
@@ -216,6 +215,7 @@ export class Renderer {
   private previousRenderTimestamp: number;
   rendererStack: BaseRenderer[];
   config: IRendererConfig;
+  settings: ReturnType<RendererGameContext['getSettingStore']>;
 
   private constructor(
     canvas: HTMLCanvasElement,
@@ -229,6 +229,8 @@ export class Renderer {
     this.glCanvas = glCanvas;
     this.bufferCanvas = bufferCanvas;
     this.context = context;
+
+    this.settings = context.getSettingStore();
 
     this.glManager = new GameGLManager(this, this.glCanvas);
     this.overlay2dRenderer = new Overlay2DRenderer(this, this.canvas);
@@ -341,17 +343,17 @@ export class Renderer {
     // get some data
     const { cachedPlanets, chunks } = this.context.getLocationsAndChunks();
 
-    const innerNebulaColor = this.context.getStringSetting(Setting.RendererColorInnerNebula);
-    const nebulaColor = this.context.getStringSetting(Setting.RendererColorNebula);
-    const spaceColor = this.context.getStringSetting(Setting.RendererColorSpace);
-    const deepSpaceColor = this.context.getStringSetting(Setting.RendererColorDeepSpace);
-    const deadSpaceColor = this.context.getStringSetting(Setting.RendererColorDeadSpace);
+    const innerNebulaColor = this.settings.get('RendererColorInnerNebula') as string;
+    const nebulaColor = this.settings.get('RendererColorNebula') as string;
+    const spaceColor = this.settings.get('RendererColorSpace') as string;
+    const deepSpaceColor = this.settings.get('RendererColorDeepSpace') as string;
+    const deadSpaceColor = this.settings.get('RendererColorDeadSpace') as string;
 
-    const isHighPerfMode = this.context.getBooleanSetting(Setting.HighPerformanceRendering);
-    const disableEmojis = this.context.getBooleanSetting(Setting.DisableEmojiRendering);
-    const disableHats = this.context.getBooleanSetting(Setting.DisableHatRendering);
-    const drawChunkBorders = this.context.getBooleanSetting(Setting.DrawChunkBorders);
-    const disableFancySpaceEffect = this.context.getBooleanSetting(Setting.DisableFancySpaceEffect);
+    const isHighPerfMode = this.settings.get('HighPerformanceRendering') as boolean;
+    const disableEmojis = this.settings.get('DisableEmojiRendering') as boolean;
+    const disableHats = this.settings.get('DisableHatRendering') as boolean;
+    const drawChunkBorders = this.settings.get('DrawChunkBorders') as boolean;
+    const disableFancySpaceEffect = this.settings.get('DisableFancySpaceEffect') as boolean;
 
     // draw the bg
     this.bgRenderer.queueChunks(

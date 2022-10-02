@@ -8,6 +8,7 @@ import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { ContractsAPI, makeContractsAPI } from '../../Backend/GameLogic/ContractsAPI';
+import { SettingStore } from '../../Backend/Storage/SettingStore';
 import { ContractsAPIEvent } from '../../_types/darkforest/api/ContractsAPITypes';
 import { InitRenderState, Wrapper } from '../Components/GameLandingPageComponents';
 import { ConfigurationPane } from '../Panes/Lobbies/ConfigurationPane';
@@ -62,8 +63,12 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
   );
 
   useEffect(() => {
-    if (connection && contractAddress) {
-      makeContractsAPI({ connection, contractAddress })
+    if (!connection) return;
+
+    const account = connection.getAddress();
+    if (contractAddress && account) {
+      const settings = new SettingStore({ contractAddress, account });
+      makeContractsAPI({ connection, contractAddress, settings })
         .then((contract) => setContract(contract))
         .catch((e) => {
           console.log(e);

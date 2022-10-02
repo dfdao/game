@@ -23,7 +23,6 @@ import {
   Player,
   QueuedArrival,
   Rectangle,
-  Setting,
   SpaceType,
   Transaction,
   UnconfirmedActivateArtifact,
@@ -45,11 +44,6 @@ import NotificationManager from '../../Frontend/Game/NotificationManager';
 import Viewport from '../../Frontend/Game/Viewport';
 import { getObjectWithIdFromMap } from '../../Frontend/Utils/EmitterUtils';
 import { listenForKeyboardEvents, unlinkKeyboardEvents } from '../../Frontend/Utils/KeyEmitters';
-import {
-  getBooleanSetting,
-  getSetting,
-  setBooleanSetting,
-} from '../../Frontend/Utils/SettingsHooks';
 import UIEmitter, { UIEmitterEvent } from '../../Frontend/Utils/UIEmitter';
 import { TerminalHandle } from '../../Frontend/Views/Terminal';
 import { ContractConstants } from '../../_types/darkforest/api/ContractsAPITypes';
@@ -169,7 +163,7 @@ class GameUIManager extends EventEmitter {
       this.gameManager.getArtifactUpdated$()
     );
     this.myArtifacts$ = this.gameManager.getMyArtifactsUpdated$();
-    this.viewportEntities = new ViewportEntities(this.gameManager, this);
+    this.viewportEntities = new ViewportEntities(this.gameManager.getGameObjects(), this);
 
     this.isSending$ = monomitter(true);
     this.isAbandoning$ = monomitter(true);
@@ -251,26 +245,8 @@ class GameUIManager extends EventEmitter {
     this.hoverArtifactId$.clear();
   }
 
-  public getStringSetting(setting: Setting): string | undefined {
-    const account = this.getAccount();
-    const config = {
-      contractAddress: this.getContractAddress(),
-      account,
-    };
-
-    return account && getSetting(config, setting);
-  }
-
-  public getBooleanSetting(setting: Setting): boolean {
-    const account = this.getAccount();
-
-    if (!account) {
-      return false;
-    }
-
-    const config = { contractAddress: this.getContractAddress(), account };
-
-    return getBooleanSetting(config, setting);
+  public getSettingStore() {
+    return this.gameManager.getSettingStore();
   }
 
   public getDiagnostics(): Diagnostics {
@@ -848,10 +824,7 @@ class GameUIManager extends EventEmitter {
   public onDiscoveredChunk(chunk: Chunk): void {
     const res = this.gameManager.getCurrentlyExploringChunk();
     const account = this.getAccount();
-    const config = {
-      contractAddress: this.getContractAddress(),
-      account,
-    };
+    const settingStore = this.gameManager.getSettingStore();
 
     if (res) {
       const { bottomLeft, sideLength } = res;
@@ -870,89 +843,62 @@ class GameUIManager extends EventEmitter {
       if (!planet || !account) break;
 
       if (planet.owner === EMPTY_ADDRESS && planet.energy > 0) {
-        if (
-          !this.getBooleanSetting(Setting.FoundPirates) &&
-          this.getBooleanSetting(Setting.TutorialCompleted)
-        ) {
+        if (!settingStore.get('FoundPirates') && settingStore.get('TutorialCompleted')) {
           notifManager.foundPirates(planet);
-          setBooleanSetting(config, Setting.FoundPirates, true);
+          settingStore.set('FoundPirates', true);
         }
       }
 
       if (planet.planetType === PlanetType.SILVER_MINE) {
-        if (
-          !this.getBooleanSetting(Setting.FoundSilver) &&
-          this.getBooleanSetting(Setting.TutorialCompleted)
-        ) {
+        if (!settingStore.get('FoundSilver') && settingStore.get('TutorialCompleted')) {
           notifManager.foundSilver(planet);
-          setBooleanSetting(config, Setting.FoundSilver, true);
+          settingStore.set('FoundSilver', true);
         }
       }
       if (planet.planetType === PlanetType.SILVER_BANK) {
-        if (
-          !this.getBooleanSetting(Setting.FoundSilverBank) &&
-          this.getBooleanSetting(Setting.TutorialCompleted)
-        ) {
+        if (!settingStore.get('FoundSilverBank') && settingStore.get('TutorialCompleted')) {
           notifManager.foundSilverBank(planet);
-          setBooleanSetting(config, Setting.FoundSilverBank, true);
+          settingStore.set('FoundSilverBank', true);
         }
       }
       if (planet.planetType === PlanetType.TRADING_POST) {
-        if (
-          !this.getBooleanSetting(Setting.FoundTradingPost) &&
-          this.getBooleanSetting(Setting.TutorialCompleted)
-        ) {
+        if (!settingStore.get('FoundTradingPost') && settingStore.get('TutorialCompleted')) {
           notifManager.foundTradingPost(planet);
-          setBooleanSetting(config, Setting.FoundTradingPost, true);
+          settingStore.set('FoundTradingPost', true);
         }
       }
       if (planetHasBonus(planet)) {
-        if (
-          !this.getBooleanSetting(Setting.FoundComet) &&
-          this.getBooleanSetting(Setting.TutorialCompleted)
-        ) {
+        if (!settingStore.get('FoundComet') && settingStore.get('TutorialCompleted')) {
           notifManager.foundComet(planet);
-          setBooleanSetting(config, Setting.FoundComet, true);
+          settingStore.set('FoundComet', true);
         }
       }
       if (isLocatable(planet) && planet.planetType === PlanetType.PLANET) {
         this.discoverBiome(planet);
       }
       if (isLocatable(planet) && planet.planetType === PlanetType.RUINS) {
-        if (
-          !this.getBooleanSetting(Setting.FoundArtifact) &&
-          this.getBooleanSetting(Setting.TutorialCompleted)
-        ) {
+        if (!settingStore.get('FoundArtifact') && settingStore.get('TutorialCompleted')) {
           notifManager.foundFoundry(planet);
-          setBooleanSetting(config, Setting.FoundArtifact, true);
+          settingStore.set('FoundArtifact', true);
         }
       }
     }
 
     if (account !== undefined) {
       if (this.spaceTypeFromPerlin(chunk.perlin) === SpaceType.DEEP_SPACE) {
-        if (
-          !this.getBooleanSetting(Setting.FoundDeepSpace) &&
-          this.getBooleanSetting(Setting.TutorialCompleted)
-        ) {
+        if (!settingStore.get('FoundDeepSpace') && settingStore.get('TutorialCompleted')) {
           notifManager.foundDeepSpace(chunk);
-          setBooleanSetting(config, Setting.FoundDeepSpace, true);
+          settingStore.set('FoundDeepSpace', true);
         }
       } else if (this.spaceTypeFromPerlin(chunk.perlin) === SpaceType.SPACE) {
-        if (
-          !this.getBooleanSetting(Setting.FoundSpace) &&
-          this.getBooleanSetting(Setting.TutorialCompleted)
-        ) {
+        if (!settingStore.get('FoundSpace') && settingStore.get('TutorialCompleted')) {
           notifManager.foundSpace(chunk);
-          setBooleanSetting(config, Setting.FoundSpace, true);
+          settingStore.set('FoundSpace', true);
         }
       } else if (this.spaceTypeFromPerlin(chunk.perlin) === SpaceType.DEAD_SPACE) {
-        if (
-          !this.getBooleanSetting(Setting.FoundDeepSpace) &&
-          this.getBooleanSetting(Setting.TutorialCompleted)
-        ) {
+        if (!settingStore.get('FoundDeepSpace') && settingStore.get('TutorialCompleted')) {
           notifManager.foundDeadSpace(chunk);
-          setBooleanSetting(config, Setting.FoundDeepSpace, true);
+          settingStore.set('FoundDeepSpace', true);
         }
       }
     }
@@ -1189,7 +1135,7 @@ class GameUIManager extends EventEmitter {
       return false;
     }
 
-    return this.getBooleanSetting(Setting.HighPerformanceRendering);
+    return this.getSettingStore().get('HighPerformanceRendering');
   }
 
   public getPlanetsInViewport(): Planet[] {

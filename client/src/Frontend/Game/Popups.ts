@@ -1,7 +1,7 @@
 import { EthConnection, isPurchase, weiToEth } from '@dfdao/network';
-import { EthAddress, Setting, TransactionId, TxIntent } from '@dfdao/types';
+import { EthAddress, TransactionId, TxIntent } from '@dfdao/types';
 import { BigNumber as EthersBN, providers } from 'ethers';
-import { getBooleanSetting } from '../Utils/SettingsHooks';
+import { SettingStore } from '../../Backend/Storage/SettingStore';
 
 // tx is killed if user doesn't click popup within 20s
 const POPUP_TIMEOUT = 20000;
@@ -25,11 +25,13 @@ export async function openConfirmationWindowForTransaction({
   from,
   gasFeeGwei,
 }: OpenConfirmationConfig): Promise<void> {
-  const config = {
-    contractAddress,
-    account: connection.getAddress(),
-  };
-  const autoApprove = getBooleanSetting(config, Setting.AutoApproveNonPurchaseTransactions);
+  // TODO: Get this access to the SettingStore
+  const account = connection.getAddress();
+  if (!account) {
+    throw new Error('How did you get here without an account?!');
+  }
+  const settingStore = new SettingStore({ contractAddress, account });
+  const autoApprove = settingStore.get('AutoApproveNonPurchaseTransactions');
 
   if (!autoApprove || isPurchase(overrides)) {
     localStorage.setItem(`${from}-gasFeeGwei`, gasFeeGwei.toString());

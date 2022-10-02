@@ -1,5 +1,5 @@
 import { EthConnection } from '@dfdao/network';
-import { AutoGasSetting, Chunk, ModalName, Setting } from '@dfdao/types';
+import { AutoGasSetting, Chunk, ModalName } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TutorialManager from '../../Backend/GameLogic/TutorialManager';
@@ -186,7 +186,7 @@ export function SettingsPane({
             <SectionHeader>Development</SectionHeader>
             <BooleanSetting
               uiManager={uiManager}
-              setting={Setting.ForceReloadEmbeddedPlugins}
+              setting={'ForceReloadEmbeddedPlugins'}
               settingDescription={'force reload embedded plugins'}
             />
           </Section>
@@ -214,14 +214,15 @@ export function SettingsPane({
           <MultiSelectSetting
             wide
             uiManager={uiManager}
-            setting={Setting.GasFeeGwei}
+            setting={'GasFeeGwei'}
             values={[
-              '1',
-              '2',
-              '5',
-              '10',
-              '20',
-              '40',
+              // TODO: this is shit
+              '1' as AutoGasSetting,
+              '2' as AutoGasSetting,
+              '5' as AutoGasSetting,
+              '10' as AutoGasSetting,
+              '20' as AutoGasSetting,
+              '40' as AutoGasSetting,
               AutoGasSetting.Slow,
               AutoGasSetting.Average,
               AutoGasSetting.Fast,
@@ -262,7 +263,7 @@ export function SettingsPane({
           <Spacer height={16} />
           <BooleanSetting
             uiManager={uiManager}
-            setting={Setting.AutoApproveNonPurchaseTransactions}
+            setting={'AutoApproveNonPurchaseTransactions'}
             settingDescription={'auto confirm non-purchase transactions'}
           />
         </Section>
@@ -325,7 +326,7 @@ export function SettingsPane({
           <Spacer height={8} />
           <BooleanSetting
             uiManager={uiManager}
-            setting={Setting.OptOutMetrics}
+            setting={'OptOutMetrics'}
             settingDescription='metrics opt out'
           />
         </Section>
@@ -337,19 +338,19 @@ export function SettingsPane({
           <Spacer height={8} />
           <BooleanSetting
             uiManager={uiManager}
-            setting={Setting.HighPerformanceRendering}
+            setting={'HighPerformanceRendering'}
             settingDescription='high performance mode'
           />
           <Spacer height={8} />
           <BooleanSetting
             uiManager={uiManager}
-            setting={Setting.DisableEmojiRendering}
+            setting={'DisableEmojiRendering'}
             settingDescription='disable emoji rendering'
           />
           <Spacer height={8} />
           <BooleanSetting
             uiManager={uiManager}
-            setting={Setting.DisableHatRendering}
+            setting={'DisableHatRendering'}
             settingDescription='disable hat rendering'
           />
         </Section>
@@ -359,7 +360,7 @@ export function SettingsPane({
           <Spacer height={8} />
           <BooleanSetting
             uiManager={uiManager}
-            setting={Setting.MoveNotifications}
+            setting={'MoveNotifications'}
             settingDescription='show notifications for move transactions'
           />
           <Spacer height={8} />
@@ -368,14 +369,14 @@ export function SettingsPane({
           <Spacer height={8} />
           <NumberSetting
             uiManager={uiManager}
-            setting={Setting.AutoClearConfirmedTransactionsAfterSeconds}
+            setting={'AutoClearConfirmedTransactionsAfterSeconds'}
           />
           <Spacer height={8} />
           Auto clear transaction rejection notifications after this many seconds. Set to a negative
           number to not auto-clear.
           <NumberSetting
             uiManager={uiManager}
-            setting={Setting.AutoClearRejectedTransactionsAfterSeconds}
+            setting={'AutoClearRejectedTransactionsAfterSeconds'}
           />
         </Section>
 
@@ -409,7 +410,7 @@ export function SettingsPane({
           <Spacer height={8} />
           <BooleanSetting
             uiManager={uiManager}
-            setting={Setting.DisableDefaultShortcuts}
+            setting={'DisableDefaultShortcuts'}
             settingDescription='toggle disable default shortcuts'
           />
         </Section>
@@ -420,7 +421,7 @@ export function SettingsPane({
           <Spacer height={8} />
           <BooleanSetting
             uiManager={uiManager}
-            setting={Setting.ExperimentalFeatures}
+            setting={'ExperimentalFeatures'}
             settingDescription='toggle expeirmental features'
           />
         </Section>
@@ -431,33 +432,33 @@ export function SettingsPane({
           <Spacer height={8} />
           <BooleanSetting
             uiManager={uiManager}
-            setting={Setting.DisableFancySpaceEffect}
+            setting={'DisableFancySpaceEffect'}
             settingDescription='disable fancy space shaders'
           />
           <Spacer height={8} />
           <ColorSetting
             uiManager={uiManager}
-            setting={Setting.RendererColorInnerNebula}
+            setting={'RendererColorInnerNebula'}
             settingDescription='inner nebula color'
           />
           <ColorSetting
             uiManager={uiManager}
-            setting={Setting.RendererColorNebula}
+            setting={'RendererColorNebula'}
             settingDescription='nebula color'
           />
           <ColorSetting
             uiManager={uiManager}
-            setting={Setting.RendererColorSpace}
+            setting={'RendererColorSpace'}
             settingDescription='space color'
           />
           <ColorSetting
             uiManager={uiManager}
-            setting={Setting.RendererColorDeepSpace}
+            setting={'RendererColorDeepSpace'}
             settingDescription='deep space color'
           />
           <ColorSetting
             uiManager={uiManager}
-            setting={Setting.RendererColorDeadSpace}
+            setting={'RendererColorDeadSpace'}
             settingDescription='dead space color'
           />
         </Section>

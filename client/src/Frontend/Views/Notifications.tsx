@@ -1,4 +1,3 @@
-import { Setting } from '@dfdao/types';
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
@@ -55,7 +54,7 @@ export function NotificationsPane() {
     const notifManager = NotificationManager.getInstance();
 
     const addNotif = (notif: NotificationInfo) => {
-      const notifMove = uiManager.getBooleanSetting(Setting.MoveNotifications);
+      const notifMove = uiManager.getSettingStore().get('MoveNotifications');
 
       if (!notifMove && notif.type === NotificationType.Tx && notif.txData?.methodName === 'move')
         return;

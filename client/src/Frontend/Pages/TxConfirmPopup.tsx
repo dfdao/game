@@ -1,16 +1,15 @@
 import { weiToGwei } from '@dfdao/network';
 import { address } from '@dfdao/serde';
-import { Setting } from '@dfdao/types';
 import { BigNumber as EthersBN } from 'ethers';
 import React, { useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import styled, { css, keyframes } from 'styled-components';
+import { SettingStore } from '../../Backend/Storage/SettingStore';
 import { ONE_DAY } from '../../Backend/Utils/Utils';
 import Button from '../Components/Button';
 import { Checkbox, DarkForestCheckbox } from '../Components/Input';
 import { Row } from '../Components/Row';
 import dfstyles from '../Styles/dfstyles';
-import { setBooleanSetting } from '../Utils/SettingsHooks';
 
 const StyledTxConfirmPopup = styled.div`
   width: 100%;
@@ -123,6 +122,8 @@ export function TxConfirmPopup({
   const contractAddress = address(contract);
   const account = address(addr);
 
+  const settingStore = new SettingStore({ contractAddress, account });
+
   const doReject = () => {
     localStorage.setItem(`tx-approved-${account}-${actionId}`, 'false');
     window.close();
@@ -138,11 +139,7 @@ export function TxConfirmPopup({
   const setAutoApproveSetting = () => {
     localStorage.setItem(`tx-approved-${account}-${actionId}`, 'true');
     localStorage.setItem(`wallet-enabled-${account}`, (Date.now() + ONE_DAY).toString());
-    const config = {
-      contractAddress,
-      account,
-    };
-    setBooleanSetting(config, Setting.AutoApproveNonPurchaseTransactions, true);
+    settingStore.set('AutoApproveNonPurchaseTransactions', true);
     window.close();
   };
 

@@ -1,5 +1,5 @@
 import { Renderer } from '@dfdao/renderer';
-import { CursorState, ModalManagerEvent, Setting } from '@dfdao/types';
+import { CursorState, ModalManagerEvent } from '@dfdao/types';
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { useUIManager } from '../Utils/AppHooks';
@@ -113,11 +113,11 @@ export default function ControllableCanvas() {
       gameUIManager,
       {
         spaceColors: {
-          innerNebulaColor: gameUIManager.getStringSetting(Setting.RendererColorInnerNebula),
-          nebulaColor: gameUIManager.getStringSetting(Setting.RendererColorNebula),
-          spaceColor: gameUIManager.getStringSetting(Setting.RendererColorSpace),
-          deepSpaceColor: gameUIManager.getStringSetting(Setting.RendererColorDeepSpace),
-          deadSpaceColor: gameUIManager.getStringSetting(Setting.RendererColorDeadSpace),
+          innerNebulaColor: gameUIManager.getSettingStore().get('RendererColorInnerNebula'),
+          nebulaColor: gameUIManager.getSettingStore().get('RendererColorNebula'),
+          spaceColor: gameUIManager.getSettingStore().get('RendererColorSpace'),
+          deepSpaceColor: gameUIManager.getSettingStore().get('RendererColorDeepSpace'),
+          deadSpaceColor: gameUIManager.getSettingStore().get('RendererColorDeadSpace'),
         },
       }
     );

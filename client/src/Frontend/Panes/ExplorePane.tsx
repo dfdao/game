@@ -1,4 +1,4 @@
-import { CursorState, ModalManagerEvent, Setting, TooltipName, WorldCoords } from '@dfdao/types';
+import { CursorState, ModalManagerEvent, TooltipName, WorldCoords } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TutorialManager, { TutorialState } from '../../Backend/GameLogic/TutorialManager';
@@ -16,7 +16,7 @@ import { Coords, Sub } from '../Components/Text';
 import dfstyles from '../Styles/dfstyles';
 import { useUIManager } from '../Utils/AppHooks';
 import { MIN_CHUNK_SIZE } from '../Utils/constants';
-import { MultiSelectSetting, useBooleanSetting } from '../Utils/SettingsHooks';
+import { MultiSelectSetting, useSetting } from '../Utils/SettingsHooks';
 import { TOGGLE_EXPLORE, TOGGLE_TARGETTING } from '../Utils/ShortcutConstants';
 import UIEmitter, { UIEmitterEvent } from '../Utils/UIEmitter';
 import { TooltipTrigger } from './Tooltip';
@@ -37,14 +37,14 @@ const StyledExplorePane = styled.div`
 function Cores() {
   const uiManager = useUIManager();
 
-  const values = ['1', '2', '4', '8', '16', '32'];
-  const labels = values.map((value) => value + ' core' + (value === '1' ? '' : 's'));
+  const values = [1, 2, 4, 8, 16, 32];
+  const labels = values.map((value) => value + ' core' + (value === 1 ? '' : 's'));
 
   return (
     <MultiSelectSetting
       style={{ width: '7em' }}
       uiManager={uiManager}
-      setting={Setting.MiningCores}
+      setting={'MiningCores'}
       values={values}
       labels={labels}
     />
@@ -105,7 +105,7 @@ export function ExplorePane() {
   const modalManager = uiManager.getModalManager();
   const uiEmitter = UIEmitter.getInstance();
   const [pattern, setPattern] = useState<string>(MiningPatternType.Spiral.toString());
-  const [mining] = useBooleanSetting(uiManager, Setting.IsMining);
+  const [mining] = useSetting(uiManager, 'IsMining');
   const [targetting, setTargetting] = useState(false);
   const [coords, setCoords] = useState<WorldCoords>(uiManager.getHomeCoords());
 
