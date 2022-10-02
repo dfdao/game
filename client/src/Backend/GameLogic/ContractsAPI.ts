@@ -10,10 +10,7 @@ import {
 } from '@dfdao/network';
 import {
   address,
-  artifactIdFromEthersBN,
-  artifactIdToDecStr,
   decodeArrival,
-  decodeArtifact,
   decodeArtifactPointValues,
   decodePlanet,
   decodePlanetDefaults,
@@ -26,7 +23,6 @@ import {
 } from '@dfdao/serde';
 import {
   Artifact,
-  ArtifactId,
   ArtifactType,
   AutoGasSetting,
   DiagnosticUpdater,
@@ -243,8 +239,6 @@ export class ContractsAPI extends EventEmitter {
         rawArtifactId: EthersBN,
         loc: EthersBN
       ) => {
-        const artifactId = artifactIdFromEthersBN(rawArtifactId);
-        this.emit(ContractsAPIEvent.ArtifactUpdate, artifactId);
         this.emit(ContractsAPIEvent.PlanetUpdate, locationIdFromEthersBN(loc));
       },
       [ContractEvent.ArtifactDeposited]: (
@@ -252,8 +246,6 @@ export class ContractsAPI extends EventEmitter {
         rawArtifactId: EthersBN,
         loc: EthersBN
       ) => {
-        const artifactId = artifactIdFromEthersBN(rawArtifactId);
-        this.emit(ContractsAPIEvent.ArtifactUpdate, artifactId);
         this.emit(ContractsAPIEvent.PlanetUpdate, locationIdFromEthersBN(loc));
       },
       [ContractEvent.ArtifactWithdrawn]: (
@@ -261,8 +253,6 @@ export class ContractsAPI extends EventEmitter {
         rawArtifactId: EthersBN,
         loc: EthersBN
       ) => {
-        const artifactId = artifactIdFromEthersBN(rawArtifactId);
-        this.emit(ContractsAPIEvent.ArtifactUpdate, artifactId);
         this.emit(ContractsAPIEvent.PlanetUpdate, locationIdFromEthersBN(loc));
       },
       [ContractEvent.ArtifactActivated]: (
@@ -270,8 +260,6 @@ export class ContractsAPI extends EventEmitter {
         rawArtifactId: EthersBN,
         loc: EthersBN
       ) => {
-        const artifactId = artifactIdFromEthersBN(rawArtifactId);
-        this.emit(ContractsAPIEvent.ArtifactUpdate, artifactId);
         this.emit(ContractsAPIEvent.PlanetUpdate, locationIdFromEthersBN(loc));
       },
       [ContractEvent.ArtifactDeactivated]: (
@@ -279,8 +267,6 @@ export class ContractsAPI extends EventEmitter {
         rawArtifactId: EthersBN,
         loc: EthersBN
       ) => {
-        const artifactId = artifactIdFromEthersBN(rawArtifactId);
-        this.emit(ContractsAPIEvent.ArtifactUpdate, artifactId);
         this.emit(ContractsAPIEvent.PlanetUpdate, locationIdFromEthersBN(loc));
       },
       [ContractEvent.PlayerInitialized]: async (player: string, locRaw: EthersBN, _: Event) => {
@@ -796,69 +782,17 @@ export class ContractsAPI extends EventEmitter {
     return decodePlanet(decStrId, rawPlanet);
   }
 
-  public async getArtifactById(artifactId: ArtifactId): Promise<Artifact | undefined> {
-    const exists = await this.makeCall<boolean>(this.contract.doesArtifactExist, [
-      artifactIdToDecStr(artifactId),
-    ]);
-    if (!exists) return undefined;
-    const rawArtifact = await this.makeCall(this.contract.getArtifactById, [
-      artifactIdToDecStr(artifactId),
-    ]);
-
-    const artifact = decodeArtifact(rawArtifact);
-    artifact.transactions = new TxCollection();
-    return artifact;
-  }
-
-  public async bulkGetArtifactsOnPlanets(
-    locationIds: LocationId[],
-    onProgress?: (fractionCompleted: number) => void
-  ): Promise<Artifact[][]> {
-    const rawArtifacts = await aggregateBulkGetter(
-      locationIds.length,
-      200,
-      async (start, end) =>
-        await this.makeCall(this.contract.bulkGetPlanetArtifacts, [
-          locationIds.slice(start, end).map(locationIdToDecStr),
-        ]),
-      onProgress
-    );
-
-    return rawArtifacts.map((rawArtifactArray) => {
-      return rawArtifactArray.map(decodeArtifact);
-    });
-  }
-
-  public async bulkGetArtifacts(
-    artifactIds: ArtifactId[],
-    onProgress?: (fractionCompleted: number) => void
-  ): Promise<Artifact[]> {
-    const rawArtifacts = await aggregateBulkGetter(
-      artifactIds.length,
-      200,
-      async (start, end) =>
-        await this.makeCall(this.contract.bulkGetArtifactsByIds, [
-          artifactIds.slice(start, end).map(artifactIdToDecStr),
-        ]),
-      onProgress
-    );
-
-    const ret: Artifact[] = rawArtifacts.map(decodeArtifact);
-    ret.forEach((a) => (a.transactions = new TxCollection()));
-
-    return ret;
-  }
-
   public async getPlayerArtifacts(
     playerId?: EthAddress,
-    onProgress?: (percent: number) => void
+    _onProgress?: (percent: number) => void
   ): Promise<Artifact[]> {
     if (playerId === undefined) return [];
 
-    const myArtifactIds = (await this.makeCall(this.contract.getPlayerArtifactIds, [playerId])).map(
-      artifactIdFromEthersBN
-    );
-    return this.bulkGetArtifacts(myArtifactIds, onProgress);
+    return [];
+    // const myArtifactIds = (await this.makeCall(this.contract.getPlayerArtifactIds, [playerId])).map(
+    //   artifactIdFromEthersBN
+    // );
+    // return this.bulkGetArtifacts(myArtifactIds, onProgress);
   }
 
   public setDiagnosticUpdater(diagnosticUpdater?: DiagnosticUpdater) {

@@ -53,9 +53,7 @@ export class PlanetRenderManager implements PlanetRenderManagerType {
       textAlpha *= renderInfo.radii.radiusPixels / (2 * maxRadius);
     }
 
-    const artifacts = uiManager
-      .getArtifactsWithIds(planet.heldArtifactIds)
-      .filter((a) => !!a) as Artifact[];
+    const artifacts = planet.artifacts;
     const color = uiManager.isOwnedByMe(planet) ? whiteA : getOwnerColorVec(planet);
 
     // draw planet body

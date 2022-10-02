@@ -114,7 +114,6 @@ class GameUIManager extends EventEmitter {
   public readonly hoverPlanetId$: Monomitter<LocationId | undefined>;
   public readonly hoverPlanet$: Monomitter<Planet | undefined>;
   public readonly hoverArtifactId$: Monomitter<ArtifactId | undefined>;
-  public readonly hoverArtifact$: Monomitter<Artifact | undefined>;
   public readonly myArtifacts$: Monomitter<Map<ArtifactId, Artifact>>;
 
   public readonly isSending$: Monomitter<boolean>;
@@ -163,11 +162,6 @@ class GameUIManager extends EventEmitter {
     );
 
     this.hoverArtifactId$ = monomitter<ArtifactId | undefined>();
-    this.hoverArtifact$ = getObjectWithIdFromMap<Artifact, ArtifactId>(
-      this.getArtifactMap(),
-      this.hoverArtifactId$,
-      this.gameManager.getArtifactUpdated$()
-    );
     this.myArtifacts$ = this.gameManager.getMyArtifactsUpdated$();
     this.viewportEntities = new ViewportEntities(this.gameManager, this);
 
@@ -996,7 +990,6 @@ class GameUIManager extends EventEmitter {
 
   public setHoveringOverArtifact(artifactId?: ArtifactId) {
     this.hoverArtifactId$.publish(artifactId);
-    this.hoverArtifact$.publish(artifactId ? this.getArtifactWithId(artifactId) : undefined);
   }
 
   public getHoveringOverPlanet(): Planet | undefined {
@@ -1084,7 +1077,8 @@ class GameUIManager extends EventEmitter {
   }
 
   public getMyArtifactsNotOnPlanet(): Artifact[] {
-    return this.getMyArtifacts().filter((a) => !a.onPlanetId);
+    // return this.getMyArtifacts().filter((a) => !a.onPlanetId);
+    return [];
   }
 
   public getPlanetWithId(planetId: LocationId | undefined): Planet | undefined {
@@ -1099,21 +1093,8 @@ class GameUIManager extends EventEmitter {
     return this.gameManager.getPlayer(address);
   }
 
-  public getArtifactWithId(artifactId: ArtifactId | undefined): Artifact | undefined {
-    return this.gameManager.getArtifactWithId(artifactId);
-  }
-
   public getPlanetWithCoords(coords: WorldCoords | undefined): Planet | undefined {
     return coords && this.gameManager.getPlanetWithCoords(coords);
-  }
-
-  public getArtifactsWithIds(artifactIds?: ArtifactId[]): Array<Artifact | undefined> {
-    return this.gameManager.getArtifactsWithIds(artifactIds);
-  }
-
-  public getArtifactPlanet(artifact: Artifact): Planet | undefined {
-    if (!artifact.onPlanetId) return undefined;
-    return this.getPlanetWithId(artifact.onPlanetId);
   }
 
   public getPlanetLevel(planetId: LocationId): PlanetLevel | undefined {
@@ -1431,10 +1412,6 @@ class GameUIManager extends EventEmitter {
 
   public getCaptureZonePointValues() {
     return this.contractConstants.CAPTURE_ZONE_PLANET_LEVEL_SCORE;
-  }
-
-  public getArtifactUpdated$() {
-    return this.gameManager.getArtifactUpdated$();
   }
 
   public getUIEmitter() {

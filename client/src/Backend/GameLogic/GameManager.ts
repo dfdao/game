@@ -8,7 +8,6 @@ import type { DarkForest } from '@dfdao/contracts/typechain';
 import { monomitter, Monomitter, Subscription } from '@dfdao/events';
 import {
   getRange,
-  isActivated,
   isLocatable,
   isSpaceShip,
   timeUntilNextBroadcastAvailable,
@@ -24,6 +23,7 @@ import {
 import { getPlanetName } from '@dfdao/procedural';
 import {
   artifactIdToDecStr,
+  decodeArtifact,
   isUnconfirmedActivateArtifactTx,
   isUnconfirmedBuyHatTx,
   isUnconfirmedCapturePlanetTx,
@@ -94,7 +94,7 @@ import {
 } from '@dfdao/types';
 import bigInt, { BigInteger } from 'big-integer';
 import delay from 'delay';
-import { BigNumber, Contract, ContractInterface, providers } from 'ethers';
+import { BigNumber, Contract, ContractInterface, ethers, providers } from 'ethers';
 import { EventEmitter } from 'events';
 import NotificationManager from '../../Frontend/Game/NotificationManager';
 import { MIN_CHUNK_SIZE } from '../../Frontend/Utils/constants';
@@ -152,7 +152,6 @@ export enum GameManagerEvent {
   DiscoveredNewChunk = 'DiscoveredNewChunk',
   InitializedPlayer = 'InitializedPlayer',
   InitializedPlayerError = 'InitializedPlayerError',
-  ArtifactUpdate = 'ArtifactUpdate',
   Moved = 'Moved',
 }
 
@@ -615,26 +614,8 @@ class GameManager extends EventEmitter {
 
     const knownArtifacts: Map<ArtifactId, Artifact> = new Map();
 
-    for (let i = 0; i < initialState.loadedPlanets.length; i++) {
-      const planet = initialState.touchedAndLocatedPlanets.get(initialState.loadedPlanets[i]);
-
-      if (!planet) {
-        continue;
-      }
-
-      planet.heldArtifactIds = initialState.heldArtifacts[i].map((a) => a.id);
-
-      for (const heldArtifact of initialState.heldArtifacts[i]) {
-        knownArtifacts.set(heldArtifact.id, heldArtifact);
-      }
-    }
-
     for (const myArtifact of initialState.myArtifacts) {
       knownArtifacts.set(myArtifact.id, myArtifact);
-    }
-
-    for (const artifact of initialState.artifactsOnVoyages) {
-      knownArtifacts.set(artifact.id, artifact);
     }
 
     // figure out what's my home planet
@@ -708,10 +689,6 @@ class GameManager extends EventEmitter {
 
     // set up listeners: whenever ContractsAPI reports some game state update, do some logic
     gameManager.contractsAPI
-      .on(ContractsAPIEvent.ArtifactUpdate, async (artifactId: ArtifactId) => {
-        await gameManager.hardRefreshArtifact(artifactId);
-        gameManager.emit(GameManagerEvent.ArtifactUpdate, artifactId);
-      })
       .on(
         ContractsAPIEvent.PlanetTransferred,
         async (planetId: LocationId, newOwner: EthAddress) => {
@@ -788,11 +765,7 @@ class GameManager extends EventEmitter {
           // mining manager should be initialized already via joinGame, but just in case...
           gameManager.initMiningManager(tx.intent.location.coords, 4);
         } else if (isUnconfirmedMoveTx(tx)) {
-          const promises = [gameManager.bulkHardRefreshPlanets([tx.intent.from, tx.intent.to])];
-          if (tx.intent.artifact) {
-            promises.push(gameManager.hardRefreshArtifact(tx.intent.artifact));
-          }
-          await Promise.all(promises);
+          await Promise.all([gameManager.bulkHardRefreshPlanets([tx.intent.from, tx.intent.to])]);
         } else if (isUnconfirmedUpgradeTx(tx)) {
           await gameManager.hardRefreshPlanet(tx.intent.locationId);
         } else if (isUnconfirmedBuyHatTx(tx)) {
@@ -802,27 +775,15 @@ class GameManager extends EventEmitter {
         } else if (isUnconfirmedFindArtifactTx(tx)) {
           await gameManager.hardRefreshPlanet(tx.intent.planetId);
         } else if (isUnconfirmedDepositArtifactTx(tx)) {
-          await Promise.all([
-            gameManager.hardRefreshPlanet(tx.intent.locationId),
-            gameManager.hardRefreshArtifact(tx.intent.artifactId),
-          ]);
+          await Promise.all([gameManager.hardRefreshPlanet(tx.intent.locationId)]);
         } else if (isUnconfirmedWithdrawArtifactTx(tx)) {
-          await Promise.all([
-            await gameManager.hardRefreshPlanet(tx.intent.locationId),
-            await gameManager.hardRefreshArtifact(tx.intent.artifactId),
-          ]);
+          await Promise.all([await gameManager.hardRefreshPlanet(tx.intent.locationId)]);
         } else if (isUnconfirmedProspectPlanetTx(tx)) {
           await gameManager.softRefreshPlanet(tx.intent.planetId);
         } else if (isUnconfirmedActivateArtifactTx(tx)) {
-          await Promise.all([
-            gameManager.hardRefreshPlanet(tx.intent.locationId),
-            gameManager.hardRefreshArtifact(tx.intent.artifactId),
-          ]);
+          await Promise.all([gameManager.hardRefreshPlanet(tx.intent.locationId)]);
         } else if (isUnconfirmedDeactivateArtifactTx(tx)) {
-          await Promise.all([
-            gameManager.hardRefreshPlanet(tx.intent.locationId),
-            gameManager.hardRefreshArtifact(tx.intent.artifactId),
-          ]);
+          await Promise.all([gameManager.hardRefreshPlanet(tx.intent.locationId)]);
         } else if (isUnconfirmedWithdrawSilverTx(tx)) {
           await gameManager.softRefreshPlanet(tx.intent.locationId);
         } else if (isUnconfirmedCapturePlanetTx(tx)) {
@@ -905,8 +866,6 @@ class GameManager extends EventEmitter {
     const planet = await this.contractsAPI.getPlanetById(planetId);
     if (!planet) return;
     const arrivals = await this.contractsAPI.getArrivalsForPlanet(planetId);
-    const artifactsOnPlanets = await this.contractsAPI.bulkGetArtifactsOnPlanets([planetId]);
-    const artifactsOnPlanet = artifactsOnPlanets[0];
 
     const revealedCoords = await this.contractsAPI.getRevealedCoordsByIdIfExists(planetId);
     let revealedLocation: RevealedLocation | undefined;
@@ -922,16 +881,9 @@ class GameManager extends EventEmitter {
     this.entityStore.replacePlanetFromContractData(
       planet,
       arrivals,
-      artifactsOnPlanet.map((a) => a.id),
       revealedLocation,
       claimedCoords?.revealer
     );
-
-    // it's important that we reload the artifacts that are on the planet after the move
-    // completes because this move could have been a photoid canon move. one of the side
-    // effects of this type of move is that the active photoid canon deactivates upon a move
-    // meaning we need to reload its data from the blockchain.
-    artifactsOnPlanet.forEach((a) => this.entityStore.replaceArtifactFromContractData(a));
   }
 
   private async bulkHardRefreshPlanets(planetIds: LocationId[]): Promise<void> {
@@ -939,7 +891,6 @@ class GameManager extends EventEmitter {
 
     const allVoyages = await this.contractsAPI.getAllArrivals(planetIds);
     const planetsToUpdateMap = await this.contractsAPI.bulkGetPlanets(planetIds);
-    const artifactsOnPlanets = await this.contractsAPI.bulkGetArtifactsOnPlanets(planetIds);
     planetsToUpdateMap.forEach((planet, locId) => {
       if (planetsToUpdateMap.has(locId)) {
         planetVoyageMap.set(locId, []);
@@ -965,23 +916,9 @@ class GameManager extends EventEmitter {
 
       const voyagesForPlanet = planetVoyageMap.get(planet.locationId);
       if (voyagesForPlanet) {
-        this.entityStore.replacePlanetFromContractData(
-          planet,
-          voyagesForPlanet,
-          artifactsOnPlanets[i].map((a) => a.id)
-        );
+        this.entityStore.replacePlanetFromContractData(planet, voyagesForPlanet);
       }
     }
-
-    for (const artifacts of artifactsOnPlanets) {
-      this.entityStore.replaceArtifactsFromContractData(artifacts);
-    }
-  }
-
-  public async hardRefreshArtifact(artifactId: ArtifactId): Promise<void> {
-    const artifact = await this.contractsAPI.getArtifactById(artifactId);
-    if (!artifact) return;
-    this.entityStore.replaceArtifactFromContractData(artifact);
   }
 
   private onTxSubmit(tx: Transaction): void {
@@ -1409,21 +1346,6 @@ class GameManager extends EventEmitter {
     }
     const player = this.players.get(this.account);
     return player?.score;
-  }
-
-  /**
-   * Gets the artifact with the given id. Null if no artifact with id exists.
-   */
-  getArtifactWithId(artifactId?: ArtifactId): Artifact | undefined {
-    return this.entityStore.getArtifactById(artifactId);
-  }
-
-  /**
-   * Gets the artifacts with the given ids, including ones we know exist but haven't been loaded,
-   * represented by `undefined`.
-   */
-  getArtifactsWithIds(artifactIds: ArtifactId[] = []): Array<Artifact | undefined> {
-    return artifactIds.map((id) => this.getArtifactWithId(id));
   }
 
   /**
@@ -2286,20 +2208,7 @@ class GameManager extends EventEmitter {
 
       const tx = await this.contractsAPI.submitTransaction<UnconfirmedFindArtifact>(txIntent);
 
-      tx.confirmedPromise
-        .then(() => {
-          return this.waitForPlanet<Artifact>(planet.locationId, ({ current }: Diff<Planet>) => {
-            return current.heldArtifactIds
-              .map(this.getArtifactWithId.bind(this))
-              .find((a: Artifact) => a?.planetDiscoveredOn === planet.locationId) as Artifact;
-          }).then((foundArtifact) => {
-            if (!foundArtifact) throw new Error('Artifact not found?');
-            const notifManager = NotificationManager.getInstance();
-
-            notifManager.artifactFound(planet as LocatablePlanet, foundArtifact);
-          });
-        })
-        .catch(console.log);
+      // TODO: Found notification (through events?)
 
       return tx;
     } catch (e) {
@@ -2340,9 +2249,12 @@ class GameManager extends EventEmitter {
 
       const tx = await this.contractsAPI.submitTransaction(txIntent);
 
-      tx.confirmedPromise.then(() =>
-        this.getGameObjects().updateArtifact(artifactId, (a) => (a.onPlanetId = locationId))
-      );
+      tx.confirmedPromise.then(() => {
+        this.getGameObjects().updatePlanet(locationId, (planet) => {
+          const artifact = decodeArtifact(ethers.BigNumber.from(artifactId));
+          planet.artifacts.push(artifact);
+        });
+      });
 
       return tx;
     } catch (e) {
@@ -2394,7 +2306,9 @@ class GameManager extends EventEmitter {
       const tx = await this.contractsAPI.submitTransaction(txIntent);
 
       tx.confirmedPromise.then(() =>
-        this.getGameObjects().updateArtifact(artifactId, (a) => (a.onPlanetId = undefined))
+        this.getGameObjects().updatePlanet(locationId, (planet) => {
+          planet.artifacts = planet.artifacts.filter(({ id }) => id !== artifactId);
+        })
       );
 
       return tx;
@@ -2749,10 +2663,7 @@ class GameManager extends EventEmitter {
 
       const oldPlanet = this.entityStore.getPlanetWithLocation(oldLocation);
 
-      if (
-        ((!bypassChecks && !this.account) || !oldPlanet || oldPlanet.owner !== this.account) &&
-        !isSpaceShip(this.getArtifactWithId(artifactMoved)?.artifactType)
-      ) {
+      if ((!bypassChecks && !this.account) || !oldPlanet || oldPlanet.owner !== this.account) {
         throw new Error('attempted to move from a planet not owned by player');
       }
 
@@ -2804,16 +2715,11 @@ class GameManager extends EventEmitter {
       };
 
       if (artifactMoved) {
-        const artifact = this.entityStore.getArtifactById(artifactMoved);
-
         if (!bypassChecks) {
-          if (!artifact) {
-            throw new Error("couldn't find this artifact");
-          }
-          if (isActivated(artifact)) {
+          if (oldPlanet?.activeArtifact?.id === artifactMoved) {
             throw new Error("can't move an activated artifact");
           }
-          if (!oldPlanet?.heldArtifactIds?.includes(artifactMoved)) {
+          if (!oldPlanet?.artifacts?.find(({ id }) => id === artifactMoved)) {
             throw new Error("that artifact isn't on this planet!");
           }
         }
@@ -3171,16 +3077,6 @@ class GameManager extends EventEmitter {
   }
 
   /**
-   * Gets the active artifact on this planet, if one exists.
-   */
-  getActiveArtifact(planet: Planet): Artifact | undefined {
-    const artifacts = this.getArtifactsWithIds(planet.heldArtifactIds);
-    const active = artifacts.find((a) => a && isActivated(a));
-
-    return active;
-  }
-
-  /**
    * If there's an active artifact on either of these planets which happens to be a wormhole which
    * is active and targetting the other planet, return the wormhole boost which is greater. Values
    * represent a multiplier.
@@ -3189,21 +3085,21 @@ class GameManager extends EventEmitter {
     fromPlanet: Planet,
     toPlanet: Planet
   ): { distanceFactor: number; speedFactor: number } | undefined {
-    const fromActiveArtifact = this.getActiveArtifact(fromPlanet);
-    const toActiveArtifact = this.getActiveArtifact(toPlanet);
+    const fromActiveArtifact = fromPlanet.activeArtifact;
+    const toActiveArtifact = toPlanet.activeArtifact;
 
     let greaterRarity: ArtifactRarity | undefined;
 
     if (
       fromActiveArtifact?.artifactType === ArtifactType.Wormhole &&
-      fromActiveArtifact.wormholeTo === toPlanet.locationId
+      fromPlanet.wormholeTo === toPlanet.locationId
     ) {
       greaterRarity = fromActiveArtifact.rarity;
     }
 
     if (
       toActiveArtifact?.artifactType === ArtifactType.Wormhole &&
-      toActiveArtifact.wormholeTo === fromPlanet.locationId
+      toPlanet.wormholeTo === fromPlanet.locationId
     ) {
       if (greaterRarity === undefined) {
         greaterRarity = toActiveArtifact.rarity;
@@ -3360,10 +3256,6 @@ class GameManager extends EventEmitter {
 
   public getPlanetUpdated$(): Monomitter<LocationId> {
     return this.entityStore.planetUpdated$;
-  }
-
-  public getArtifactUpdated$(): Monomitter<ArtifactId> {
-    return this.entityStore.artifactUpdated$;
   }
 
   public getMyPlanetsUpdated$(): Monomitter<Map<LocationId, Planet>> {

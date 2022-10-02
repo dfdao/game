@@ -1,6 +1,13 @@
 import { MAX_ARTIFACT_TYPE, MAX_BIOME, MIN_ARTIFACT_TYPE } from '@dfdao/constants';
 import { isAncient, isBasic, isRelic, isSpaceShip } from '@dfdao/gamelogic';
-import { ArtifactId, ArtifactRarity, ArtifactType, Biome, RenderedArtifact } from '@dfdao/types';
+import {
+  ArtifactId,
+  ArtifactRarity,
+  ArtifactType,
+  Biome,
+  RenderedArtifact,
+  SpaceshipType,
+} from '@dfdao/types';
 
 export const ARTIFACTS_URL = '/sprites/artifacts.png';
 export const ARTIFACTS_THUMBS_URL = '/sprites/artifactthumbs.png';
@@ -162,11 +169,11 @@ export function spriteFromArtifact(artifact: RenderedArtifact): SpriteRectangle 
 
   if (isSpaceShip(artifact.artifactType)) {
     const idx = {
-      [ArtifactType.ShipMothership]: 0,
-      [ArtifactType.ShipCrescent]: 1,
-      [ArtifactType.ShipWhale]: 2,
-      [ArtifactType.ShipGear]: 3,
-      [ArtifactType.ShipTitan]: 4,
+      [SpaceshipType.ShipMothership]: 0,
+      [SpaceshipType.ShipCrescent]: 1,
+      [SpaceshipType.ShipWhale]: 2,
+      [SpaceshipType.ShipGear]: 3,
+      [SpaceshipType.ShipTitan]: 4,
     };
     return spriteRectangleFromIndex(idx[artifact.artifactType], 11);
   } else if (isAncient(artifact)) {

@@ -64,9 +64,10 @@ export function ArtifactThumb({
 }) {
   const uiManager = useUIManager();
   const enemy = useMemo(() => {
-    const account = uiManager.getAccount();
+    const _account = uiManager.getAccount();
     if (isSpaceShip(artifact.artifactType)) {
-      return artifact?.controller !== account;
+      // return artifact?.controller !== account;
+      return false;
     }
 
     return false;

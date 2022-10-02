@@ -287,9 +287,9 @@ export function SendResources({
     [uiManager, locationId, updateSilverSending]
   );
 
-  const artifacts = usePlanetInactiveArtifacts(p, uiManager);
+  const artifacts = usePlanetInactiveArtifacts(p);
   const spaceshipsYouOwn = artifacts.filter(
-    (a) => isSpaceShip(a.artifactType) && a.controller === account
+    (a) => isSpaceShip(a.artifactType) /* && a.controller === account */
   );
 
   let abandonRow;

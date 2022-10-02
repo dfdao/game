@@ -10,7 +10,8 @@ import type {
   SpaceType,
 } from '@dfdao/types';
 import { address } from './address';
-import { locationIdFromDecStr } from './location';
+import { decodeArtifact } from './artifact';
+import { locationIdFromDecStr, locationIdFromEthersBN } from './location';
 
 export type RawPlanet = Awaited<ReturnType<DarkForest['planets']>>;
 
@@ -21,7 +22,7 @@ export type RawPlanet = Awaited<ReturnType<DarkForest['planets']>>;
  * aware of, such as `unconfirmedDepartures`, (2) store derived data that is
  * calculated later by the client, such as `silverSpent` and `bonus`, or (3)
  * store data which must be added later from the results of additional contract
- * calls, such as `coordsRevealed` and `heldArtifactIds`. Therefore this
+ * calls, such as `coordsRevealed`. Therefore this
  * function may not be very useful to you outside of the specific context of the
  * provided Dark Forest web client.
  *
@@ -80,7 +81,15 @@ export function decodePlanet(rawLocationId: string, rawPlanet: RawPlanet): Plane
       ? undefined
       : rawPlanet.prospectedBlockNumber.toNumber(),
     destroyed: rawPlanet.destroyed,
-    heldArtifactIds: [], // this is stale and will be updated in GameObjects
+    artifacts: rawPlanet.artifacts.map(decodeArtifact),
+    // TODO: convert to milliseconds
+    artifactActivationTime: rawPlanet.artifactActivationTime.toNumber(),
+    activeArtifact: rawPlanet.activeArtifact.eq(0)
+      ? undefined
+      : decodeArtifact(rawPlanet.activeArtifact),
+    wormholeTo: rawPlanet.wormholeTo.eq(0)
+      ? undefined
+      : locationIdFromEthersBN(rawPlanet.wormholeTo),
     bonus: bonusFromHex(locationId),
     pausers: rawPlanet.pausers.toNumber(),
     energyGroDoublers: rawPlanet.energyGroDoublers.toNumber(),

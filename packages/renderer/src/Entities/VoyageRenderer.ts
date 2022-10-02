@@ -116,16 +116,13 @@ export class VoyageRenderer implements VoyageRendererType {
       const fleetRadius = 4;
       const artifactSizePixels = 20;
       cR.queueCircleWorldCenterOnly(shipsLocation, fleetRadius, voyageColor);
-      if (voyage.artifactId) {
-        const artifact = gameUIManager.getArtifactWithId(voyage.artifactId);
-        if (artifact) {
-          const viewport = this.renderer.getViewport();
-          const screenCoords = viewport.worldToCanvasCoords(shipsLocation);
-          const distanceFromCenterOfFleet = fleetRadius * 1.5 + artifactSizePixels;
-          const x = distanceFromCenterOfFleet + screenCoords.x;
-          const y = screenCoords.y;
-          sR.queueArtifact(artifact, { x, y }, artifactSizePixels);
-        }
+      if (voyage.artifact) {
+        const viewport = this.renderer.getViewport();
+        const screenCoords = viewport.worldToCanvasCoords(shipsLocation);
+        const distanceFromCenterOfFleet = fleetRadius * 1.5 + artifactSizePixels;
+        const x = distanceFromCenterOfFleet + screenCoords.x;
+        const y = screenCoords.y;
+        sR.queueArtifact(voyage.artifact, { x, y }, artifactSizePixels);
       }
 
       // queue text
@@ -175,10 +172,7 @@ export class VoyageRenderer implements VoyageRendererType {
     for (const voyage of voyages) {
       const nowS = now / 1000;
       if (nowS < voyage.arrivalTime) {
-        const isMyVoyage =
-          voyage.player === gameUIManager.getAccount() ||
-          gameUIManager.getArtifactWithId(voyage.artifactId)?.controller ===
-            gameUIManager.getPlayer()?.address;
+        const isMyVoyage = voyage.player === gameUIManager.getAccount();
         const isShipVoyage = voyage.player === EMPTY_ADDRESS;
         const sender = gameUIManager.getPlayer(voyage.player);
         this.drawVoyagePath(voyage.fromPlanet, voyage.toPlanet, true, isMyVoyage, isShipVoyage);

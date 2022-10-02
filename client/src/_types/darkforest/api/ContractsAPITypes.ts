@@ -68,7 +68,6 @@ export const enum ContractsAPIEvent {
   PlanetUpdate = 'PlanetUpdate',
   PauseStateChanged = 'PauseStateChanged',
   ArrivalQueued = 'ArrivalQueued',
-  ArtifactUpdate = 'ArtifactUpdate',
   RadiusUpdated = 'RadiusUpdated',
   LocationRevealed = 'LocationRevealed',
   /**

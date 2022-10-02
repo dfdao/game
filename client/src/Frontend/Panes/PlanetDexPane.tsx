@@ -178,7 +178,7 @@ export function PlanetDexPane({ visible, onClose }: { visible: boolean; onClose:
     (planet: Planet) => <Sub>{planet.planetLevel}</Sub>,
     (planet: Planet) => <Sub>{formatNumber(planet.energy)}</Sub>,
     (planet: Planet) => <Sub>{formatNumber(planet.silver)}</Sub>,
-    (planet: Planet) => <Sub>{formatNumber(planet.heldArtifactIds.length)}</Sub>,
+    (planet: Planet) => <Sub>{formatNumber(planet.artifacts.length)}</Sub>,
   ];
 
   const sortingFunctions = [
@@ -197,7 +197,7 @@ export function PlanetDexPane({ visible, onClose }: { visible: boolean; onClose:
     (a: Planet, b: Planet): number => b.silver - a.silver,
     // artifacts
     (a: Planet, b: Planet): number => {
-      const [numArtifacts, scoreB] = [a.heldArtifactIds.length, b.heldArtifactIds.length];
+      const [numArtifacts, scoreB] = [a.artifacts.length, b.artifacts.length];
       return scoreB - numArtifacts;
     },
   ];

@@ -1,11 +1,14 @@
 import type { DarkForest } from '@dfdao/contracts/typechain';
-import type { Artifact, ArtifactId, ArtifactPointValues, VoyageId } from '@dfdao/types';
-import { ArtifactRarity, ArtifactType, Biome } from '@dfdao/types';
+import {
+  Artifact,
+  ArtifactId,
+  ArtifactPointValues,
+  ArtifactRarity,
+  ArtifactType,
+  Biome,
+} from '@dfdao/types';
 import bigInt from 'big-integer';
-import type { BigNumber as EthersBN } from 'ethers';
-import { address } from './address';
-import { locationIdFromDecStr, locationIdFromEthersBN } from './location';
-import { decodeUpgrade } from './upgrade';
+import { BigNumber as EthersBN, utils } from 'ethers';
 
 /**
  * Converts a possibly 0x-prefixed string of hex digits to an `ArtifactId`: a
@@ -84,37 +87,41 @@ export function decodeArtifactPointValues(
   };
 }
 
-export type RawArtifactWithMetadata = Awaited<ReturnType<DarkForest['getArtifactById']>>;
+function calculateByteUInt(tokenId: EthersBN, startByte: number, endByte: number) {
+  const token = utils.arrayify(tokenId);
+  let byteUInt = 0;
+  for (let i = startByte; i <= endByte; i++) {
+    byteUInt += token[i] * 256 ** (endByte - i);
+  }
+  return byteUInt;
+}
 
 /**
- * Converts the raw typechain result of `ArtifactTypes.ArtifactWithMetadata`
- * struct to an `Artifact` typescript typed object (see @dfdao/types).
+ * Converts the raw Token ID to an `Artifact` typescript typed object (see @dfdao/types).
  *
- * @param rawArtifactWithMetadata Raw data of an `ArtifactWithMetadata` struct,
- * returned from a blockchain call (assumed to be typed with typechain).
+ * @param tokenId Raw `tokenId` representing an `Artifact` struct
  */
-export function decodeArtifact(rawArtifactWithMetadata: RawArtifactWithMetadata): Artifact {
-  const { artifact, owner, upgrade, timeDelayedUpgrade, locationId, voyageId } =
-    rawArtifactWithMetadata;
+export function decodeArtifact(tokenId: EthersBN): Artifact {
+  // 454093553060631688131761916536684786657829610989267258091508080987871379456
+  // Collection: Artifact
+  // Rarity: Common
+  // Type: Colossus
+  // Biome: Forest
+
+  const tokenIdx = 0;
+  const rarityIdx = 0;
+  const typeIdx = 0;
+  const biomeIdx = 0;
+
+  const _tokenType = calculateByteUInt(tokenId, tokenIdx, tokenIdx);
+  const rarity = calculateByteUInt(tokenId, rarityIdx, rarityIdx);
+  const artifactType = calculateByteUInt(tokenId, typeIdx, typeIdx);
+  const biome = calculateByteUInt(tokenId, biomeIdx, biomeIdx);
 
   return {
-    isInititalized: artifact.isInitialized,
-    id: artifactIdFromEthersBN(artifact.id),
-    planetDiscoveredOn: locationIdFromDecStr(artifact.planetDiscoveredOn.toString()),
-    rarity: artifact.rarity as ArtifactRarity,
-    planetBiome: artifact.planetBiome as Biome,
-    mintedAtTimestamp: artifact.mintedAtTimestamp.toNumber(),
-    discoverer: address(artifact.discoverer),
-    artifactType: artifact.artifactType as ArtifactType,
-    activations: artifact.activations.toNumber(),
-    lastActivated: artifact.lastActivated.toNumber(),
-    lastDeactivated: artifact.lastDeactivated.toNumber(),
-    controller: address(artifact.controller),
-    wormholeTo: artifact.wormholeTo.eq(0) ? undefined : locationIdFromEthersBN(artifact.wormholeTo),
-    currentOwner: address(owner),
-    upgrade: decodeUpgrade(upgrade),
-    timeDelayedUpgrade: decodeUpgrade(timeDelayedUpgrade),
-    onPlanetId: locationId.eq(0) ? undefined : locationIdFromEthersBN(locationId),
-    onVoyageId: voyageId.eq(0) ? undefined : (voyageId.toString() as VoyageId),
+    id: artifactIdFromEthersBN(tokenId),
+    rarity: rarity as ArtifactRarity,
+    planetBiome: biome as Biome,
+    artifactType: artifactType as ArtifactType,
   };
 }

@@ -1,7 +1,6 @@
 import { isLocatable } from '@dfdao/gamelogic';
 import { EthConnection } from '@dfdao/network';
 import {
-  ArtifactId,
   Biome,
   EthAddress,
   LocatablePlanet,
@@ -144,23 +143,13 @@ class ReaderDataStore {
 
     for (const arrival of arrivals) {
       if (nowInSeconds < arrival.arrivalTime) break;
-      arrive(planet, [], arrival, undefined, contractConstants);
+      arrive(planet, arrival, contractConstants);
     }
 
-    updatePlanetToTime(planet, [], Date.now(), contractConstants);
+    updatePlanetToTime(planet, Date.now(), contractConstants);
     await this.setPlanetLocationIfKnown(planet);
 
     return planet;
-  }
-
-  public async loadArtifactFromContract(artifactId: ArtifactId) {
-    const artifact = await this.contractsAPI.getArtifactById(artifactId);
-
-    if (!artifact) {
-      throw new Error(`unable to load artifact with id ${artifactId}`);
-    }
-
-    return artifact;
   }
 
   // copied from GameEntityMemoryStore. needed to determine biome if we know planet location

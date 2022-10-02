@@ -1,6 +1,5 @@
 import {
   Artifact,
-  ArtifactId,
   AsteroidRendererType,
   BackgroundRendererType,
   BaseRenderer,
@@ -125,11 +124,9 @@ export interface RendererGameContext extends DiagnosticUpdater {
   getUnconfirmedMoves(): Transaction<UnconfirmedMove>[];
   spaceTypeFromPerlin(perlin: number): SpaceType;
   getPerlinConfig(isBiome: boolean): PerlinConfig;
-  getArtifactWithId(artifactId: ArtifactId | undefined): Artifact | undefined;
   getSpaceTypePerlin(coords: WorldCoords, floor: boolean): number;
   getPerlinThresholds(): [number, number, number];
   isOwnedByMe(planet: Planet): boolean;
-  getArtifactsWithIds(artifactIds: ArtifactId[]): Array<Artifact | undefined>;
   getSelectedPlanet(): LocatablePlanet | undefined;
   getHoveringOverPlanet(): Planet | undefined;
   getHoveringOverCoords(): WorldCoords | undefined;

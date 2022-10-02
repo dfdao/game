@@ -1,5 +1,5 @@
 import { isLocatable } from '@dfdao/gamelogic';
-import { LocationId } from '@dfdao/types';
+import { Artifact, LocationId } from '@dfdao/types';
 import React from 'react';
 import { CenterBackgroundSubtext, Underline } from '../../Components/CoreUI';
 import { useAccount, useMyArtifactsList, usePlanet, useUIManager } from '../../Utils/AppHooks';
@@ -50,14 +50,14 @@ export function ManagePlanetArtifactsPane({
   const planetId = useEmitterValue(uiManager.selectedPlanetId$, initialPlanetId);
   const planet = usePlanet(uiManager, planetId).value;
   const myArtifacts = useMyArtifactsList(uiManager);
-  const onPlanet = uiManager.getArtifactsWithIds(planet?.heldArtifactIds || []);
+  const onPlanet = planet?.artifacts || [];
 
-  const artifactsInWallet = [];
-  for (const a of myArtifacts) {
-    if (!a.onPlanetId) {
-      artifactsInWallet.push(a);
-    }
-  }
+  const artifactsInWallet: Artifact[] = [];
+  // for (const a of myArtifacts) {
+  //   if (!a.onPlanetId) {
+  //     artifactsInWallet.push(a);
+  //   }
+  // }
 
   if (planet && myArtifacts && isLocatable(planet) && account) {
     return (

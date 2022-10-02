@@ -1,7 +1,6 @@
 import type { Biome } from './game_types';
-import type { ArtifactId, EthAddress, LocationId, VoyageId } from './identifier';
+import type { ArtifactId, LocationId } from './identifier';
 import type { TransactionCollection } from './transaction';
-import type { Upgrade } from './upgrade';
 import type { Abstract } from './utility';
 
 /**
@@ -23,11 +22,6 @@ export const ArtifactType = {
   PhotoidCannon: 7 as ArtifactType,
   BloomFilter: 8 as ArtifactType,
   BlackDomain: 9 as ArtifactType,
-  ShipMothership: 10 as ArtifactType,
-  ShipCrescent: 11 as ArtifactType,
-  ShipWhale: 12 as ArtifactType,
-  ShipGear: 13 as ArtifactType,
-  ShipTitan: 14 as ArtifactType,
 
   // Don't forget to update MIN_ARTIFACT_TYPE and/or MAX_ARTIFACT_TYPE in the `constants` package
 } as const;
@@ -46,11 +40,6 @@ export const ArtifactTypeNames = {
   [ArtifactType.BlackDomain]: 'Black Domain',
   [ArtifactType.PhotoidCannon]: 'Photoid Cannon',
   [ArtifactType.BloomFilter]: 'Bloom Filter',
-  [ArtifactType.ShipMothership]: 'Mothership',
-  [ArtifactType.ShipCrescent]: 'Crescent',
-  [ArtifactType.ShipWhale]: 'Whale',
-  [ArtifactType.ShipGear]: 'Gear',
-  [ArtifactType.ShipTitan]: 'Titan',
 } as const;
 
 /**
@@ -96,25 +85,10 @@ export type ArtifactPointValues = { [ArtifactRarity: number]: number };
  * client that can't send transactions, these fields should be ignored.
  */
 export type Artifact = {
-  isInititalized: boolean;
   id: ArtifactId;
-  planetDiscoveredOn: LocationId;
   rarity: ArtifactRarity;
   planetBiome: Biome;
-  mintedAtTimestamp: number;
-  discoverer: EthAddress;
   artifactType: ArtifactType;
-  activations: number;
-  lastActivated: number;
-  lastDeactivated: number;
-  controller: EthAddress;
-
-  upgrade: Upgrade;
-  timeDelayedUpgrade: Upgrade;
-  currentOwner: EthAddress; // owner of the NFT - can be the contract
-  wormholeTo?: LocationId;
-  onPlanetId?: LocationId;
-  onVoyageId?: VoyageId;
 
   transactions?: TransactionCollection;
 };
