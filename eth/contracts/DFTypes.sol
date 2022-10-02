@@ -281,3 +281,8 @@ struct Spaceship {
     TokenType tokenType;
     SpaceshipType spaceshipType;
 }
+
+enum SilverInfo {
+    Unknown,
+    TokenType
+}
