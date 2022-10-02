@@ -18,7 +18,7 @@ import {
 
 const CONTRACT_PRECISION = 1_000;
 
-describe.only('DFSilver', async function () {
+describe('DFSilver', async function () {
   // Bump the time out so that the test doesn't timeout during
   // initial fixture creation
   this.timeout(1000 * 60);

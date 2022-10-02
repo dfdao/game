@@ -166,6 +166,25 @@ contract DFCoreFacet is WithStorage {
         return (_location, _branch);
     }
 
+    function upgradePlanetMax(uint256 _location, uint256 _branch) public notPaused {
+        // _branch specifies which of the three upgrade branches player is leveling up
+        // 0 improves defense
+        // 1 improves range
+        // 2 improves speed
+        refreshPlanet(_location);
+        LibPlanet.upgradePlanetMax(_location, _branch);
+    }
+
+    function bulkUpgradePlanetMax(uint256[] memory _locationIds, uint256[] memory _branches)
+        public
+        notPaused
+    {
+        for (uint256 i = 0; i < _locationIds.length; i++) {
+            refreshPlanet(_locationIds[i]);
+            LibPlanet.upgradePlanetMax(_locationIds[i], _branches[i]);
+        }
+    }
+
     function transferPlanet(uint256 _location, address _player) public notPaused {
         require(gameConstants().PLANET_TRANSFER_ENABLED, "planet transferring is disabled");
 

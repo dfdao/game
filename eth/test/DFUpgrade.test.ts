@@ -1,3 +1,4 @@
+import { UpgradeBranchName } from '@dfdao/types';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
@@ -105,6 +106,113 @@ describe('DarkForestUpgrade', function () {
     expect(initialPopulationGrowth).to.be.below(newPopulationGrowth);
   });
 
+  it.only('should max upgrade planet stats and emit event', async function () {
+    const upgradeablePlanetId = LVL1_PLANET_NEBULA.id;
+    const silverMinePlanetId = LVL1_ASTEROID_2.id;
+
+    await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
+
+    // conquer silver mine and upgradeable planet
+    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_PLANET_NEBULA);
+    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_2);
+
+    await increaseBlockchainTime();
+
+    await world.user1Core.withdrawSilverAsteroid(silverMinePlanetId);
+
+    await increaseBlockchainTime();
+
+    await world.user1Core.withdrawSilverAsteroid(silverMinePlanetId);
+
+    await world.contract.refreshPlanet(upgradeablePlanetId);
+
+    const planetBeforeUpgrade = await world.contract.planets(upgradeablePlanetId);
+
+    const silverCap = planetBeforeUpgrade.silverCap.toNumber();
+
+    const initialSilver = (await world.contract.getSilverBalance(world.user1.address)).toNumber();
+    const initialPopulationCap = planetBeforeUpgrade.populationCap;
+    const initialPopulationGrowth = planetBeforeUpgrade.populationGrowth;
+    const initialRange = planetBeforeUpgrade.range;
+    await expect(world.user1Core.upgradePlanetMax(upgradeablePlanetId, UpgradeBranchName.Range))
+      .to.emit(world.contract, 'PlanetUpgraded')
+      .withArgs(
+        world.user1.address,
+        upgradeablePlanetId,
+        BN.from(UpgradeBranchName.Range),
+        BN.from(5)
+      );
+
+    const planetAfterUpgrade = await world.contract.planets(upgradeablePlanetId);
+    const newPopulationCap = planetAfterUpgrade.populationCap;
+    const newPopulationGrowth = planetAfterUpgrade.populationGrowth;
+    const newSilver = (await world.contract.getSilverBalance(world.user1.address)).toNumber();
+    const newRange = planetAfterUpgrade.range;
+
+    expect(newSilver).to.equal(initialSilver - (silverCap * 3) / 1000);
+    expect(newPopulationCap.toNumber()).to.equal(initialPopulationCap.toNumber() * 2.5);
+    expect(newPopulationGrowth.toNumber()).to.equal(
+      Math.floor(initialPopulationGrowth.toNumber() * 2.5)
+    );
+    expect(newRange.toNumber()).to.equal(Math.floor(initialRange.toNumber() * 2.5));
+  });
+
+  it.only('should bulk max upgrade planet stats and emit event', async function () {
+    const upgradeablePlanetId = LVL1_PLANET_NEBULA.id;
+    const otherUpgradeablePlanetId = LVL1_PLANET_DEEP_SPACE.id;
+    const silverMinePlanetId = LVL1_ASTEROID_2.id;
+
+    await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
+
+    // conquer silver mine and upgradeable planet
+    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_PLANET_NEBULA);
+    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_PLANET_DEEP_SPACE);
+    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_2);
+
+    // TODO: Move silver fetching logic into TestUtils
+    await increaseBlockchainTime();
+
+    await world.user1Core.withdrawSilverAsteroid(silverMinePlanetId);
+
+    await increaseBlockchainTime();
+
+    await world.user1Core.withdrawSilverAsteroid(silverMinePlanetId);
+
+    await increaseBlockchainTime();
+
+    await world.user1Core.withdrawSilverAsteroid(silverMinePlanetId);
+
+    await world.contract.refreshPlanet(upgradeablePlanetId);
+
+    const planetBeforeUpgrade = await world.contract.planets(upgradeablePlanetId);
+    const planetBeforeUpgrade1 = await world.contract.planets(otherUpgradeablePlanetId);
+
+    const initialSilver = (await world.contract.getSilverBalance(world.user1.address)).toNumber();
+
+    const silverCap =
+      (planetBeforeUpgrade.silverCap.toNumber() + planetBeforeUpgrade1.silverCap.toNumber()) / 1000;
+
+    const initialRange = planetBeforeUpgrade.range.toNumber();
+    const initialSpeed = planetBeforeUpgrade1.speed.toNumber();
+
+    const bUTx = await world.user1Core.bulkUpgradePlanetMax(
+      [upgradeablePlanetId, otherUpgradeablePlanetId],
+      [UpgradeBranchName.Range, UpgradeBranchName.Speed]
+    );
+    const bURct = await bUTx.wait();
+    console.log(`bulk upgrade used ${bURct.gasUsed.toNumber() / 2} gas per planet`);
+
+    const planetAfterUpgrade = await world.contract.planets(upgradeablePlanetId);
+    const planetAfterUpgrade1 = await world.contract.planets(otherUpgradeablePlanetId);
+
+    const newRange = planetAfterUpgrade.range.toNumber();
+    const newSpeed = planetAfterUpgrade1.speed.toNumber();
+
+    const newSilver = (await world.contract.getSilverBalance(world.user1.address)).toNumber();
+    expect(newRange).to.equal(Math.floor(initialRange * 2.5));
+    expect(newSpeed).to.equal(Math.floor(initialSpeed * 2.5));
+    expect(newSilver).to.equal(initialSilver - silverCap * 3);
+  });
   it('should reject upgrade on silver mine, ruins, silver bank, and trading post', async function () {
     this.timeout(0);
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
