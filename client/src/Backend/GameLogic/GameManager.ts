@@ -583,13 +583,16 @@ class GameManager extends EventEmitter {
     const settingStore = new SettingStore({ contractAddress, account });
 
     const gameStateDownloader = new InitialGameStateDownloader(terminal.current);
-    const contractsAPI = await makeContractsAPI({ connection, contractAddress, settings: settingStore });
+    const contractsAPI = await makeContractsAPI({
+      connection,
+      contractAddress,
+      settings: settingStore,
+    });
 
     terminal.current?.println('Loading game data from disk...');
 
     const persistentChunkStore = new PersistentChunkStore({ account, contractAddress });
     const otherStore = await OtherStore.create({ account, contractAddress });
-
 
     terminal.current?.println('Downloading data from Ethereum blockchain...');
     terminal.current?.println('(the contract is very big. this may take a while)');
