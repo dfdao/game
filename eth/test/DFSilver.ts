@@ -1,8 +1,23 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
-import { conquerUnownedPlanet, feedSilverToCap, makeInitArgs } from './utils/TestUtils';
+import {
+  conquerUnownedPlanet,
+  feedSilverToCap,
+  increaseBlockchainTime,
+  makeInitArgs,
+} from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
-import { LVL1_ASTEROID_1, LVL3_SPACETIME_1, SPAWN_PLANET_1 } from './utils/WorldConstants';
+import {
+  LVL1_ASTEROID_1,
+  LVL1_ASTEROID_2,
+  LVL1_ASTEROID_DEEP_SPACE,
+  LVL1_ASTEROID_NEBULA,
+  LVL3_SPACETIME_1,
+  SPAWN_PLANET_1,
+} from './utils/WorldConstants';
+
+const CONTRACT_PRECISION = 1_000;
+const SILVER_TOKEN_ID = '0x0300000000000000000000000000000000000000000000000000000000000000';
 
 describe('DFSilver', async function () {
   // Bump the time out so that the test doesn't timeout during
@@ -44,6 +59,37 @@ describe('DFSilver', async function () {
     // `CONTRACT_PRECISION`
     expect(await world.contract.getSilverBalance(world.user1.address)).to.equal(
       withdrawnAmount.div(1000)
+    );
+  });
+
+  it('allows player to bulk withdraw silver from asteroids', async function () {
+    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_2);
+    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_NEBULA);
+    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_DEEP_SPACE);
+
+    // await feedSilverToCap(world, world.user1Core, LVL1_ASTEROID_1, LVL3_SPACETIME_2);
+    const ast1 = await world.contract.planets(LVL1_ASTEROID_1.id);
+    const ast2 = await world.contract.planets(LVL1_ASTEROID_2.id);
+    const ast3 = await world.contract.planets(LVL1_ASTEROID_NEBULA.id);
+    const ast4 = await world.contract.planets(LVL1_ASTEROID_DEEP_SPACE.id);
+
+    // Let Asteroids fill up
+    await increaseBlockchainTime();
+
+    const tx = await world.user1Core.bulkWithdrawSilverAsteroid([
+      LVL1_ASTEROID_1.id,
+      LVL1_ASTEROID_2.id,
+      LVL1_ASTEROID_NEBULA.id,
+      LVL1_ASTEROID_DEEP_SPACE.id,
+    ]);
+    const rct = await tx.wait();
+    console.log(`bulk withdraw used ${rct.gasUsed.toNumber() / 4} gas per asteroid`);
+
+    expect(
+      await (await world.contract.balanceOf(world.user1.address, SILVER_TOKEN_ID)).toNumber()
+    ).to.equal(
+      ast1.silverCap.add(ast2.silverCap).add(ast3.silverCap).add(ast4.silverCap).toNumber() /
+        CONTRACT_PRECISION
     );
   });
 
