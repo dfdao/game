@@ -385,4 +385,28 @@ library LibPlanet {
         scoreGained = (scoreGained * gameConstants().SILVER_SCORE_VALUE) / 100;
         gs().players[msg.sender].score += scoreGained;
     }
+
+    // Withdraw Max Silver
+    function withdrawSilverAsteroid(uint256 locationId) public returns (uint256) {
+        Planet storage planet = gs().planets[locationId];
+        require(planet.owner == msg.sender, "you must own this planet");
+        require(
+            planet.planetType == PlanetType.SILVER_MINE,
+            "can only withdraw silver from asteroids"
+        );
+        require(!planet.destroyed, "planet is destroyed");
+        // No op in case client is off
+        if (planet.silver == 0) return 0;
+
+        uint256 silverId = LibSilver.create();
+        // Divide by 1000 for precision
+        uint256 silverAmount = planet.silver / 1000;
+        planet.silver = 0;
+        DFTokenFacet(address(this)).mint(msg.sender, silverId, silverAmount);
+
+        uint256 scoreGained = silverAmount;
+        scoreGained = (scoreGained * gameConstants().SILVER_SCORE_VALUE) / 100;
+        gs().players[msg.sender].score += scoreGained;
+        return silverAmount;
+    }
 }
