@@ -182,12 +182,12 @@ library LibArtifactUtils {
             }
 
             planet.planetType = PlanetType.SILVER_MINE;
-            emit ArtifactActivated(msg.sender, locationId, shipId);
+            emit ArtifactActivated(msg.sender, shipId, locationId);
 
             // TODO: Why not actually burn?
             // burn it after use. will be owned by contract but not on a planet anyone can control
             LibSpaceship.takeSpaceshipOffPlanet(locationId, shipId);
-            emit ArtifactDeactivated(msg.sender, locationId, shipId);
+            emit ArtifactDeactivated(msg.sender, shipId, locationId);
         }
     }
 
@@ -217,7 +217,7 @@ library LibArtifactUtils {
 
         gs().planetArtifactActivationTime[locationId] = block.timestamp;
         gs().planetActiveArtifact[locationId] = artifactId;
-        emit ArtifactActivated(msg.sender, locationId, artifactId);
+        emit ArtifactActivated(msg.sender, artifactId, locationId);
 
         if (artifact.artifactType == ArtifactType.Wormhole) {
             require(wormholeTo != 0, "you must provide a wormholeTo to activate a wormhole");
@@ -248,7 +248,7 @@ library LibArtifactUtils {
         if (shouldDeactivateAndBurn) {
             gs().planetActiveArtifact[locationId] = 0; // immediately remove activate artifact
 
-            emit ArtifactDeactivated(msg.sender, locationId, artifactId);
+            emit ArtifactDeactivated(msg.sender, artifactId, locationId);
             // burn it after use. will be owned by contract but not on a planet anyone can control
             LibArtifact.takeArtifactOffPlanet(locationId, artifactId);
         }
