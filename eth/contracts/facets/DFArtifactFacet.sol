@@ -88,26 +88,26 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         // Account, Id, Amount, Data
         _mint(owner, tokenId, 1, "");
 
-        return getSpaceship(tokenId);
+        return getSpaceshipFromId(tokenId);
     }
 
-    function getSpaceship(uint256 shipId) public pure returns (Spaceship memory) {
+    function getSpaceshipFromId(uint256 shipId) public pure returns (Spaceship memory) {
         return LibSpaceship.decode(shipId);
     }
 
-    function encodeSpaceship(Spaceship memory spaceship) public pure returns (uint256) {
-        return LibSpaceship.encode(spaceship);
+    function createSpaceshipId(SpaceshipType spaceshipType) public pure returns (uint256) {
+        return LibSpaceship.create(spaceshipType);
     }
 
-    function decodeSpaceship(uint256 shipId) public pure returns (Spaceship memory) {
-        return LibSpaceship.decode(shipId);
+    function createArtifactId(
+        ArtifactRarity rarity,
+        ArtifactType artifactType,
+        Biome biome
+    ) public pure returns (uint256) {
+        return LibArtifact.create(rarity, artifactType, biome);
     }
 
-    function encodeArtifact(Artifact memory artifact) public pure returns (uint256) {
-        return LibArtifact.encode(artifact);
-    }
-
-    function decodeArtifact(uint256 artifactId) public pure returns (Artifact memory) {
+    function getArtifactFromId(uint256 artifactId) public pure returns (Artifact memory) {
         return LibArtifact.decode(artifactId);
     }
 
