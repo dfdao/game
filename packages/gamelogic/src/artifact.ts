@@ -126,21 +126,6 @@ export function artifactFileName(
 ): string {
   const { artifactType: type, rarity, planetBiome: biome, id } = artifact;
 
-  // if (isSpaceShip(type)) {
-  //   switch (type) {
-  //     case ArtifactType.ShipWhale:
-  //       return '64-whale.png';
-  //     case ArtifactType.ShipMothership:
-  //       return '64-mothership.png';
-  //     case ArtifactType.ShipCrescent:
-  //       return '64-crescent.png';
-  //     case ArtifactType.ShipGear:
-  //       return '64-gear.png';
-  //     case ArtifactType.ShipTitan:
-  //       return '64-titan.png';
-  //   }
-  // }
-
   const size = thumb ? '16' : '64';
   const ext = videoMode ? 'webm' : 'png';
 
