@@ -8,9 +8,9 @@ The fundamental data structure in ERC1155 is `mapping(uint256 => mapping(address
 
 `balances[tokenId][myAddress]` = number of tokens I have of a given collection.
 
-The `uint 256 tokenId`, which identifies a _set_ of tokens, is represented in the following way:
+The `uint256` `tokenId`, which identifies a _set_ of tokens, is represented in the following way:
 
-Each `uint256 tokenId` is broken down into 32 chunks of 8 bits each (32\*8 = 256).
+Each `uint256` `tokenId` is broken down into 32 chunks of 8 bits each (32\*8 = 256).
 
 > | chunk1 | chunk 2 | ... chunk32 |.
 
@@ -55,7 +55,7 @@ The `Lib<TokenName>.sol`. file **must** have the following methods:
 where `<TokenName>` can be a struct (like Artifacts or Spaceships) or just a uint256 (like Silver).
 
 Additionally methods can be added to each library, but they must be `internal` functions that can be
-inherited by other facets or libraries.
+inlined into other facets or libraries.
 
 ## Artifacts
 
@@ -217,7 +217,7 @@ For the wormhole, we do the same:
 
 ## Simulteanous Activate and Deactivate
 
-Some Bloom Filters (Artifacts) and Crescents (Spaceships) are burned on use.
+Some Artifacts (Bloom Filters) and Spaceships (Crescents) are burned on use.
 
 All we do is make sure that we call the Activate and Deactivate functions in the same transaction.
 
