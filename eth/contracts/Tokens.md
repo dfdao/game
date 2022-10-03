@@ -18,7 +18,11 @@ Chunks are used from left to right, so a token that has a value of `0xff` in chu
 
 Another way to visualize the `tokenId` is by highlighting each chunk: `0x**ff**_00_**00**_00_**00**_00_...`
 
-Each chunk allows for 2^8 (256) unique pieces of information. If you need more than 256 properties of a token, you can use an additional chunk
+Each chunk allows for 2^8 (256) unique pieces of information. If you need more than 256 properties
+of a token, you can use an additional chunk.
+
+For example, if you wanted to add a new property to an Artifact called `Weather`, you use the next
+chunk(s) to encode that value. You would have 256 options for what `Weather` an Artifact could have.
 
 This architecture allows us to encode information about a Dark Forest token in the `tokenId` itself,
 and, more importantly, it allows to create a copy of a token just by using the same `tokenId`.
