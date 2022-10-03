@@ -1,5 +1,5 @@
 import { isUnconfirmedFindArtifactTx, isUnconfirmedProspectPlanetTx } from '@dfdao/serde';
-import { Planet, PlanetType, TooltipName } from '@dfdao/types';
+import { Planet, PlanetType, SpaceshipType, TooltipName } from '@dfdao/types';
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { isFindable } from '../../Backend/GameLogic/ArrivalUtils';
@@ -40,12 +40,13 @@ export function MineArtifactButton({
 
   const isDestroyed = useMemo(() => planetWrapper.value?.destroyed, [planetWrapper]);
 
-  const hasGear = useMemo(() => {
-    return false;
-    // planetWrapper.value?.heldArtifactIds
-    //   .map((id) => uiManager.getArtifactWithId(id))
-    //   .find((artifact) => artifact?.artifactType === ArtifactType.ShipGear),
-  }, [planetWrapper, uiManager]);
+  const hasGear = useMemo(
+    () =>
+      planetWrapper.value?.spaceships.some(
+        (spaceship) => spaceship.spaceshipType === SpaceshipType.ShipGear
+      ),
+    [planetWrapper]
+  );
   const gearEnabled = uiManager.contractConstants.SPACESHIPS.GEAR;
 
   let prospectable = isRuins;
