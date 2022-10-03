@@ -13,7 +13,6 @@ import {LibUtils} from "./LibUtils.sol";
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
 import {Biome, SpaceType, Planet, PlanetType, PlanetEventType, Artifact, ArtifactType, TokenType, ArtifactRarity, Upgrade, PlanetDefaultStats} from "../DFTypes.sol";
-import "hardhat/console.sol";
 
 library LibGameUtils {
     function gs() internal pure returns (GameStorage storage) {

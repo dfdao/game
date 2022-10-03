@@ -16,7 +16,6 @@ import {LibStorage, GameStorage, GameConstants} from "./LibStorage.sol";
 
 // Type imports
 import {Biome, Planet, PlanetType, ArtifactType, ArtifactRarity, TokenType, DFPFindArtifactArgs, DFTCreateArtifactArgs, Artifact, ArtifactInfo, Spaceship, SpaceshipType} from "../DFTypes.sol";
-import "hardhat/console.sol";
 
 library LibArtifactUtils {
     function gs() internal pure returns (GameStorage storage) {
@@ -65,17 +64,9 @@ library LibArtifactUtils {
         address owner,
         SpaceshipType shipType
     ) public returns (uint256) {
-        require(shipType != SpaceshipType.Unknown, "incorrect ship type");
-        // require(gs().miscNonce < MAX UINT 128) but won't happen.
-        uint128 id = uint128(gs().miscNonce++);
-        uint256 tokenId = LibSpaceship.encode(
-            Spaceship({id: 0, tokenType: TokenType.Spaceship, spaceshipType: shipType})
-        );
+        uint256 tokenId = LibSpaceship.create(shipType) + uint128(gs().miscNonce++);
 
-        Spaceship memory spaceship = DFArtifactFacet(address(this)).createSpaceship(
-            tokenId + id, // Make each ship unique
-            owner
-        );
+        Spaceship memory spaceship = DFArtifactFacet(address(this)).createSpaceship(tokenId, owner);
         LibSpaceship.putSpaceshipOnPlanet(planetId, spaceship.id);
 
         return spaceship.id;
@@ -104,15 +95,7 @@ library LibArtifactUtils {
         ArtifactRarity rarity = LibArtifact.artifactRarityFromPlanetLevel(
             levelBonus + planet.planetLevel
         );
-        uint256 tokenId = LibArtifact.encode(
-            Artifact({
-                id: 0,
-                tokenType: TokenType.Artifact,
-                rarity: rarity,
-                artifactType: artifactType,
-                planetBiome: biome
-            })
-        );
+        uint256 tokenId = LibArtifact.create(rarity, artifactType, biome);
 
         Artifact memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
             tokenId,
@@ -135,7 +118,6 @@ library LibArtifactUtils {
         uint256 wormholeTo
     ) public {
         Planet storage planet = gs().planets[locationId];
-        Artifact memory artifact = LibArtifact.decode(artifactId);
 
         if (LibSpaceship.isShip(artifactId)) {
             require(
@@ -144,6 +126,8 @@ library LibArtifactUtils {
             );
             activateSpaceshipArtifact(locationId, artifactId, planet);
         } else if (LibArtifact.isArtifact(artifactId)) {
+            Artifact memory artifact = LibArtifact.decode(artifactId);
+
             require(
                 LibArtifact.isArtifactOnPlanet(locationId, artifactId),
                 "can't activate an artifact on a planet it's not on"
@@ -183,12 +167,12 @@ library LibArtifactUtils {
             }
 
             planet.planetType = PlanetType.SILVER_MINE;
-            emit ArtifactActivated(msg.sender, locationId, shipId);
+            emit ArtifactActivated(msg.sender, shipId, locationId);
 
             // TODO: Why not actually burn?
             // burn it after use. will be owned by contract but not on a planet anyone can control
             LibSpaceship.takeSpaceshipOffPlanet(locationId, shipId);
-            emit ArtifactDeactivated(msg.sender, locationId, shipId);
+            emit ArtifactDeactivated(msg.sender, shipId, locationId);
         }
     }
 
@@ -218,7 +202,7 @@ library LibArtifactUtils {
 
         gs().planetArtifactActivationTime[locationId] = block.timestamp;
         gs().planetActiveArtifact[locationId] = artifactId;
-        emit ArtifactActivated(msg.sender, locationId, artifactId);
+        emit ArtifactActivated(msg.sender, artifactId, locationId);
 
         if (artifact.artifactType == ArtifactType.Wormhole) {
             require(wormholeTo != 0, "you must provide a wormholeTo to activate a wormhole");
@@ -247,10 +231,9 @@ library LibArtifactUtils {
         }
 
         if (shouldDeactivateAndBurn) {
-            // artifact.lastDeactivated = block.timestamp; // immediately deactivate
             gs().planetActiveArtifact[locationId] = 0; // immediately remove activate artifact
 
-            emit ArtifactDeactivated(msg.sender, locationId, artifactId);
+            emit ArtifactDeactivated(msg.sender, artifactId, locationId);
             // burn it after use. will be owned by contract but not on a planet anyone can control
             LibArtifact.takeArtifactOffPlanet(locationId, artifactId);
         }
@@ -313,7 +296,6 @@ library LibArtifactUtils {
             planet.planetLevel > uint256(artifact.rarity),
             "spacetime rip not high enough level to deposit this artifact"
         );
-        require(!LibSpaceship.isShip(artifactId), "cannot deposit spaceships");
 
         require(
             gs().planetArtifacts[locationId].length + gs().planetSpaceships[locationId].length < 5,
@@ -340,7 +322,7 @@ library LibArtifactUtils {
             planet.planetLevel > uint256(artifact.rarity),
             "spacetime rip not high enough level to withdraw this artifact"
         );
-        require(!LibSpaceship.isShip(artifactId), "cannot withdraw spaceships");
+
         LibArtifact.takeArtifactOffPlanet(locationId, artifactId);
 
         // artifactId, curr owner, new owner

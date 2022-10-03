@@ -226,15 +226,6 @@ enum ArtifactRarity {
     Mythic
 }
 
-// for artifact getters
-// struct ArtifactWithMetadata {
-//     Artifact artifact;
-//     Upgrade upgrade;
-//     Upgrade timeDelayedUpgrade; // for photoid canons specifically.
-//     address owner;
-//     uint256 locationId; // 0 if planet is not deposited into contract or is on a voyage
-//     uint256 voyageId; // 0 is planet is not deposited into contract or is on a planet
-// }
 
 enum Biome {
     Unknown,

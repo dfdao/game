@@ -20,7 +20,6 @@
     "@projectsophon/workspace": "^2.0.0",
     "@solidstate/contracts": "^0.0.41",
     "@solidstate/hardhat-4byte-uploader": "^1.0.2",
-    "@solidstate/spec": "^0.0.41",
     "@typechain/ethers-v5": "^10.1.0",
     "@typechain/hardhat": "^6.1.3",
     "@types/chai": "^4.2.14",
