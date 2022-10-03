@@ -42,7 +42,7 @@ export function MineArtifactButton({
 
   const hasGear = useMemo(
     () =>
-      planetWrapper.value?.spaceships.some(
+      planetWrapper.value?.spaceships?.some(
         (spaceship) => spaceship.spaceshipType === SpaceshipType.ShipGear
       ),
     [planetWrapper]
