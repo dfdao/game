@@ -454,7 +454,8 @@ contract DFMoveFacet is WithStorage {
             departureTime: block.timestamp,
             arrivalTime: block.timestamp + args.travelTime,
             arrivalType: args.arrivalType,
-            carriedArtifactId: args.movedArtifactId,
+            carriedArtifactId: isSpaceship ? 0 : args.movedArtifactId,
+            carriedSpaceshipId: isSpaceship ? args.movedArtifactId : 0,
             distance: args.actualDist
         });
         // Photoids are burned in _checkPhotoid, so don't remove twice
