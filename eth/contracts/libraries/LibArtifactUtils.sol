@@ -64,8 +64,6 @@ library LibArtifactUtils {
         address owner,
         SpaceshipType shipType
     ) public returns (uint256) {
-        require(shipType != SpaceshipType.Unknown, "incorrect ship type");
-
         uint256 tokenId = LibSpaceship.create(shipType) + uint128(gs().miscNonce++);
 
         Spaceship memory spaceship = DFArtifactFacet(address(this)).createSpaceship(tokenId, owner);
@@ -298,7 +296,6 @@ library LibArtifactUtils {
             planet.planetLevel > uint256(artifact.rarity),
             "spacetime rip not high enough level to deposit this artifact"
         );
-        require(!LibSpaceship.isShip(artifactId), "cannot deposit spaceships");
 
         require(
             gs().planetArtifacts[locationId].length + gs().planetSpaceships[locationId].length < 5,
@@ -325,7 +322,7 @@ library LibArtifactUtils {
             planet.planetLevel > uint256(artifact.rarity),
             "spacetime rip not high enough level to withdraw this artifact"
         );
-        require(!LibSpaceship.isShip(artifactId), "cannot withdraw spaceships");
+
         LibArtifact.takeArtifactOffPlanet(locationId, artifactId);
 
         // artifactId, curr owner, new owner

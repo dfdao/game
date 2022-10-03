@@ -120,15 +120,15 @@ contract DFMoveFacet is WithStorage {
             arrivalType = ArrivalType.Wormhole;
         }
 
-        if (!_isSpaceshipMove(args)) {
+        if (_isSpaceshipMove(args)) {
+            _removeSpaceshipEffectsFromOriginPlanet(args.oldLoc, args.movedArtifactId);
+        } else if (_isArtifactMove(args)) {
             (bool photoidPresent, Upgrade memory newTempUpgrade) = _checkPhotoid(args);
             if (photoidPresent) {
                 temporaryUpgrade = newTempUpgrade;
                 arrivalType = ArrivalType.Photoid;
             }
         }
-
-        _removeSpaceshipEffectsFromOriginPlanet(args);
 
         uint256 popMoved = args.popMoved;
         uint256 silverMoved = args.silverMoved;
@@ -271,11 +271,10 @@ contract DFMoveFacet is WithStorage {
     /**
         Undo the spaceship effects that were applied when the ship arrived on the planet.
      */
-    function _removeSpaceshipEffectsFromOriginPlanet(DFPMoveArgs memory args) private {
-        if (!LibSpaceship.isShip(args.movedArtifactId)) return;
-        Spaceship memory spaceship = LibSpaceship.decode(args.movedArtifactId);
-        Planet memory planet = applySpaceshipDepart(spaceship, gs().planets[args.oldLoc]);
-        gs().planets[args.oldLoc] = planet;
+    function _removeSpaceshipEffectsFromOriginPlanet(uint256 originLoc, uint256 shipId) private {
+        Spaceship memory spaceship = LibSpaceship.decode(shipId);
+        Planet memory planet = applySpaceshipDepart(spaceship, gs().planets[originLoc]);
+        gs().planets[originLoc] = planet;
     }
 
     /**
@@ -423,6 +422,10 @@ contract DFMoveFacet is WithStorage {
 
     function _isSpaceshipMove(DFPMoveArgs memory args) private pure returns (bool) {
         return LibSpaceship.isShip(args.movedArtifactId);
+    }
+
+    function _isArtifactMove(DFPMoveArgs memory args) private pure returns (bool) {
+        return LibArtifact.isArtifact(args.movedArtifactId);
     }
 
     function _createArrival(DFPCreateArrivalArgs memory args) private {
