@@ -9,6 +9,7 @@ export const TOGGLE_PLUGINS_PANE = 'k';
 export const TOGGLE_YOUR_INVENTORY_PANE = 'l';
 export const TOGGLE_YOUR_PLANETS_DEX_PANE = ';';
 export const TOGGLE_TRANSACTIONS_PANE = "'";
+export const TOGGLE_SHOP_PANE = 'd';
 
 // planet context pane shortcuts
 export const TOGGLE_PLANET_INVENTORY_PANE = 's';
