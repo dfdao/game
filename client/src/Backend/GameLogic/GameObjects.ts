@@ -1283,6 +1283,7 @@ export class GameObjects {
 
       prospectedBlockNumber: undefined,
       artifacts: [],
+      spaceships: [],
       activeArtifact: undefined,
       artifactActivationTime: 0,
       wormholeTo: undefined,
