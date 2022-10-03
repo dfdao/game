@@ -4,6 +4,7 @@ import type { ArrivalType, QueuedArrival, VoyageId } from '@dfdao/types';
 import { address } from './address';
 import { decodeArtifact } from './artifact';
 import { locationIdFromDecStr } from './location';
+import { decodeSpaceship } from './spaceship';
 
 export type RawArrival = Awaited<ReturnType<DarkForest['getPlanetArrival']>>;
 
@@ -28,6 +29,9 @@ export function decodeArrival(rawArrival: RawArrival): QueuedArrival {
     artifact: rawArrival.carriedArtifactId.eq(0)
       ? undefined
       : decodeArtifact(rawArrival.carriedArtifactId),
+    spaceship: rawArrival.carriedSpaceshipId.eq(0)
+      ? undefined
+      : decodeSpaceship(rawArrival.carriedSpaceshipId),
     arrivalType: rawArrival.arrivalType as ArrivalType,
   };
 
