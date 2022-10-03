@@ -1,3 +1,4 @@
+import { MAX_SPACESHIP_TYPE, MIN_SPACESHIP_TYPE } from '@dfdao/constants';
 import { hashToInt } from '@dfdao/serde';
 import {
   Abstract,
@@ -28,6 +29,15 @@ export function isRelic(type: ArtifactType): boolean {
 
 export function isBasic(type: ArtifactType): boolean {
   return ArtifactType.Monolith <= type && type <= ArtifactType.Pyramid;
+}
+
+export function isSpaceShip(type: ArtifactType | undefined): boolean {
+  return (
+    type !== undefined &&
+    type >= MIN_SPACESHIP_TYPE &&
+    type <= MAX_SPACESHIP_TYPE &&
+    type !== ArtifactType.Spaceship
+  );
 }
 
 export function hasStatBoost(type: ArtifactType | undefined): boolean {

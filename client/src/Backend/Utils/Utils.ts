@@ -2,6 +2,11 @@ import { formatNumber } from '@dfdao/gamelogic';
 import { EthAddress, Planet, SpaceType, Upgrade, UpgradeBranchName } from '@dfdao/types';
 import * as bigInt from 'big-integer';
 import { BigInteger } from 'big-integer';
+import {
+  artifactRarityPrices,
+  artifactTypePrices,
+  ShopArtifact,
+} from '../../Frontend/Utils/constants';
 import { StatIdx } from '../../_types/global/GlobalTypes';
 
 export const ONE_DAY = 24 * 60 * 60 * 1000;
@@ -119,3 +124,11 @@ export const titleCase = (title: string): string =>
       return `${word.substring(0, 1).toUpperCase()}${word.substring(1)}`;
     })
     .join(' ');
+
+export const artifactPrice = (artifact: ShopArtifact): number => {
+  const typePrice = artifactTypePrices.get(artifact.artifactType);
+  const rarityPrice = artifactRarityPrices.get(artifact.rarity);
+
+  if (!typePrice || !rarityPrice) return 0;
+  return typePrice * rarityPrice;
+};
