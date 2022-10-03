@@ -6,12 +6,7 @@ import {
 } from '@dfdao/constants';
 import type { DarkForest } from '@dfdao/contracts/typechain';
 import { monomitter, Monomitter, Subscription } from '@dfdao/events';
-import {
-  getRange,
-  isLocatable,
-  isSpaceShip,
-  timeUntilNextBroadcastAvailable,
-} from '@dfdao/gamelogic';
+import { getRange, isLocatable, timeUntilNextBroadcastAvailable } from '@dfdao/gamelogic';
 import { fakeHash, mimcHash, perlin } from '@dfdao/hashing';
 import {
   createContract,
@@ -374,7 +369,6 @@ class GameManager extends EventEmitter {
     snarkHelper: SnarkArgsHelper,
     homeLocation: WorldLocation | undefined,
     useMockHash: boolean,
-    artifacts: Map<ArtifactId, Artifact>,
     ethConnection: EthConnection,
     paused: boolean
   ) {
@@ -467,7 +461,6 @@ class GameManager extends EventEmitter {
       allTouchedPlanetIds,
       revealedLocations,
       claimedLocations,
-      artifacts,
       persistentChunkStore.allChunks(),
       unprocessedArrivals,
       unprocessedPlanetArrivalIds,
@@ -661,7 +654,6 @@ class GameManager extends EventEmitter {
       snarkHelper,
       homeLocation,
       useMockHash,
-      knownArtifacts,
       connection,
       initialState.paused
     );
@@ -1297,14 +1289,15 @@ class GameManager extends EventEmitter {
    */
   getMyArtifacts(): Artifact[] {
     if (!this.account) return [];
-    const ownedByMe = this.entityStore.getArtifactsOwnedBy(this.account);
-    const onPlanetsOwnedByMe = this.entityStore
-      .getArtifactsOnPlanetsOwnedBy(this.account)
-      // filter out space ships because they always show up
-      // in the `ownedByMe` array.
-      .filter((a) => !isSpaceShip(a.artifactType));
+    // const ownedByMe = this.entityStore.getArtifactsOwnedBy(this.account);
+    // const onPlanetsOwnedByMe = this.entityStore
+    //   .getArtifactsOnPlanetsOwnedBy(this.account)
+    //   // filter out space ships because they always show up
+    //   // in the `ownedByMe` array.
+    //   .filter((a) => !isSpaceShip(a.artifactType));
 
-    return [...ownedByMe, ...onPlanetsOwnedByMe];
+    // return [...ownedByMe, ...onPlanetsOwnedByMe];
+    return [];
   }
 
   /**
@@ -3237,11 +3230,6 @@ class GameManager extends EventEmitter {
   /** Return a reference to the planet map */
   public getPlanetMap(): Map<LocationId, Planet> {
     return this.entityStore.getPlanetMap();
-  }
-
-  /** Return a reference to the artifact map */
-  public getArtifactMap(): Map<ArtifactId, Artifact> {
-    return this.entityStore.getArtifactMap();
   }
 
   /** Return a reference to the map of my planets */

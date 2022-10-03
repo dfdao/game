@@ -1266,10 +1266,6 @@ class GameUIManager extends EventEmitter {
     return this.gameManager.getPlanetMap();
   }
 
-  public getArtifactMap(): Map<ArtifactId, Artifact> {
-    return this.gameManager.getArtifactMap();
-  }
-
   public getMyPlanetMap(): Map<LocationId, Planet> {
     return this.gameManager.getMyPlanetMap();
   }

@@ -117,13 +117,6 @@ export class GameObjects {
   private readonly myPlanets: Map<LocationId, Planet>;
 
   /**
-   * Cached index of all known artifact data.
-   *
-   * @see The same warning applys as the one on {@link GameObjects.planets}
-   */
-  private readonly artifacts: Map<ArtifactId, Artifact>;
-
-  /**
    * Cached index of artifacts owned by the player.
    *
    * @see The same warning applys as the one on {@link GameObjects.planets}
@@ -218,7 +211,6 @@ export class GameObjects {
     allTouchedPlanetIds: Set<LocationId>,
     revealedLocations: Map<LocationId, RevealedLocation>,
     claimedLocations: Map<LocationId, ClaimedLocation>,
-    artifacts: Map<ArtifactId, Artifact>,
     allChunks: Iterable<Chunk>,
     unprocessedArrivals: Map<VoyageId, QueuedArrival>,
     unprocessedPlanetArrivalIds: Map<LocationId, VoyageId[]>,
@@ -233,7 +225,6 @@ export class GameObjects {
     this.touchedPlanetIds = allTouchedPlanetIds;
     this.revealedLocations = revealedLocations;
     this.claimedLocations = claimedLocations;
-    this.artifacts = artifacts;
     this.myArtifacts = new Map();
     this.contractConstants = contractConstants;
     this.coordsToLocation = new Map();
@@ -320,35 +311,8 @@ export class GameObjects {
     return this.wormholes.values();
   }
 
-  public getArtifactById(artifactId?: ArtifactId): Artifact | undefined {
-    return artifactId ? this.artifacts.get(artifactId) : undefined;
-  }
-
-  public getArtifactsOwnedBy(_addr: EthAddress): Artifact[] {
-    const ret: Artifact[] = [];
-    this.artifacts.forEach((_artifact) => {
-      // if (artifact.currentOwner === addr || artifact.controller === addr) {
-      //   ret.push(artifact);
-      // }
-    });
-    return ret;
-  }
-
   public getPlanetArtifacts(planetId: LocationId): Artifact[] {
     return this.planets.get(planetId)?.artifacts || [];
-  }
-
-  public getArtifactsOnPlanetsOwnedBy(_addr: EthAddress): Artifact[] {
-    const ret: Artifact[] = [];
-    this.artifacts.forEach((_artifact) => {
-      // if (artifact.onPlanetId) {
-      //   const planet = this.getPlanetWithId(artifact.onPlanetId, false);
-      //   if (planet && planet.owner === addr) {
-      //     ret.push(artifact);
-      //   }
-      // }
-    });
-    return ret;
   }
 
   // get planet by ID - must be in contract or known chunks
@@ -631,12 +595,6 @@ export class GameObjects {
         planet.transactions?.addTransaction(tx);
         this.setPlanet(planet);
       }
-      if (tx.intent.artifact) {
-        const artifact = this.getArtifactById(tx.intent.artifact);
-        if (artifact) {
-          artifact.transactions?.addTransaction(tx);
-        }
-      }
     } else if (isUnconfirmedUpgradeTx(tx)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
       if (planet) {
@@ -669,43 +627,27 @@ export class GameObjects {
       }
     } else if (isUnconfirmedDepositArtifactTx(tx)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
       if (planet) {
         planet.transactions?.addTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.addTransaction(tx);
       }
     } else if (isUnconfirmedWithdrawArtifactTx(tx)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
       if (planet) {
         planet.transactions?.addTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.addTransaction(tx);
       }
     } else if (isUnconfirmedActivateArtifactTx(tx)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
       if (planet) {
         planet.transactions?.addTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.addTransaction(tx);
       }
     } else if (isUnconfirmedDeactivateArtifactTx(tx)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
       if (planet) {
         planet.transactions?.addTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.addTransaction(tx);
       }
     } else if (isUnconfirmedWithdrawSilverTx(tx)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
@@ -754,12 +696,6 @@ export class GameObjects {
         planet.transactions?.removeTransaction(tx);
         this.setPlanet(planet);
       }
-      if (tx.intent.artifact) {
-        const artifact = this.getArtifactById(tx.intent.artifact);
-        if (artifact) {
-          artifact.transactions?.removeTransaction(tx);
-        }
-      }
     } else if (isUnconfirmedUpgrade(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
       if (planet) {
@@ -781,25 +717,17 @@ export class GameObjects {
       }
     } else if (isUnconfirmedDepositArtifact(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
 
       if (planet) {
         planet.transactions?.removeTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.removeTransaction(tx);
       }
     } else if (isUnconfirmedWithdrawArtifact(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
 
       if (planet) {
         planet.transactions?.removeTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.removeTransaction(tx);
       }
     } else if (isUnconfirmedTransfer(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.planetId);
@@ -815,23 +743,15 @@ export class GameObjects {
       }
     } else if (isUnconfirmedActivateArtifact(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
       if (planet) {
         planet.transactions?.removeTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.removeTransaction(tx);
       }
     } else if (isUnconfirmedDeactivateArtifact(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
       if (planet) {
         planet.transactions?.removeTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.removeTransaction(tx);
       }
     } else if (isUnconfirmedWithdrawSilver(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
@@ -856,10 +776,6 @@ export class GameObjects {
 
   public getPlanetMap(): Map<LocationId, Planet> {
     return this.planets;
-  }
-
-  public getArtifactMap(): Map<ArtifactId, Artifact> {
-    return this.artifacts;
   }
 
   public getMyPlanetMap(): Map<LocationId, Planet> {
