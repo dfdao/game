@@ -218,7 +218,7 @@ library LibArtifact {
     // whether or not the artifact is activated.
 
     function isActivated(uint256 locationId, uint256 artifactId) internal view returns (bool) {
-        return (gs().planetActiveArtifact[locationId] == artifactId);
+        return (gs().planets[locationId].activeArtifact == artifactId);
     }
 
     function isArtifactOnPlanet(uint256 locationId, uint256 artifactId)
@@ -226,8 +226,8 @@ library LibArtifact {
         view
         returns (bool)
     {
-        for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
-            if (gs().planetArtifacts[locationId][i] == artifactId) {
+        for (uint256 i; i < gs().planets[locationId].artifacts.length; i++) {
+            if (gs().planets[locationId].artifacts[i] == artifactId) {
                 return true;
             }
         }
@@ -290,25 +290,25 @@ library LibArtifact {
     }
 
     function putArtifactOnPlanet(uint256 locationId, uint256 artifactId) internal {
-        gs().planetArtifacts[locationId].push(artifactId);
+        gs().planets[locationId].artifacts.push(artifactId);
     }
 
     /**
      * Remove artifactId from planet with locationId if artifactId exists AND is not active.
      */
     function takeArtifactOffPlanet(uint256 locationId, uint256 artifactId) internal {
-        uint256 artifactsOnThisPlanet = gs().planetArtifacts[locationId].length;
+        uint256 artifactsOnThisPlanet = gs().planets[locationId].artifacts.length;
 
         bool hadTheArtifact = false;
 
         for (uint256 i = 0; i < artifactsOnThisPlanet; i++) {
-            if (gs().planetArtifacts[locationId][i] == artifactId) {
+            if (gs().planets[locationId].artifacts[i] == artifactId) {
                 require(
                     !isActivated(locationId, artifactId),
                     "you cannot take an activated artifact off a planet"
                 );
 
-                gs().planetArtifacts[locationId][i] = gs().planetArtifacts[locationId][
+                gs().planets[locationId].artifacts[i] = gs().planets[locationId].artifacts[
                     artifactsOnThisPlanet - 1
                 ];
 
@@ -318,19 +318,19 @@ library LibArtifact {
         }
 
         require(hadTheArtifact, "this artifact was not present on this planet");
-        gs().planetArtifacts[locationId].pop();
+        gs().planets[locationId].artifacts.pop();
     }
 
     // if the given planet has an activated artifact on it, then return the artifact
     // otherwise, return a 'null artifact'
     function getActiveArtifact(uint256 locationId) internal view returns (Artifact memory) {
         require(hasActiveArtifact(locationId), "planet does not have an active artifact");
-        uint256 artifactId = gs().planetActiveArtifact[locationId];
+        uint256 artifactId = gs().planets[locationId].activeArtifact;
         return LibArtifact.decode(artifactId);
     }
 
     function hasActiveArtifact(uint256 locationId) internal view returns (bool) {
-        uint256 artifactId = gs().planetActiveArtifact[locationId];
+        uint256 artifactId = gs().planets[locationId].activeArtifact;
         return artifactId != 0;
     }
 
@@ -342,8 +342,8 @@ library LibArtifact {
         returns (Artifact memory a)
     {
         bool found = false;
-        for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
-            if (gs().planetArtifacts[locationId][i] == artifactId) {
+        for (uint256 i; i < gs().planets[locationId].artifacts.length; i++) {
+            if (gs().planets[locationId].artifacts[i] == artifactId) {
                 a = LibArtifact.decode(artifactId);
                 found = true;
                 return a;
