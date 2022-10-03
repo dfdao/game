@@ -2,9 +2,8 @@ import { perlin } from '@dfdao/hashing';
 import { Chunk, PerlinConfig, Rectangle } from '@dfdao/types';
 import { EventEmitter } from 'events';
 import _ from 'lodash';
-import { ChunkStore } from '../../_types/darkforest/api/ChunkStoreTypes';
 import { HashConfig, MinerWorkerMessage } from '../../_types/global/GlobalTypes';
-import { getChunkKey } from './ChunkUtils';
+import { ChunkStore, getChunkKey } from './ChunkUtils';
 import DefaultWorker from './miner.worker.ts?worker';
 import { MiningPattern } from './MiningPatterns';
 
