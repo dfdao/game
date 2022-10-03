@@ -8,6 +8,7 @@ import {
   PlanetMessage,
   PlanetType,
   QueuedArrival,
+  SpaceshipType,
   Upgrade,
 } from '@dfdao/types';
 import _ from 'lodash';
@@ -215,22 +216,22 @@ export const arrive = (
     toPlanet.artifacts.push(arrival.artifact);
   }
 
-  // if (arrivingArtifact) {
-  //   if (arrivingArtifact.artifactType === ArtifactType.ShipMothership) {
-  //     if (toPlanet.energyGroDoublers === 0) {
-  //       toPlanet.energyGrowth *= 2;
-  //     }
-  //     toPlanet.energyGroDoublers++;
-  //   } else if (arrivingArtifact.artifactType === ArtifactType.ShipWhale) {
-  //     if (toPlanet.silverGroDoublers === 0) {
-  //       toPlanet.silverGrowth *= 2;
-  //     }
-  //     toPlanet.silverGroDoublers++;
-  //   } else if (arrivingArtifact.artifactType === ArtifactType.ShipTitan) {
-  //     toPlanet.pausers++;
-  //   }
-  //   arrivingArtifact.onPlanetId = toPlanet.locationId;
-  // }
+  if (arrival.spaceship) {
+    toPlanet.spaceships.push(arrival.spaceship);
+    if (arrival.spaceship.spaceshipType === SpaceshipType.ShipMothership) {
+      if (toPlanet.energyGroDoublers === 0) {
+        toPlanet.energyGrowth *= 2;
+      }
+      toPlanet.energyGroDoublers++;
+    } else if (arrival.spaceship.spaceshipType === SpaceshipType.ShipWhale) {
+      if (toPlanet.silverGroDoublers === 0) {
+        toPlanet.silverGrowth *= 2;
+      }
+      toPlanet.silverGroDoublers++;
+    } else if (arrival.spaceship.spaceshipType === SpaceshipType.ShipTitan) {
+      toPlanet.pausers++;
+    }
+  }
 
   return { arrival, current: toPlanet, previous: prevPlanet };
 };
