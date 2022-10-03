@@ -114,7 +114,7 @@ class GameUIManager extends EventEmitter {
   public readonly hoverPlanetId$: Monomitter<LocationId | undefined>;
   public readonly hoverPlanet$: Monomitter<Planet | undefined>;
   public readonly hoverArtifactId$: Monomitter<ArtifactId | undefined>;
-  public readonly myArtifacts$: Monomitter<Map<ArtifactId, Artifact>>;
+  public readonly myArtifacts$: Monomitter<[ArtifactId, Artifact]>;
 
   public readonly isSending$: Monomitter<boolean>;
   public readonly isAbandoning$: Monomitter<boolean>;
