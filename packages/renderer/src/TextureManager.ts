@@ -1,11 +1,13 @@
 import { MAX_ARTIFACT_TYPE, MAX_BIOME, MIN_ARTIFACT_TYPE } from '@dfdao/constants';
-import { isAncient, isBasic, isRelic, isSpaceShip } from '@dfdao/gamelogic';
+import { isAncient, isBasic, isRelic } from '@dfdao/gamelogic';
 import {
   ArtifactId,
   ArtifactRarity,
   ArtifactType,
   Biome,
   RenderedArtifact,
+  RenderedSpaceship,
+  SpaceshipId,
   SpaceshipType,
 } from '@dfdao/types';
 
@@ -167,16 +169,7 @@ export function spriteFromArtifact(artifact: RenderedArtifact): SpriteRectangle 
 
   if (artifactSpriteMap.has(id)) return artifactSpriteMap.get(id) || EMPTY_SPRITE;
 
-  if (isSpaceShip(artifact.artifactType)) {
-    const idx = {
-      [SpaceshipType.ShipMothership]: 0,
-      [SpaceshipType.ShipCrescent]: 1,
-      [SpaceshipType.ShipWhale]: 2,
-      [SpaceshipType.ShipGear]: 3,
-      [SpaceshipType.ShipTitan]: 4,
-    };
-    return spriteRectangleFromIndex(idx[artifact.artifactType], 11);
-  } else if (isAncient(artifact)) {
+  if (isAncient(artifact)) {
     const info = ancientSpriteLocs[type];
 
     return isShiny(rarity) ? info.shiny : info.normal;
@@ -186,4 +179,22 @@ export function spriteFromArtifact(artifact: RenderedArtifact): SpriteRectangle 
 
     return isShiny(rarity) ? info.shiny : info.normal;
   }
+}
+
+const spaceshipSpriteMap: Map<SpaceshipId, SpriteRectangle> = new Map();
+
+const spaceshipSpriteLocs = {
+  [SpaceshipType.ShipMothership]: 0,
+  [SpaceshipType.ShipCrescent]: 1,
+  [SpaceshipType.ShipWhale]: 2,
+  [SpaceshipType.ShipGear]: 3,
+  [SpaceshipType.ShipTitan]: 4,
+};
+
+export function spriteFromSpaceship(spaceship: RenderedSpaceship): SpriteRectangle {
+  const { id, spaceshipType: type } = spaceship;
+
+  if (spaceshipSpriteMap.has(id)) return spaceshipSpriteMap.get(id) || EMPTY_SPRITE;
+
+  return spriteRectangleFromIndex(spaceshipSpriteLocs[type], 11);
 }

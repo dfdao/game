@@ -56,3 +56,8 @@ export type Spaceship = {
 
   transactions?: TransactionCollection;
 };
+
+export interface RenderedSpaceship extends Partial<Spaceship> {
+  spaceshipType: SpaceshipType;
+  id: SpaceshipId; // for rolls
+}
