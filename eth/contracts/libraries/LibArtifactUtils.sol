@@ -65,16 +65,10 @@ library LibArtifactUtils {
         SpaceshipType shipType
     ) public returns (uint256) {
         require(shipType != SpaceshipType.Unknown, "incorrect ship type");
-        // require(gs().miscNonce < MAX UINT 128) but won't happen.
-        uint128 id = uint128(gs().miscNonce++);
-        uint256 tokenId = LibSpaceship.encode(
-            Spaceship({id: 0, tokenType: TokenType.Spaceship, spaceshipType: shipType})
-        );
 
-        Spaceship memory spaceship = DFArtifactFacet(address(this)).createSpaceship(
-            tokenId + id, // Make each ship unique
-            owner
-        );
+        uint256 tokenId = LibSpaceship.create(shipType) + uint128(gs().miscNonce++);
+
+        Spaceship memory spaceship = DFArtifactFacet(address(this)).createSpaceship(tokenId, owner);
         LibSpaceship.putSpaceshipOnPlanet(planetId, spaceship.id);
 
         return spaceship.id;
@@ -103,15 +97,7 @@ library LibArtifactUtils {
         ArtifactRarity rarity = LibArtifact.artifactRarityFromPlanetLevel(
             levelBonus + planet.planetLevel
         );
-        uint256 tokenId = LibArtifact.encode(
-            Artifact({
-                id: 0,
-                tokenType: TokenType.Artifact,
-                rarity: rarity,
-                artifactType: artifactType,
-                planetBiome: biome
-            })
-        );
+        uint256 tokenId = LibArtifact.create(rarity, artifactType, biome);
 
         Artifact memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
             tokenId,
@@ -134,7 +120,6 @@ library LibArtifactUtils {
         uint256 wormholeTo
     ) public {
         Planet storage planet = gs().planets[locationId];
-        Artifact memory artifact = LibArtifact.decode(artifactId);
 
         if (LibSpaceship.isShip(artifactId)) {
             require(
@@ -143,6 +128,8 @@ library LibArtifactUtils {
             );
             activateSpaceshipArtifact(locationId, artifactId, planet);
         } else if (LibArtifact.isArtifact(artifactId)) {
+            Artifact memory artifact = LibArtifact.decode(artifactId);
+
             require(
                 LibArtifact.isArtifactOnPlanet(locationId, artifactId),
                 "can't activate an artifact on a planet it's not on"

@@ -381,6 +381,10 @@ contract DFGetterFacet is WithStorage {
         return hasToken;
     }
 
+    function hasActiveArtifact(uint256 locationId) public view returns (bool) {
+        return LibArtifact.hasActiveArtifact(locationId);
+    }
+
     function getActiveArtifactOnPlanet(uint256 locationId)
         public
         view

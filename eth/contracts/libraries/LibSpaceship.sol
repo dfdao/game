@@ -5,7 +5,6 @@ pragma solidity ^0.8.0;
  * Library for all things Spaceships
  */
 
-
 // Library imports
 import {LibUtils} from "./LibUtils.sol";
 
@@ -22,16 +21,17 @@ library LibSpaceship {
 
     /**
      * @notice Create the token ID for a Spaceship with the following properties:
-     * @param spaceship Spaceship
+     * @param spaceshipType SpaceshipType.
      */
-    function encode(Spaceship memory spaceship) internal pure returns (uint256) {
-        // x << y is equivalent to the mathematical expression x * 2**y
+    function create(SpaceshipType spaceshipType) internal pure returns (uint256) {
+        require(isValidShipType(spaceshipType), "spaceship type is not valid");
+
         uint256 tokenType = LibUtils.shiftLeft(
-            uint8(spaceship.tokenType),
+            uint8(TokenType.Spaceship),
             uint8(SpaceshipInfo.TokenType)
         );
         uint256 shipType = LibUtils.shiftLeft(
-            uint8(spaceship.spaceshipType),
+            uint8(spaceshipType),
             uint8(SpaceshipInfo.SpaceshipType)
         );
         return tokenType + shipType;
@@ -46,6 +46,9 @@ library LibSpaceship {
         uint8 tokenType = uint8(LibUtils.calculateByteUInt(_b, tokenIdx, tokenIdx));
         uint8 shipType = uint8(LibUtils.calculateByteUInt(_b, shipInfoIdx, shipInfoIdx));
 
+        require(isShip(spaceshipId), "token type is not spaceship");
+        require(isValidShipType(SpaceshipType(shipType)), "spaceship type is not valid");
+
         return
             Spaceship({
                 id: spaceshipId,
@@ -58,7 +61,11 @@ library LibSpaceship {
         bytes memory _b = abi.encodePacked(tokenId);
         uint8 tokenIdx = uint8(SpaceshipInfo.TokenType) - 1;
         uint8 tokenType = uint8(LibUtils.calculateByteUInt(_b, tokenIdx, tokenIdx));
-        return (TokenType(tokenType) == TokenType.Spaceship);
+        return (tokenType == uint8(TokenType.Spaceship));
+    }
+
+    function isValidShipType(SpaceshipType shipType) internal pure returns (bool) {
+        return (shipType >= SpaceshipType.ShipMothership && shipType <= SpaceshipType.ShipTitan);
     }
 
     function isSpaceshipOnPlanet(uint256 locationId, uint256 shipId) internal view returns (bool) {

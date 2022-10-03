@@ -86,14 +86,8 @@ describe('DarkForestArtifacts', function () {
       const rarity = ArtifactRarity.Legendary;
       const artifactType = ArtifactType.Colossus;
       const planetBiome = Biome.DESERT;
-      const res = await world.contract.encodeArtifact({
-        id: 0,
-        tokenType,
-        rarity,
-        artifactType,
-        planetBiome,
-      });
-      const a = await world.contract.decodeArtifact(res);
+      const res = await world.contract.createArtifactId(rarity, artifactType, planetBiome);
+      const a = await world.contract.getArtifactFromId(res);
       expect(tokenType).to.equal(Number(a.tokenType));
       expect(rarity).to.equal(Number(a.rarity));
       expect(artifactType).to.equal(Number(a.artifactType));
@@ -103,12 +97,8 @@ describe('DarkForestArtifacts', function () {
       // Must be valid options
       const tokenType = TokenType.Spaceship;
       const spaceshipType = 2;
-      const res = await world.contract.encodeSpaceship({
-        id: 0,
-        tokenType,
-        spaceshipType,
-      });
-      const a = await world.contract.decodeSpaceship(res);
+      const res = await world.contract.createSpaceshipId(spaceshipType);
+      const a = await world.contract.getSpaceshipFromId(res);
       expect(tokenType).to.equal(Number(a.tokenType));
       expect(spaceshipType).to.equal(Number(a.spaceshipType));
     });
@@ -126,7 +116,7 @@ describe('DarkForestArtifacts', function () {
       const statSumAfterFound = getStatSum(await world.contract.planets(ARTIFACT_PLANET_1.id));
       await world.user1Core.activateArtifact(ARTIFACT_PLANET_1.id, artifactId, 0);
 
-      prettyPrintToken(await world.user1Core.decodeArtifact(artifactId));
+      prettyPrintToken(await world.user1Core.getArtifactFromId(artifactId));
 
       // artifact and gear should be on planet. Gear is 0 and Artifact is 1.
       const artifactsOnPlanet = await getArtifactsOnPlanet(world, ARTIFACT_PLANET_1.id);
@@ -575,8 +565,8 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         ZERO_PLANET,
         ArtifactType.Monolith,
-        TokenType.Artifact,
-        { rarity: ArtifactRarity.Legendary, biome: Biome.OCEAN }
+        ArtifactRarity.Legendary,
+        Biome.OCEAN
       );
 
       // deposit fails on low level trading post, succeeds on high level trading post
@@ -625,10 +615,10 @@ describe('DarkForestArtifacts', function () {
           world.user1.address,
           from,
           ArtifactType.Wormhole,
-          TokenType.Artifact,
-          { rarity: artifactRarities[i] as ArtifactRarity, biome: Biome.OCEAN }
+          artifactRarities[i] as ArtifactRarity,
+          Biome.OCEAN
         );
-        prettyPrintToken(await world.contract.decodeArtifact(artifactId));
+        prettyPrintToken(await world.contract.getArtifactFromId(artifactId));
 
         activateAndConfirm(world.user1Core, from.id, artifactId, to.id);
 
@@ -695,8 +685,8 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         from,
         ArtifactType.Wormhole,
-        TokenType.Artifact,
-        { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
+        ArtifactRarity.Common,
+        Biome.OCEAN
       );
 
       // Move gear bc too many artifacts on SPAWN_PLANET_1, so can't receive wormhole.
@@ -786,10 +776,10 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         ZERO_PLANET,
         ArtifactType.BloomFilter,
-        TokenType.Artifact,
-        { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
+        ArtifactRarity.Common,
+        Biome.OCEAN
       );
-      prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
+      prettyPrintToken(await world.contract.getArtifactFromId(newTokenId));
 
       await increaseBlockchainTime(); // so that trading post can fill up to max energy
       await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, newTokenId);
@@ -833,11 +823,11 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         ZERO_PLANET,
         ArtifactType.BloomFilter,
-        TokenType.Artifact,
-        { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
+        ArtifactRarity.Common,
+        Biome.OCEAN
       );
 
-      prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
+      prettyPrintToken(await world.contract.getArtifactFromId(newTokenId));
       await increaseBlockchainTime(); // so that trading post can fill up to max energy
       await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, newTokenId);
       await world.user1Core.move(
@@ -868,8 +858,8 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         ZERO_PLANET,
         ArtifactType.BlackDomain,
-        TokenType.Artifact,
-        { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
+        ArtifactRarity.Common,
+        Biome.OCEAN
       );
 
       await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, newTokenId);
@@ -918,8 +908,8 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         ZERO_PLANET,
         ArtifactType.BlackDomain,
-        TokenType.Artifact,
-        { rarity: ArtifactRarity.Common, biome: Biome.OCEAN }
+        ArtifactRarity.Common,
+        Biome.OCEAN
       );
 
       await increaseBlockchainTime(); // so that trading post can fill up to max energy
@@ -942,10 +932,10 @@ describe('DarkForestArtifacts', function () {
         world.user1.address,
         LVL3_SPACETIME_1,
         ArtifactType.PlanetaryShield,
-        TokenType.Artifact,
-        { rarity: ArtifactRarity.Rare as ArtifactRarity, biome: Biome.OCEAN }
+        ArtifactRarity.Rare as ArtifactRarity,
+        Biome.OCEAN
       );
-      prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
+      prettyPrintToken(await world.contract.getArtifactFromId(newTokenId));
 
       const planetBeforeActivation = await world.user1Core.planets(LVL3_SPACETIME_1.id);
       await activateAndConfirm(world.user1Core, LVL3_SPACETIME_1.id, newTokenId);
@@ -959,11 +949,7 @@ describe('DarkForestArtifacts', function () {
       // Burned on deactivate
       await world.user1Core.deactivateArtifact(LVL3_SPACETIME_1.id);
 
-      expect((await getArtifactsOnPlanet(world, LVL3_SPACETIME_1.id)).length).to.equal(0);
-      expect((await world.user1Core.getActiveArtifactOnPlanet(LVL3_SPACETIME_1.id)).id).to.equal(0);
-      expect(await world.user1Core.getArtifactActivationTimeOnPlanet(LVL3_SPACETIME_1.id)).to.equal(
-        0
-      );
+      testDeactivate(world, LVL3_SPACETIME_3.id);
     });
   });
 
@@ -987,10 +973,10 @@ describe('DarkForestArtifacts', function () {
           world.user1.address,
           ZERO_PLANET,
           ArtifactType.PhotoidCannon,
-          TokenType.Artifact,
-          { rarity: artifactRarities[i] as ArtifactRarity, biome: Biome.OCEAN }
+          artifactRarities[i] as ArtifactRarity,
+          Biome.OCEAN
         );
-        prettyPrintToken(await world.contract.decodeArtifact(newTokenId));
+        prettyPrintToken(await world.contract.getArtifactFromId(newTokenId));
 
         await world.user1Core.depositArtifact(LVL6_SPACETIME.id, newTokenId);
 
