@@ -21,7 +21,6 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 // Type imports
 import {Artifact, ArtifactRarity, ArtifactType, Biome, TokenType, DFTCreateArtifactArgs, DFPFindArtifactArgs, Spaceship, SpaceshipType} from "../DFTypes.sol";
 
-
 contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
     event PlanetProspected(address player, uint256 loc);
     event ArtifactFound(address player, uint256 artifactId, uint256 loc);
@@ -170,7 +169,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
 
         LibArtifactUtils.depositArtifact(locationId, artifactId, address(this));
 
-        emit ArtifactDeposited(msg.sender, locationId, artifactId);
+        emit ArtifactDeposited(msg.sender, artifactId, locationId);
     }
 
     // withdraws the given artifact from the given planet. you must own the planet,
@@ -180,7 +179,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
 
         LibArtifactUtils.withdrawArtifact(locationId, artifactId);
 
-        emit ArtifactWithdrawn(msg.sender, locationId, artifactId);
+        emit ArtifactWithdrawn(msg.sender, artifactId, locationId);
     }
 
     // activates the given artifact on the given planet. the artifact must have

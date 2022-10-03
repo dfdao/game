@@ -32,8 +32,6 @@ library LibPlanet {
     }
 
     // also need to copy some of DFCore's event signatures
-    event ArtifactActivated(address player, uint256 artifactId, uint256 loc);
-    event ArtifactDeactivated(address player, uint256 artifactId, uint256 loc);
     event PlanetUpgraded(address player, uint256 loc, uint256 branch, uint256 toBranchLevel);
 
     function revealLocation(
