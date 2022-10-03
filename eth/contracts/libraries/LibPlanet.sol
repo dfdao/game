@@ -17,7 +17,6 @@ import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStora
 
 // Type imports
 import {ArtifactType, Artifact, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetType, RevealedCoords, SpaceType, Spaceship, SpaceshipType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
-import "hardhat/console.sol";
 
 library LibPlanet {
     function gs() internal pure returns (GameStorage storage) {

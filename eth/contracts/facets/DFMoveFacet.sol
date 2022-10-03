@@ -18,7 +18,6 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
 import {ArrivalData, ArrivalType, Artifact, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetEventMetadata, PlanetEventType, Spaceship, SpaceshipType, Upgrade} from "../DFTypes.sol";
-import "hardhat/console.sol";
 
 contract DFMoveFacet is WithStorage {
     modifier notPaused() {

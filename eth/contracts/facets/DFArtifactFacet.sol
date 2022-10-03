@@ -21,7 +21,6 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 // Type imports
 import {Artifact, ArtifactRarity, ArtifactType, Biome, TokenType, DFTCreateArtifactArgs, DFPFindArtifactArgs, Spaceship, SpaceshipType} from "../DFTypes.sol";
 
-import "hardhat/console.sol";
 
 contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
     event PlanetProspected(address player, uint256 loc);
