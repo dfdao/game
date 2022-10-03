@@ -83,7 +83,7 @@ export function decodePlanet(rawLocationId: string, rawPlanet: RawPlanet): Plane
       : rawPlanet.prospectedBlockNumber.toNumber(),
     destroyed: rawPlanet.destroyed,
     artifacts: rawPlanet.artifacts.map(decodeArtifact),
-    spaceships: rawPlanet.artifacts.map(decodeSpaceship),
+    spaceships: rawPlanet.spaceships.map(decodeSpaceship),
     // TODO: convert to milliseconds
     artifactActivationTime: rawPlanet.artifactActivationTime.toNumber(),
     activeArtifact: rawPlanet.activeArtifact.eq(0)
