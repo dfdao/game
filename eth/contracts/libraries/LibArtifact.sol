@@ -5,9 +5,6 @@ pragma solidity ^0.8.0;
  * Library for all things Artifacts
  */
 
-// Contract imports
-import "hardhat/console.sol";
-
 // Library imports
 import {LibUtils} from "./LibUtils.sol";
 
@@ -24,23 +21,30 @@ library LibArtifact {
 
     /**
      * @notice Create the token ID for a Artifact with the following properties:
-     * @param artifact Artifact
+     * @param _rarity Artifact
+     * @param _artifactType Artifact
+     * @param _biome Artifact
      */
-    function encode(Artifact memory artifact) internal pure returns (uint256) {
+    function create(
+        ArtifactRarity _rarity,
+        ArtifactType _artifactType,
+        Biome _biome
+    ) internal pure returns (uint256) {
         // x << y is equivalent to the mathematical expression x * 2**y
+        require(isValidArtifactRarity(_rarity), "artifact rarity is not valid");
+        require(isValidArtifactType(_artifactType), "artifact type is not valid");
+        require(isValidBiome(_biome), "artifact biome is not valid");
+
         uint256 tokenType = LibUtils.shiftLeft(
-            uint8(artifact.tokenType),
-            uint8(ArtifactInfo.TokenType)
+            uint8(TokenType.Artifact), // value
+            uint8(ArtifactInfo.TokenType) // chunk position in tokenId
         );
-        uint256 rarity = LibUtils.shiftLeft(
-            uint8(artifact.rarity),
-            uint8(ArtifactInfo.ArtifactRarity)
-        );
+        uint256 rarity = LibUtils.shiftLeft(uint8(_rarity), uint8(ArtifactInfo.ArtifactRarity));
         uint256 artifactType = LibUtils.shiftLeft(
-            uint8(artifact.artifactType),
+            uint8(_artifactType),
             uint8(ArtifactInfo.ArtifactType)
         );
-        uint256 biome = LibUtils.shiftLeft(uint8(artifact.planetBiome), uint8(ArtifactInfo.Biome));
+        uint256 biome = LibUtils.shiftLeft(uint8(_biome), uint8(ArtifactInfo.Biome));
         return tokenType + rarity + artifactType + biome;
     }
 
@@ -51,18 +55,38 @@ library LibArtifact {
         uint8 typeIdx = uint8(ArtifactInfo.ArtifactType) - 1;
         uint8 biomeIdx = uint8(ArtifactInfo.Biome) - 1;
 
-        uint8 tokenType = uint8(LibUtils.calculateByteUInt(_b, tokenIdx, tokenIdx));
-        uint8 rarity = uint8(LibUtils.calculateByteUInt(_b, rarityIdx, rarityIdx));
-        uint8 artifactType = uint8(LibUtils.calculateByteUInt(_b, typeIdx, typeIdx));
-        uint8 biome = uint8(LibUtils.calculateByteUInt(_b, biomeIdx, biomeIdx));
+        TokenType tokenType = TokenType(LibUtils.calculateByteUInt(_b, tokenIdx, tokenIdx));
+        ArtifactRarity rarity = ArtifactRarity(
+            LibUtils.calculateByteUInt(_b, rarityIdx, rarityIdx)
+        );
+        ArtifactType artifactType = ArtifactType(LibUtils.calculateByteUInt(_b, typeIdx, typeIdx));
+        Biome biome = Biome(LibUtils.calculateByteUInt(_b, biomeIdx, biomeIdx));
+
+        require(isArtifact(artifactId), "token type is not artifact");
+        require(isValidArtifactRarity(rarity), "artifact rarity is not valid");
+        require(isValidArtifactType(artifactType), "artifact type is not valid");
+        require(isValidBiome(biome), "artifact biome is not valid");
+
         return
             Artifact({
                 id: artifactId,
-                tokenType: TokenType(tokenType),
-                rarity: ArtifactRarity(rarity),
-                artifactType: ArtifactType(artifactType),
-                planetBiome: Biome(biome)
+                tokenType: tokenType,
+                rarity: rarity,
+                artifactType: artifactType,
+                planetBiome: biome
             });
+    }
+
+    function isValidArtifactRarity(ArtifactRarity rarity) internal pure returns (bool) {
+        return (rarity >= ArtifactRarity.Common && rarity <= ArtifactRarity.Mythic);
+    }
+
+    function isValidArtifactType(ArtifactType artifactType) internal pure returns (bool) {
+        return (artifactType >= ArtifactType.Monolith && artifactType <= ArtifactType.BlackDomain);
+    }
+
+    function isValidBiome(Biome biome) internal pure returns (bool) {
+        return (biome >= Biome.Ocean && biome <= Biome.Corrupted);
     }
 
     function isArtifact(uint256 tokenId) internal pure returns (bool) {
@@ -70,17 +94,6 @@ library LibArtifact {
         uint8 tokenIdx = uint8(ArtifactInfo.TokenType) - 1;
         uint8 tokenType = uint8(LibUtils.calculateByteUInt(_b, tokenIdx, tokenIdx));
         return (TokenType(tokenType) == TokenType.Artifact);
-    }
-
-    function _nullArtifactProperties() internal pure returns (Artifact memory) {
-        return
-            Artifact(
-                0,
-                TokenType.Unknown,
-                ArtifactRarity.Unknown,
-                ArtifactType.Unknown,
-                Biome.Unknown
-            );
     }
 
     function getUpgradeForArtifact(Artifact memory artifact)
@@ -264,7 +277,6 @@ library LibArtifact {
             } else {
                 artifactType = ArtifactType.Wormhole;
             }
-            artifactType = ArtifactType.PhotoidCannon;
         }
 
         uint256 bonus = 0;
@@ -277,9 +289,6 @@ library LibArtifact {
         return (artifactType, bonus);
     }
 
-    // planets can have multiple artifacts on them. this function updates all the
-    // internal contract book-keeping to reflect that the given artifact was
-    // put on. note that this function does not transfer the artifact.
     function putArtifactOnPlanet(uint256 locationId, uint256 artifactId) internal {
         gs().planetArtifacts[locationId].push(artifactId);
     }
@@ -315,16 +324,11 @@ library LibArtifact {
     // if the given planet has an activated artifact on it, then return the artifact
     // otherwise, return a 'null artifact'
     function getActiveArtifact(uint256 locationId) internal view returns (Artifact memory) {
-        if (hasActiveArtifact(locationId)) {
-            uint256 artifactId = gs().planetActiveArtifact[locationId];
-            return LibArtifact.decode(artifactId);
-        } else {
-            return LibArtifact._nullArtifactProperties();
-        }
+        require(hasActiveArtifact(locationId), "planet does not have an active artifact");
+        uint256 artifactId = gs().planetActiveArtifact[locationId];
+        return LibArtifact.decode(artifactId);
     }
 
-    // if the given planet has an activated artifact on it, then return the artifact
-    // otherwise, return a 'null artifact'
     function hasActiveArtifact(uint256 locationId) internal view returns (bool) {
         uint256 artifactId = gs().planetActiveArtifact[locationId];
         return artifactId != 0;

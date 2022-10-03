@@ -14,7 +14,6 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Contract imports
 import {DFArtifactFacet} from "./DFArtifactFacet.sol";
-import "hardhat/console.sol";
 
 // Type imports
 import {Artifact, SpaceType, Spaceship, SpaceshipType, DFPInitPlanetArgs, AdminCreatePlanetArgs, DFTCreateArtifactArgs, ArtifactType, Player, Planet, TokenType} from "../DFTypes.sol";
@@ -170,15 +169,8 @@ contract DFAdminFacet is WithStorage {
 
     function adminGiveArtifact(DFTCreateArtifactArgs memory args) public onlyAdmin {
         // Note: calling this in tests should supply Diamond address as args.owner
-        uint256 tokenId = LibArtifact.encode(
-            Artifact({
-                id: 0,
-                tokenType: TokenType.Artifact,
-                rarity: args.rarity,
-                artifactType: args.artifactType,
-                planetBiome: args.biome
-            })
-        );
+        uint256 tokenId = LibArtifact.create(args.rarity, args.artifactType, args.biome);
+
         Artifact memory artifact = DFArtifactFacet(address(this)).createArtifact(
             tokenId,
             args.owner

@@ -18,7 +18,6 @@ import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStora
 
 // Type imports
 import {ArtifactType, Artifact, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetType, RevealedCoords, SpaceType, Spaceship, SpaceshipType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
-import "hardhat/console.sol";
 
 library LibPlanet {
     function gs() internal pure returns (GameStorage storage) {
@@ -34,8 +33,6 @@ library LibPlanet {
     }
 
     // also need to copy some of DFCore's event signatures
-    event ArtifactActivated(address player, uint256 artifactId, uint256 loc);
-    event ArtifactDeactivated(address player, uint256 artifactId, uint256 loc);
     event PlanetUpgraded(address player, uint256 loc, uint256 branch, uint256 toBranchLevel);
 
     function revealLocation(

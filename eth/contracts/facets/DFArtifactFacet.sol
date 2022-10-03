@@ -21,9 +21,8 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 // Type imports
 import {Artifact, ArtifactRarity, ArtifactType, Biome, TokenType, DFTCreateArtifactArgs, DFPFindArtifactArgs, Spaceship, SpaceshipType} from "../DFTypes.sol";
 
-import "hardhat/console.sol";
-
 contract DFArtifactFacet is WithStorage {
+
     event PlanetProspected(address player, uint256 loc);
     event ArtifactFound(address player, uint256 artifactId, uint256 loc);
     event ArtifactDeposited(address player, uint256 artifactId, uint256 loc);
@@ -94,26 +93,26 @@ contract DFArtifactFacet is WithStorage {
         // Account, Id, Amount, Data
         DFTokenFacet(address(this)).mint(owner, tokenId, 1);
 
-        return getSpaceship(tokenId);
+        return getSpaceshipFromId(tokenId);
     }
 
-    function getSpaceship(uint256 shipId) public pure returns (Spaceship memory) {
+    function getSpaceshipFromId(uint256 shipId) public pure returns (Spaceship memory) {
         return LibSpaceship.decode(shipId);
     }
 
-    function encodeSpaceship(Spaceship memory spaceship) public pure returns (uint256) {
-        return LibSpaceship.encode(spaceship);
+    function createSpaceshipId(SpaceshipType spaceshipType) public pure returns (uint256) {
+        return LibSpaceship.create(spaceshipType);
     }
 
-    function decodeSpaceship(uint256 shipId) public pure returns (Spaceship memory) {
-        return LibSpaceship.decode(shipId);
+    function createArtifactId(
+        ArtifactRarity rarity,
+        ArtifactType artifactType,
+        Biome biome
+    ) public pure returns (uint256) {
+        return LibArtifact.create(rarity, artifactType, biome);
     }
 
-    function encodeArtifact(Artifact memory artifact) public pure returns (uint256) {
-        return LibArtifact.encode(artifact);
-    }
-
-    function decodeArtifact(uint256 artifactId) public pure returns (Artifact memory) {
+    function getArtifactFromId(uint256 artifactId) public pure returns (Artifact memory) {
         return LibArtifact.decode(artifactId);
     }
 
@@ -171,7 +170,7 @@ contract DFArtifactFacet is WithStorage {
 
         LibArtifactUtils.depositArtifact(locationId, artifactId, address(this));
 
-        emit ArtifactDeposited(msg.sender, locationId, artifactId);
+        emit ArtifactDeposited(msg.sender, artifactId, locationId);
     }
 
     // withdraws the given artifact from the given planet. you must own the planet,
@@ -181,7 +180,7 @@ contract DFArtifactFacet is WithStorage {
 
         LibArtifactUtils.withdrawArtifact(locationId, artifactId);
 
-        emit ArtifactWithdrawn(msg.sender, locationId, artifactId);
+        emit ArtifactWithdrawn(msg.sender, artifactId, locationId);
     }
 
     // activates the given artifact on the given planet. the artifact must have

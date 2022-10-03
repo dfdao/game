@@ -8,9 +8,9 @@ The fundamental data structure in ERC1155 is `mapping(uint256 => mapping(address
 
 `balances[tokenId][myAddress]` = number of tokens I have of a given collection.
 
-The `uint 256 tokenId`, which identifies a _set_ of tokens, is represented in the following way:
+The `uint256` `tokenId`, which identifies a _set_ of tokens, is represented in the following way:
 
-Each `uint256 tokenId` is broken down into 32 chunks of 8 bits each (32\*8 = 256).
+Each `uint256` `tokenId` is broken down into 32 chunks of 8 bits each (32\*8 = 256).
 
 > | chunk1 | chunk 2 | ... chunk32 |.
 
@@ -18,7 +18,11 @@ Chunks are used from left to right, so a token that has a value of `0xff` in chu
 
 Another way to visualize the `tokenId` is by highlighting each chunk: `0x**ff**_00_**00**_00_**00**_00_...`
 
-Each chunk allows for 2^8 (256) unique pieces of information. If you need more than 256 properties of a token, you can use an additional chunk
+Each chunk allows for 2^8 (256) unique pieces of information. If you need more than 256 properties
+of a token, you can use an additional chunk.
+
+For example, if you wanted to add a new property to an Artifact called `Weather`, you use the next
+chunk(s) to encode that value. You would have 256 options for what `Weather` an Artifact could have.
 
 This architecture allows us to encode information about a Dark Forest token in the `tokenId` itself,
 and, more importantly, it allows to create a copy of a token just by using the same `tokenId`.
@@ -55,7 +59,7 @@ The `Lib<TokenName>.sol`. file **must** have the following methods:
 where `<TokenName>` can be a struct (like Artifacts or Spaceships) or just a uint256 (like Silver).
 
 Additionally methods can be added to each library, but they must be `internal` functions that can be
-inherited by other facets or libraries.
+inlined into other facets or libraries.
 
 ## Artifacts
 
@@ -217,7 +221,7 @@ For the wormhole, we do the same:
 
 ## Simulteanous Activate and Deactivate
 
-Some Bloom Filters (Artifacts) and Crescents (Spaceships) are burned on use.
+Some Artifacts (Bloom Filters) and Spaceships (Crescents) are burned on use.
 
 All we do is make sure that we call the Activate and Deactivate functions in the same transaction.
 
