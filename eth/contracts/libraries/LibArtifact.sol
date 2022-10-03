@@ -13,6 +13,7 @@ import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStora
 
 // Type imports
 import {Artifact, ArtifactInfo, ArtifactRarity, ArtifactType, Biome, SpaceType, TokenType, Upgrade} from "../DFTypes.sol";
+import "hardhat/console.sol";
 
 library LibArtifact {
     function gs() internal pure returns (GameStorage storage) {

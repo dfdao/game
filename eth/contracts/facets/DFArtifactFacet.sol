@@ -20,6 +20,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
 import {Artifact, ArtifactRarity, ArtifactType, Biome, TokenType, DFTCreateArtifactArgs, DFPFindArtifactArgs, Spaceship, SpaceshipType} from "../DFTypes.sol";
+import "hardhat/console.sol";
 
 contract DFArtifactFacet is WithStorage {
 
@@ -160,27 +161,6 @@ contract DFArtifactFacet is WithStorage {
         );
 
         emit ArtifactFound(msg.sender, foundArtifactId, planetId);
-    }
-
-    function depositArtifact(uint256 locationId, uint256 artifactId) public notPaused {
-        // should this be implemented as logic that is triggered when a player sends
-        // an artifact to the contract with locationId in the extra data?
-        // might be better use of the ERC721 standard - can use safeTransfer then
-        LibPlanet.refreshPlanet(locationId);
-
-        LibArtifactUtils.depositArtifact(locationId, artifactId, address(this));
-
-        emit ArtifactDeposited(msg.sender, artifactId, locationId);
-    }
-
-    // withdraws the given artifact from the given planet. you must own the planet,
-    // the artifact must be on the given planet
-    function withdrawArtifact(uint256 locationId, uint256 artifactId) public notPaused {
-        LibPlanet.refreshPlanet(locationId);
-
-        LibArtifactUtils.withdrawArtifact(locationId, artifactId);
-
-        emit ArtifactWithdrawn(msg.sender, artifactId, locationId);
     }
 
     // activates the given artifact on the given planet. the artifact must have

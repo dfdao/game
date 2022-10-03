@@ -16,6 +16,7 @@ import {LibStorage, GameStorage, GameConstants} from "./LibStorage.sol";
 
 // Type imports
 import {Biome, Planet, PlanetType, ArtifactType, ArtifactRarity, TokenType, DFPFindArtifactArgs, DFTCreateArtifactArgs, Artifact, ArtifactInfo, Spaceship, SpaceshipType} from "../DFTypes.sol";
+import "hardhat/console.sol";
 
 library LibArtifactUtils {
     function gs() internal pure returns (GameStorage storage) {
@@ -97,12 +98,14 @@ library LibArtifactUtils {
         );
         uint256 tokenId = LibArtifact.create(rarity, artifactType, biome);
 
+        // Artifacts found in game are owned by player.
         Artifact memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
             tokenId,
-            args.coreAddress
+            msg.sender
         );
 
-        LibArtifact.putArtifactOnPlanet(args.planetId, foundArtifact.id);
+        // Artifacts are not put on planet.
+        // LibArtifact.putArtifactOnPlanet(args.planetId, foundArtifact.id);
 
         planet.hasTriedFindingArtifact = true;
         gs().players[msg.sender].score += gameConstants().ARTIFACT_POINT_VALUES[
@@ -118,20 +121,19 @@ library LibArtifactUtils {
         uint256 wormholeTo
     ) public {
         Planet storage planet = gs().planets[locationId];
-
+        require(
+            gs().planets[locationId].spaceships.length + gs().planets[locationId].artifacts.length <
+                5,
+            "too many tokens on this planet"
+        );
+        require(
+            DFArtifactFacet(address(this)).tokenExists(msg.sender, artifactId),
+            "you can only activate artifacts you own"
+        );
         if (LibSpaceship.isShip(artifactId)) {
-            require(
-                LibSpaceship.isSpaceshipOnPlanet(locationId, artifactId),
-                "can't activate a ship on a planet it's not on"
-            );
             activateSpaceshipArtifact(locationId, artifactId, planet);
         } else if (LibArtifact.isArtifact(artifactId)) {
             Artifact memory artifact = LibArtifact.decode(artifactId);
-
-            require(
-                LibArtifact.isArtifactOnPlanet(locationId, artifactId),
-                "can't activate an artifact on a planet it's not on"
-            );
             activateNonSpaceshipArtifact(locationId, artifactId, wormholeTo, planet, artifact);
         } else {
             require(false, "token cannot be activated");
@@ -193,11 +195,6 @@ library LibArtifactUtils {
         );
         require(!planet.destroyed, "planet is destroyed");
 
-        require(
-            LibArtifact.getPlanetArtifact(locationId, artifactId).tokenType != TokenType.Unknown,
-            "this artifact is not on this planet"
-        );
-
         bool shouldDeactivateAndBurn = false;
 
         gs().planets[locationId].artifactActivationTime = block.timestamp;
@@ -234,12 +231,22 @@ library LibArtifactUtils {
             gs().planets[locationId].activeArtifact = 0; // immediately remove activate artifact
 
             emit ArtifactDeactivated(msg.sender, artifactId, locationId);
+            LibGameUtils._buffPlanet(locationId, LibArtifact.getUpgradeForArtifact(artifact));
+            return;
             // burn it after use. will be owned by contract but not on a planet anyone can control
-            LibArtifact.takeArtifactOffPlanet(locationId, artifactId);
+            // No need to take off, Artifact will never get placed.
+            // LibArtifact.takeArtifactOffPlanet(locationId, artifactId);
         }
         // this is fine even tho some artifacts are immediately deactivated, because
         // those artifacts do not buff the planet.
+        LibArtifact.putArtifactOnPlanet(locationId, artifactId);
         LibGameUtils._buffPlanet(locationId, LibArtifact.getUpgradeForArtifact(artifact));
+        // Also transfer to contract
+        DFArtifactFacet(address(this)).transferArtifact(
+            artifactId,
+            msg.sender,
+            gs().diamondAddress
+        );
     }
 
     function deactivateArtifact(uint256 locationId) public {
@@ -268,6 +275,7 @@ library LibArtifactUtils {
 
         bool shouldBurn = artifact.artifactType == ArtifactType.PlanetaryShield ||
             artifact.artifactType == ArtifactType.PhotoidCannon;
+
         if (shouldBurn) {
             // burn it after use. will be owned by contract but not on a planet anyone can control
             LibArtifact.takeArtifactOffPlanet(locationId, artifact.id);

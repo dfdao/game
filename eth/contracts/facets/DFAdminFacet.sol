@@ -17,6 +17,7 @@ import {DFArtifactFacet} from "./DFArtifactFacet.sol";
 
 // Type imports
 import {Artifact, SpaceType, Spaceship, SpaceshipType, DFPInitPlanetArgs, AdminCreatePlanetArgs, DFTCreateArtifactArgs, ArtifactType, Player, Planet, TokenType} from "../DFTypes.sol";
+import "hardhat/console.sol";
 
 contract DFAdminFacet is WithStorage {
     event AdminOwnershipChanged(uint256 loc, address newOwner);
@@ -24,6 +25,7 @@ contract DFAdminFacet is WithStorage {
     event AdminGiveSpaceship(uint256 loc, address owner, SpaceshipType shipType);
     event PauseStateChanged(bool paused);
     event AdminArtifactCreated(address player, uint256 artifactId, uint256 loc);
+    event AdminArtifactActivated(address player, uint256 artifactId, uint256 loc);
 
     /////////////////////////////
     /// Administrative Engine ///
@@ -180,4 +182,34 @@ contract DFAdminFacet is WithStorage {
         if (args.planetId != 0) LibArtifact.putArtifactOnPlanet(args.planetId, artifact.id);
         emit AdminArtifactCreated(args.owner, artifact.id, args.planetId);
     }
+
+    // function adminGiveAndActivateArtifact(DFTCreateArtifactArgs memory args, uint256 wormholeTo)
+    //     public
+    //     onlyAdmin
+    // {
+    //     // Note: calling this in tests should supply Diamond address as args.owner
+    //     uint256 tokenId = LibArtifact.create(args.rarity, args.artifactType, args.biome);
+
+    //     Artifact memory artifact = DFArtifactFacet(address(this)).createArtifact(
+    //         tokenId,
+    //         args.owner
+    //     );
+
+    //     console.log("owner", args.owner);
+    //     // Don't put artifact on planet if no planetId given.
+    //     console.log("wormholeto,", wormholeTo);
+    //     console.log("planetId,", wormholeTo);
+    //     console.log("planet is intialized?", gs().planets[args.planetId].isInitialized);
+    //     if (args.planetId != 0)
+    //         // address(this).delegatecall(abi.encodeWithSignature("transferOwnership(address)", address(0)));
+    //         address(this).delegatecall(
+    //             abi.encodeWithSignature(
+    //                 "activateArtifact(uint256, uint256, uint256)",
+    //                 args.planetId,
+    //                 artifact.id,
+    //                 wormholeTo
+    //             )
+    //         );
+    //     emit AdminArtifactActivated(args.owner, artifact.id, args.planetId);
+    // }
 }
