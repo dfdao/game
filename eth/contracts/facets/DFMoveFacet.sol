@@ -17,7 +17,7 @@ import {LibSpaceship} from "../libraries/LibSpaceship.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {ArrivalData, ArrivalType, Artifact, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetEventMetadata, PlanetEventType, Spaceship, SpaceshipType, Upgrade} from "../DFTypes.sol";
+import {ArrivalData, ArrivalType, Artifact, ArtifactRarity, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetEventMetadata, PlanetEventType, Spaceship, SpaceshipType, Upgrade} from "../DFTypes.sol";
 
 contract DFMoveFacet is WithStorage {
     modifier notPaused() {
@@ -289,28 +289,40 @@ contract DFMoveFacet is WithStorage {
         returns (bool wormholePresent, uint256 effectiveDistModifier)
     {
         wormholePresent = false;
-        Artifact memory relevantWormhole;
-        Artifact memory activeArtifactFrom = LibArtifact.getActiveArtifact(args.oldLoc);
-        Artifact memory activeArtifactTo = LibArtifact.getActiveArtifact(args.newLoc);
-        // TODO: take the greater rarity of these, or disallow wormholes between planets that
-        // already have a wormhole between them
-        if (
-            activeArtifactFrom.artifactType == ArtifactType.Wormhole &&
-            gs().planetWormholes[args.oldLoc] == args.newLoc
-        ) {
-            relevantWormhole = activeArtifactFrom;
-            wormholePresent = true;
-        } else if (
-            activeArtifactTo.artifactType == ArtifactType.Wormhole &&
-            gs().planetWormholes[args.newLoc] == args.oldLoc
-        ) {
-            relevantWormhole = activeArtifactTo;
-            wormholePresent = true;
+        ArtifactRarity wormholeRarity = ArtifactRarity.Unknown;
+
+        // Check from Loc
+        if (LibArtifact.hasActiveArtifact(args.oldLoc)) {
+            Artifact memory activeArtifactFrom = LibArtifact.getActiveArtifact(args.oldLoc);
+            // If active artifact is a Wormhole and destination is newLoc
+            if (
+                activeArtifactFrom.artifactType == ArtifactType.Wormhole &&
+                gs().planetWormholes[args.oldLoc] == args.newLoc
+            ) {
+                wormholeRarity = activeArtifactFrom.rarity;
+                wormholePresent = true;
+            }
+        }
+        // Check to loc
+        if (LibArtifact.hasActiveArtifact(args.newLoc)) {
+            Artifact memory activeArtifactTo = LibArtifact.getActiveArtifact(args.newLoc);
+            // If active artifact is a Wormhole and destination is fromLoc
+            if (
+                activeArtifactTo.artifactType == ArtifactType.Wormhole &&
+                gs().planetWormholes[args.newLoc] == args.oldLoc
+            ) {
+                // Ensures higher rarity wormhole will be used.
+                // TODO: Make sure client knows this.
+                if (activeArtifactTo.rarity > wormholeRarity) {
+                    wormholeRarity = activeArtifactTo.rarity;
+                }
+                wormholePresent = true;
+            }
         }
 
         if (wormholePresent) {
             uint256[6] memory speedBoosts = [uint256(1), 2, 4, 8, 16, 32];
-            effectiveDistModifier = speedBoosts[uint256(relevantWormhole.rarity)];
+            effectiveDistModifier = speedBoosts[uint256(wormholeRarity)];
         }
     }
 
@@ -323,15 +335,17 @@ contract DFMoveFacet is WithStorage {
         private
         returns (bool photoidPresent, Upgrade memory temporaryUpgrade)
     {
-        Artifact memory activeArtifactFrom = LibArtifact.getActiveArtifact(args.oldLoc);
-        if (
-            activeArtifactFrom.artifactType == ArtifactType.PhotoidCannon &&
-            block.timestamp - gs().planetArtifactActivationTime[args.oldLoc] >=
-            gameConstants().PHOTOID_ACTIVATION_DELAY
-        ) {
-            photoidPresent = true;
-            LibArtifactUtils.deactivateArtifact(args.oldLoc);
-            temporaryUpgrade = LibGameUtils.timeDelayUpgrade(activeArtifactFrom);
+        if (LibArtifact.hasActiveArtifact(args.oldLoc)) {
+            Artifact memory activeArtifactFrom = LibArtifact.getActiveArtifact(args.oldLoc);
+            if (
+                activeArtifactFrom.artifactType == ArtifactType.PhotoidCannon &&
+                block.timestamp - gs().planetArtifactActivationTime[args.oldLoc] >=
+                gameConstants().PHOTOID_ACTIVATION_DELAY
+            ) {
+                photoidPresent = true;
+                LibArtifactUtils.deactivateArtifact(args.oldLoc);
+                temporaryUpgrade = LibGameUtils.timeDelayUpgrade(activeArtifactFrom);
+            }
         }
     }
 

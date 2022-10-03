@@ -5,7 +5,6 @@ pragma solidity ^0.8.0;
  * Library for all things Artifacts
  */
 
-
 // Library imports
 import {LibUtils} from "./LibUtils.sol";
 
@@ -309,12 +308,9 @@ library LibArtifact {
     // if the given planet has an activated artifact on it, then return the artifact
     // otherwise, return a 'null artifact'
     function getActiveArtifact(uint256 locationId) internal view returns (Artifact memory) {
-        if (hasActiveArtifact(locationId)) {
-            uint256 artifactId = gs().planetActiveArtifact[locationId];
-            return LibArtifact.decode(artifactId);
-        } else {
-            return LibArtifact._nullArtifactProperties();
-        }
+        require(hasActiveArtifact(locationId), "planet does not have an active artifact");
+        uint256 artifactId = gs().planetActiveArtifact[locationId];
+        return LibArtifact.decode(artifactId);
     }
 
     function hasActiveArtifact(uint256 locationId) internal view returns (bool) {
