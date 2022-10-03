@@ -289,7 +289,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) internal virtual override {
+    ) internal override {
         uint256 length = ids.length;
         for (uint256 i = 0; i < length; i++) {
             // Only core contract can transfer Spaceships
@@ -297,6 +297,9 @@ contract DFArtifactFacet is WithStorage, SolidStateERC1155 {
                 require(msg.sender == gs().diamondAddress, "player cannot transfer a Spaceship");
             }
         }
+
+        // TODO: Are we supposed to call this before or after
+        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
 
     /**
