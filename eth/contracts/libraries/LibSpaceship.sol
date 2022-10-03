@@ -69,8 +69,8 @@ library LibSpaceship {
     }
 
     function isSpaceshipOnPlanet(uint256 locationId, uint256 shipId) internal view returns (bool) {
-        for (uint256 i; i < gs().planetSpaceships[locationId].length; i++) {
-            if (gs().planetSpaceships[locationId][i] == shipId) {
+        for (uint256 i; i < gs().planets[locationId].spaceships.length; i++) {
+            if (gs().planets[locationId].spaceships[i] == shipId) {
                 return true;
             }
         }
@@ -78,17 +78,17 @@ library LibSpaceship {
     }
 
     function putSpaceshipOnPlanet(uint256 locationId, uint256 spaceshipId) internal {
-        gs().planetSpaceships[locationId].push(spaceshipId);
+        gs().planets[locationId].spaceships.push(spaceshipId);
     }
 
     function takeSpaceshipOffPlanet(uint256 locationId, uint256 spaceshipId) internal {
-        uint256 shipsOnThisPlanet = gs().planetSpaceships[locationId].length;
+        uint256 shipsOnThisPlanet = gs().planets[locationId].spaceships.length;
 
         bool hadTheShip = false;
 
         for (uint256 i = 0; i < shipsOnThisPlanet; i++) {
-            if (gs().planetSpaceships[locationId][i] == spaceshipId) {
-                gs().planetSpaceships[locationId][i] = gs().planetSpaceships[locationId][
+            if (gs().planets[locationId].spaceships[i] == spaceshipId) {
+                gs().planets[locationId].spaceships[i] = gs().planets[locationId].spaceships[
                     shipsOnThisPlanet - 1
                 ];
 
@@ -98,6 +98,6 @@ library LibSpaceship {
         }
 
         require(hadTheShip, "this ship was not present on this planet");
-        gs().planetSpaceships[locationId].pop();
+        gs().planets[locationId].spaceships.pop();
     }
 }

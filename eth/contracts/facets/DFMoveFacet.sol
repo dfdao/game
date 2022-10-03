@@ -227,8 +227,8 @@ contract DFMoveFacet is WithStorage {
 
         if (args.movedArtifactId != 0) {
             require(
-                gs().planetArtifacts[args.newLoc].length +
-                    gs().planetSpaceships[args.newLoc].length <
+                gs().planets[args.newLoc].artifacts.length +
+                    gs().planets[args.newLoc].spaceships.length <
                     5,
                 "too many tokens on this planet"
             );
@@ -296,7 +296,7 @@ contract DFMoveFacet is WithStorage {
             // If active artifact is a Wormhole and destination is newLoc
             if (
                 activeArtifactFrom.artifactType == ArtifactType.Wormhole &&
-                gs().planetWormholes[args.oldLoc] == args.newLoc
+                gs().planets[args.oldLoc].wormholeTo == args.newLoc
             ) {
                 wormholeRarity = activeArtifactFrom.rarity;
                 wormholePresent = true;
@@ -308,7 +308,7 @@ contract DFMoveFacet is WithStorage {
             // If active artifact is a Wormhole and destination is fromLoc
             if (
                 activeArtifactTo.artifactType == ArtifactType.Wormhole &&
-                gs().planetWormholes[args.newLoc] == args.oldLoc
+                gs().planets[args.newLoc].wormholeTo == args.oldLoc
             ) {
                 // Ensures higher rarity wormhole will be used.
                 // TODO: Make sure client knows this.
@@ -338,7 +338,7 @@ contract DFMoveFacet is WithStorage {
             Artifact memory activeArtifactFrom = LibArtifact.getActiveArtifact(args.oldLoc);
             if (
                 activeArtifactFrom.artifactType == ArtifactType.PhotoidCannon &&
-                block.timestamp - gs().planetArtifactActivationTime[args.oldLoc] >=
+                block.timestamp - gs().planets[args.oldLoc].artifactActivationTime >=
                 gameConstants().PHOTOID_ACTIVATION_DELAY
             ) {
                 photoidPresent = true;

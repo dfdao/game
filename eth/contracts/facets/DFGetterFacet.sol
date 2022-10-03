@@ -91,12 +91,12 @@ contract DFGetterFacet is WithStorage {
         return gs().planetArrivals[key];
     }
 
-    function planetArtifacts(uint256 key) public view returns (uint256[] memory) {
-        return gs().planetArtifacts[key];
+    function planetArtifacts(uint256 locationId) public view returns (uint256[] memory) {
+        return gs().planets[locationId].artifacts;
     }
 
-    function planetSpaceships(uint256 key) public view returns (uint256[] memory) {
-        return gs().planetSpaceships[key];
+    function planetSpaceships(uint256 locationId) public view returns (uint256[] memory) {
+        return gs().planets[locationId].spaceships;
     }
 
     // ADDITIONAL UTILITY GETTERS
@@ -315,7 +315,7 @@ contract DFGetterFacet is WithStorage {
     }
 
     function getArtifactActivationTimeOnPlanet(uint256 locationId) public view returns (uint256) {
-        return gs().planetArtifactActivationTime[locationId];
+        return gs().planets[locationId].artifactActivationTime;
     }
 
     // function getArtifactById(uint256 artifactId)
@@ -345,8 +345,12 @@ contract DFGetterFacet is WithStorage {
     //     });
     // }
 
+    function getUpgradeForArtifact(uint256 artifactId) public pure returns (Upgrade memory) {
+        return LibArtifact.getUpgradeForArtifact(LibArtifact.decode(artifactId));
+    }
+
     function getArtifactsOnPlanet(uint256 locationId) public view returns (Artifact[] memory ret) {
-        uint256[] memory artifactIds = gs().planetArtifacts[locationId];
+        uint256[] memory artifactIds = gs().planets[locationId].artifacts;
         ret = new Artifact[](artifactIds.length);
         for (uint256 i = 0; i < artifactIds.length; i++) {
             ret[i] = LibArtifact.decode(artifactIds[i]);
@@ -359,7 +363,7 @@ contract DFGetterFacet is WithStorage {
         view
         returns (Spaceship[] memory ret)
     {
-        uint256[] memory tokenIds = gs().planetSpaceships[locationId];
+        uint256[] memory tokenIds = gs().planets[locationId].spaceships;
         ret = new Spaceship[](tokenIds.length);
         for (uint256 i = 0; i < tokenIds.length; i++) {
             ret[i] = LibSpaceship.decode(tokenIds[i]);
@@ -370,11 +374,11 @@ contract DFGetterFacet is WithStorage {
     // Combo on Ships and Artifacts
     function tokenExistsOnPlanet(uint256 locationId, uint256 tokenId) public view returns (bool) {
         bool hasToken = false;
-        uint256[] memory artifactIds = gs().planetArtifacts[locationId];
+        uint256[] memory artifactIds = gs().planets[locationId].artifacts;
         for (uint256 i = 0; i < artifactIds.length; i++) {
             if (artifactIds[i] == tokenId) return true;
         }
-        uint256[] memory shipIds = gs().planetSpaceships[locationId];
+        uint256[] memory shipIds = gs().planets[locationId].spaceships;
         for (uint256 i = 0; i < shipIds.length; i++) {
             if (shipIds[i] == tokenId) return true;
         }
@@ -390,7 +394,7 @@ contract DFGetterFacet is WithStorage {
         view
         returns (Artifact memory ret)
     {
-        uint256 artifactId = gs().planetActiveArtifact[locationId];
+        uint256 artifactId = gs().planets[locationId].activeArtifact;
         return LibArtifact.decode(artifactId);
     }
 
