@@ -12,6 +12,7 @@ import type {
 import { address } from './address';
 import { decodeArtifact } from './artifact';
 import { locationIdFromDecStr, locationIdFromEthersBN } from './location';
+import { decodeSpaceship } from './spaceship';
 
 export type RawPlanet = Awaited<ReturnType<DarkForest['planets']>>;
 
@@ -82,6 +83,7 @@ export function decodePlanet(rawLocationId: string, rawPlanet: RawPlanet): Plane
       : rawPlanet.prospectedBlockNumber.toNumber(),
     destroyed: rawPlanet.destroyed,
     artifacts: rawPlanet.artifacts.map(decodeArtifact),
+    spaceships: rawPlanet.artifacts.map(decodeSpaceship),
     // TODO: convert to milliseconds
     artifactActivationTime: rawPlanet.artifactActivationTime.toNumber(),
     activeArtifact: rawPlanet.activeArtifact.eq(0)

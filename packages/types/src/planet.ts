@@ -2,6 +2,7 @@ import type { Artifact } from './artifact';
 import type { Biome, SpaceType } from './game_types';
 import type { EthAddress, LocationId } from './identifier';
 import type { PlanetMessage } from './planetmessage';
+import type { Spaceship } from './spaceship';
 import type { TransactionCollection } from './transaction';
 import type { Upgrade, UpgradeState } from './upgrade';
 import type { Abstract } from './utility';
@@ -119,6 +120,7 @@ export type Planet = {
   upgradeState: UpgradeState;
   hasTriedFindingArtifact: boolean;
   artifacts: Artifact[];
+  spaceships: Spaceship[];
   activeArtifact: Artifact | undefined;
   artifactActivationTime: number;
   wormholeTo: LocationId | undefined;
