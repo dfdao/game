@@ -16,7 +16,6 @@ import {
   Biome,
   BiomeNames,
   SpaceshipType,
-  TokenType,
   TokenTypeNames,
 } from '@dfdao/types';
 import { bigIntFromKey } from '@dfdao/whitelist';
@@ -310,8 +309,9 @@ export async function user1MintArtifactPlanet(user1Core: DarkForest) {
   await increaseBlockchainTime();
   const findArtifactTx = await user1Core.findArtifact(...makeFindArtifactArgs(ARTIFACT_PLANET_1));
   const findArtifactReceipt = await findArtifactTx.wait();
-  // 0th event is erc721 transfer (i think); 1st event is UpdateArtifact, 2nd argument of this event is artifactId
-  const artifactId = findArtifactReceipt.events?.[1].args?.[1];
+  // 0th event is erc721 transfer (i think); 1st event is UpdateArtifact, 2nd argument of this event
+  // is artifactId
+  const artifactId = findArtifactReceipt.events?.[1].args?.artifactId;
   return artifactId as BigNumber;
 }
 
@@ -334,19 +334,13 @@ export async function createArtifact(
   owner: string,
   planet: TestLocation,
   artifactType: ArtifactType,
-  tokenType = TokenType.Artifact,
-  { rarity, biome }: { rarity?: ArtifactRarity; biome?: Biome } = {}
+  rarity?: ArtifactRarity,
+  biome?: Biome
 ) {
   rarity ||= ArtifactRarity.Common;
   biome ||= Biome.FOREST;
 
-  const tokenId = await contract.encodeArtifact({
-    id: 0,
-    tokenType,
-    rarity,
-    artifactType,
-    planetBiome: biome,
-  });
+  const tokenId = await contract.createArtifactId(rarity, artifactType, biome);
   await contract.adminGiveArtifact({
     tokenId,
     discoverer: owner,
@@ -363,7 +357,7 @@ export async function createArtifact(
 
 export async function testDeactivate(world: World, locationId: BigNumberish) {
   expect((await getArtifactsOnPlanet(world, locationId)).length).to.equal(0);
-  expect((await world.contract.getActiveArtifactOnPlanet(locationId)).id).to.equal(0);
+  expect(await world.contract.hasActiveArtifact(locationId)).to.equal(false);
   expect(await world.contract.getArtifactActivationTimeOnPlanet(locationId)).to.equal(0);
 }
 

@@ -219,7 +219,6 @@ const config: HardhatUserConfig = {
     // This plugin will combine all ABIs from any Smart Contract with `Facet` in the name or path and output it as `DarkForest.json`
     name: 'DarkForest',
     include: ['Facet', 'DFDiamond'],
-    exclude: ['Old'],
     // We explicitly set `strict` to `true` because we want to validate our facets don't accidentally provide overlapping functions
     strict: true,
     // We use our diamond utils to filter some functions we ignore from the combined ABI

@@ -421,7 +421,6 @@ export async function deployLibraries({}, hre: HardhatRuntimeEnvironment) {
     libraries: {
       LibGameUtils: LibGameUtils.address,
       LibLazyUpdate: LibLazyUpdate.address,
-      // LibArtifactUtils: LibArtifactUtils.address,
     },
   });
   const LibPlanet = await LibPlanetFactory.deploy();
