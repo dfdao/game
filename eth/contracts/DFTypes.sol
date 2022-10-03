@@ -177,6 +177,7 @@ struct ArrivalData {
     uint256 arrivalTime;
     ArrivalType arrivalType;
     uint256 carriedArtifactId;
+    uint256 carriedSpaceshipId;
     uint256 distance;
 }
 
