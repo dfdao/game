@@ -200,8 +200,8 @@ library LibArtifactUtils {
 
         bool shouldDeactivateAndBurn = false;
 
-        gs().planetArtifactActivationTime[locationId] = block.timestamp;
-        gs().planetActiveArtifact[locationId] = artifactId;
+        gs().planets[locationId].artifactActivationTime = block.timestamp;
+        gs().planets[locationId].activeArtifact = artifactId;
         emit ArtifactActivated(msg.sender, artifactId, locationId);
 
         if (artifact.artifactType == ArtifactType.Wormhole) {
@@ -212,7 +212,7 @@ library LibArtifactUtils {
                 "you can only create a wormhole to a planet you own"
             );
             require(!gs().planets[wormholeTo].destroyed, "planet destroyed");
-            gs().planetWormholes[locationId] = wormholeTo;
+            gs().planets[locationId].wormholeTo = wormholeTo;
         } else if (artifact.artifactType == ArtifactType.BloomFilter) {
             require(
                 2 * uint256(artifact.rarity) >= planet.planetLevel,
@@ -231,7 +231,7 @@ library LibArtifactUtils {
         }
 
         if (shouldDeactivateAndBurn) {
-            gs().planetActiveArtifact[locationId] = 0; // immediately remove activate artifact
+            gs().planets[locationId].activeArtifact = 0; // immediately remove activate artifact
 
             emit ArtifactDeactivated(msg.sender, artifactId, locationId);
             // burn it after use. will be owned by contract but not on a planet anyone can control
@@ -260,9 +260,9 @@ library LibArtifactUtils {
         Artifact memory artifact = LibArtifact.getActiveArtifact(locationId);
 
         // In case just pretend there is a wormhole.
-        gs().planetWormholes[locationId] = 0;
-        gs().planetActiveArtifact[locationId] = 0;
-        gs().planetArtifactActivationTime[locationId] = 0;
+        gs().planets[locationId].wormholeTo = 0;
+        gs().planets[locationId].activeArtifact = 0;
+        gs().planets[locationId].artifactActivationTime = 0;
 
         emit ArtifactDeactivated(msg.sender, artifact.id, locationId);
 
@@ -298,7 +298,8 @@ library LibArtifactUtils {
         );
 
         require(
-            gs().planetArtifacts[locationId].length + gs().planetSpaceships[locationId].length < 5,
+            gs().planets[locationId].artifacts.length + gs().planets[locationId].spaceships.length <
+                5,
             "too many tokens on this planet"
         );
 
@@ -345,7 +346,7 @@ library LibArtifactUtils {
     }
 
     function containsGear(uint256 locationId) public view returns (bool) {
-        uint256[] memory tokenIds = gs().planetSpaceships[locationId];
+        uint256[] memory tokenIds = gs().planets[locationId].spaceships;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             Spaceship memory spaceship = LibSpaceship.decode(tokenIds[i]);
             if (

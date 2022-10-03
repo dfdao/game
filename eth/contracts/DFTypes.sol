@@ -71,6 +71,12 @@ struct Planet {
     uint256 invadeStartBlock;
     address capturer;
     uint256 locationId;
+    // Token stuff
+    uint256[] artifacts;
+    uint256[] spaceships;
+    uint256 activeArtifact;
+    uint256 wormholeTo;
+    uint256 artifactActivationTime;
 }
 
 struct RevealedCoords {

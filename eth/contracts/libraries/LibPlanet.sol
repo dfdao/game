@@ -162,6 +162,12 @@ library LibPlanet {
         _planet.planetLevel = defaultPlanet.planetLevel;
         _planet.planetType = defaultPlanet.planetType;
 
+        _planet.artifacts = defaultPlanet.artifacts;
+        _planet.spaceships = defaultPlanet.spaceships;
+        _planet.activeArtifact = defaultPlanet.activeArtifact;
+        _planet.wormholeTo = defaultPlanet.wormholeTo;
+        _planet.artifactActivationTime = defaultPlanet.artifactActivationTime;
+
         _planet.isInitialized = true;
         _planet.perlin = args.perlin;
         _planet.spaceType = args.spaceType;
