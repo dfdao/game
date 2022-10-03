@@ -372,11 +372,11 @@ contract DFGetterFacet is WithStorage {
         bool hasToken = false;
         uint256[] memory artifactIds = gs().planetArtifacts[locationId];
         for (uint256 i = 0; i < artifactIds.length; i++) {
-            if (artifactIds[i] == tokenId) hasToken = true;
+            if (artifactIds[i] == tokenId) return true;
         }
         uint256[] memory shipIds = gs().planetSpaceships[locationId];
         for (uint256 i = 0; i < shipIds.length; i++) {
-            if (shipIds[i] == tokenId) hasToken = true;
+            if (shipIds[i] == tokenId) return true;
         }
         return hasToken;
     }
