@@ -2627,6 +2627,7 @@ class GameManager extends EventEmitter {
     forces: number,
     silver: number,
     artifactMoved?: ArtifactId,
+    spaceshipMoved?: SpaceshipId,
     abandoning = false,
     bypassChecks = false
   ): Promise<Transaction<UnconfirmedMove>> {
@@ -2719,7 +2720,8 @@ class GameManager extends EventEmitter {
         to: newLocation.hash,
         forces: shipsMoved,
         silver: silverMoved,
-        artifact: artifactMoved,
+        // TODO: Make this less shit
+        artifact: artifactMoved || spaceshipMoved,
         abandoning,
       };
 

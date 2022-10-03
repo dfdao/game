@@ -1,5 +1,4 @@
 import {
-  Artifact,
   AsteroidRendererType,
   BackgroundRendererType,
   BaseRenderer,
@@ -36,6 +35,7 @@ import {
   RuinsRendererType,
   Setting,
   SpaceRendererType,
+  Spaceship,
   SpacetimeRipRendererType,
   SpaceType,
   SpriteRendererType,
@@ -149,7 +149,7 @@ export interface RendererGameContext extends DiagnosticUpdater {
   drawAllRunningPlugins(ctx: CanvasRenderingContext2D): void;
   isSendingShip(planetId: LocationId): boolean;
   isAbandoning(): boolean;
-  getArtifactSending(planetId: LocationId): Artifact | undefined;
+  getSpaceshipSending(planetId: LocationId): Spaceship | undefined;
   getAbandonRangeChangePercent(): number;
   getCaptureZones(): Iterable<CaptureZone>;
 }

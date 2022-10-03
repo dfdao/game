@@ -1,6 +1,6 @@
 import { EMPTY_ADDRESS } from '@dfdao/constants';
 import { Monomitter, monomitter } from '@dfdao/events';
-import { biomeName, isLocatable, isSpaceShip } from '@dfdao/gamelogic';
+import { biomeName, isLocatable } from '@dfdao/gamelogic';
 import { planetHasBonus } from '@dfdao/hexgen';
 import { EthConnection } from '@dfdao/network';
 import { GameGLManager, Renderer } from '@dfdao/renderer';
@@ -24,6 +24,7 @@ import {
   QueuedArrival,
   Rectangle,
   Setting,
+  Spaceship,
   SpaceType,
   Transaction,
   UnconfirmedActivateArtifact,
@@ -107,6 +108,7 @@ class GameUIManager extends EventEmitter {
   private silverSending: { [key: string]: number } = {}; // this is a percentage
 
   private artifactSending: { [key: string]: Artifact | undefined } = {};
+  private spaceshipSending: { [key: string]: Spaceship | undefined } = {};
 
   private plugins: PluginManager;
 
@@ -552,6 +554,7 @@ class GameUIManager extends EventEmitter {
             `df.move('${from.locationId}', '${to.locationId}', ${forces}, ${silver})`
           );
           const artifact = this.getArtifactSending(from.locationId);
+          const spaceship = this.getSpaceshipSending(from.locationId);
 
           this.gameManager.move(
             from.locationId,
@@ -559,6 +562,7 @@ class GameUIManager extends EventEmitter {
             forces,
             silver,
             artifact?.id,
+            spaceship?.id,
             abandoning
           );
           tutorialManager.acceptInput(TutorialState.SendFleet);
@@ -643,10 +647,13 @@ class GameUIManager extends EventEmitter {
 
   public setArtifactSending(planetId: LocationId, artifact?: Artifact) {
     this.artifactSending[planetId] = artifact;
-    if (this.isSendingShip(planetId)) {
-      this.abandoning = false;
-      this.isAbandoning$.publish(false);
-    }
+    this.gameManager.getGameObjects().forceTick(planetId);
+  }
+
+  public setSpaceshipSending(planetId: LocationId, spaceship?: Spaceship) {
+    this.spaceshipSending[planetId] = spaceship;
+    this.abandoning = false;
+    this.isAbandoning$.publish(false);
     this.gameManager.getGameObjects().forceTick(planetId);
   }
 
@@ -802,6 +809,7 @@ class GameUIManager extends EventEmitter {
 
     // Set to undefined after SendComplete so it can send another one
     this.artifactSending[locationId] = undefined;
+    this.spaceshipSending[locationId] = undefined;
 
     this.sendingPlanet = undefined;
     // Done at the end so they clear the artifact
@@ -1039,6 +1047,10 @@ class GameUIManager extends EventEmitter {
     if (!planetId) return undefined;
     return this.artifactSending[planetId];
   }
+  public getSpaceshipSending(planetId?: LocationId): Spaceship | undefined {
+    if (!planetId) return undefined;
+    return this.spaceshipSending[planetId];
+  }
 
   public getAbandonSpeedChangePercent(): number {
     const { SPACE_JUNK_ENABLED, ABANDON_SPEED_CHANGE_PERCENT } = this.contractConstants;
@@ -1060,7 +1072,7 @@ class GameUIManager extends EventEmitter {
 
   public isSendingShip(planetId?: LocationId): boolean {
     if (!planetId) return false;
-    return isSpaceShip(this.artifactSending[planetId]?.artifactType);
+    return this.spaceshipSending[planetId] !== undefined;
   }
 
   public isOverOwnPlanet(coords: WorldCoords): Planet | undefined {
