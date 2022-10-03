@@ -1,34 +1,31 @@
 import { monomitter, Monomitter } from '@dfdao/events';
 import { CursorState, ModalId, ModalManagerEvent, ModalPosition, WorldCoords } from '@dfdao/types';
 import { EventEmitter } from 'events';
-import type PersistentChunkStore from '../../Backend/Storage/PersistentChunkStore';
+import OtherStore from '../../Backend/Storage/OtherStore';
 
 class ModalManager extends EventEmitter {
   static instance: ModalManager;
   private lastIndex: number;
   private cursorState: CursorState;
-  private persistentChunkStore: PersistentChunkStore;
+  private store: OtherStore;
   private modalPositions: Map<ModalId, ModalPosition>;
 
   public modalPositions$: Monomitter<Map<ModalId, ModalPosition>>;
   public readonly activeModalId$: Monomitter<string>;
   public readonly modalPositionChanged$: Monomitter<ModalId>;
 
-  private constructor(
-    persistentChunkStore: PersistentChunkStore,
-    modalPositions: Map<ModalId, ModalPosition>
-  ) {
+  private constructor(store: OtherStore, modalPositions: Map<ModalId, ModalPosition>) {
     super();
     this.lastIndex = 0;
     this.activeModalId$ = monomitter(true);
     this.modalPositionChanged$ = monomitter();
-    this.persistentChunkStore = persistentChunkStore;
+    this.store = store;
     this.modalPositions = modalPositions;
   }
 
-  public static async create(persistentChunkStore: PersistentChunkStore): Promise<ModalManager> {
-    const modalPositions = await persistentChunkStore.loadModalPositions();
-    return new ModalManager(persistentChunkStore, modalPositions);
+  public static async create(store: OtherStore): Promise<ModalManager> {
+    const modalPositions = await store.loadModalPositions();
+    return new ModalManager(store, modalPositions);
   }
 
   public getIndex(): number {
@@ -66,13 +63,13 @@ class ModalManager extends EventEmitter {
 
   public clearModalPosition(modalId: ModalId): void {
     this.modalPositions.delete(modalId);
-    this.persistentChunkStore.saveModalPositions(this.modalPositions);
+    this.store.saveModalPositions(this.modalPositions);
     this.modalPositionChanged$.publish(modalId);
   }
 
   public setModalPosition(modalId: ModalId, pos: ModalPosition): void {
     this.modalPositions.set(modalId, pos);
-    this.persistentChunkStore.saveModalPositions(this.modalPositions);
+    this.store.saveModalPositions(this.modalPositions);
     this.modalPositionChanged$.publish(modalId);
   }
 
