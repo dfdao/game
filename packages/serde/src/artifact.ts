@@ -127,3 +127,13 @@ export function decodeArtifact(tokenId: EthersBN): Artifact {
     artifactType: artifactType as ArtifactType,
   };
 }
+
+export function isArtifact(tokenId: EthersBN): boolean {
+  // These acocunt for unknown at the 0-th index
+  const tokenIdx = ArtifactInfo.TokenType - 1;
+
+  const tokenType = calculateByteUInt(tokenId, tokenIdx, tokenIdx);
+
+  // TODO: put this into types
+  return tokenType === 1;
+}
