@@ -214,6 +214,8 @@ describe('DarkForestArtifacts', function () {
       );
       const moveReceipt = await moveTx.wait();
       const voyageId = moveReceipt.events?.[0].args?.[1]; // emitted by ArrivalQueued
+      await increaseBlockchainTime();
+
       await world.contract.refreshPlanet(ARTIFACT_PLANET_1.id);
       const oldLocArtifacts = await getArtifactsOnPlanet(world, ARTIFACT_PLANET_1.id);
       expect(oldLocArtifacts.length).to.equal(0);
