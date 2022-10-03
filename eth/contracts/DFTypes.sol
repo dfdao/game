@@ -233,7 +233,6 @@ enum ArtifactRarity {
     Mythic
 }
 
-
 enum Biome {
     Unknown,
     Ocean,
