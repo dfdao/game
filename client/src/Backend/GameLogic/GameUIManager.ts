@@ -1076,11 +1076,6 @@ class GameUIManager extends EventEmitter {
     return this.gameManager.getMyArtifacts();
   }
 
-  public getMyArtifactsNotOnPlanet(): Artifact[] {
-    // return this.getMyArtifacts().filter((a) => !a.onPlanetId);
-    return [];
-  }
-
   public getPlanetWithId(planetId: LocationId | undefined): Planet | undefined {
     return this.gameManager.getPlanetWithId(planetId);
   }
