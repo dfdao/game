@@ -1,5 +1,5 @@
 import { EMPTY_ADDRESS } from '@dfdao/constants';
-import { formatNumber, getRange, hasOwner, isLocatable, isSpaceShip } from '@dfdao/gamelogic';
+import { formatNumber, getRange, hasOwner, isLocatable } from '@dfdao/gamelogic';
 import { getOwnerColorVec, getPlanetCosmetic } from '@dfdao/procedural';
 import { isUnconfirmedMoveTx } from '@dfdao/serde';
 import {
@@ -488,8 +488,7 @@ export class PlanetRenderManager implements PlanetRenderManagerType {
       range: { energy },
     } = engineConsts.colors;
     const { x, y } = planet.location.coords;
-    const sendingArtifact = this.renderer.context.getArtifactSending(planet.locationId);
-    const sendingSpaceShip = isSpaceShip(sendingArtifact?.artifactType);
+    const sendingSpaceShip = this.renderer.context.getSpaceshipSending(planet.locationId);
 
     if (sendingSpaceShip) return;
 

@@ -40,7 +40,6 @@ export function isSpaceShip(type: ArtifactType | undefined): boolean {
 
 export function hasStatBoost(type: ArtifactType | undefined): boolean {
   return (
-    !isSpaceShip(type) &&
     type !== ArtifactType.BlackDomain &&
     type !== ArtifactType.BloomFilter &&
     type !== ArtifactType.Wormhole
@@ -92,8 +91,6 @@ export function artifactRoll(id: ArtifactId): number {
 
 export function isAncient(artifact: RenderedArtifact): boolean {
   if (forceAncient !== undefined) return forceAncient;
-
-  if (isSpaceShip(artifact.artifactType)) return false;
 
   const { id, planetBiome: biome } = artifact;
 
@@ -168,13 +165,12 @@ export function getActiveBlackDomain(artifacts: Artifact[]): Artifact | undefine
   return undefined;
 }
 
-export function canWithdrawArtifact(account: EthAddress, artifact: Artifact, planet?: Planet) {
+export function canWithdrawArtifact(account: EthAddress, planet?: Planet) {
   return (
     planet &&
     !planet.destroyed &&
     planet.owner === account &&
-    planet.planetType === PlanetType.TRADING_POST &&
-    !isSpaceShip(artifact.artifactType)
+    planet.planetType === PlanetType.TRADING_POST
   );
 }
 
