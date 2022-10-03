@@ -47,7 +47,7 @@ export function hexToBigNumber(hex: string): BigNumber {
 
 export function prettyPrintToken(token: ArtifactStructOutput) {
   console.log(
-    `~Token~\nCollection: ${TokenTypeNames[token.tokenType]}\nRarity: ${
+    `~Token~\nID: ${token.id}\nCollection: ${TokenTypeNames[token.tokenType]}\nRarity: ${
       ArtifactRarityNames[token.rarity]
     }\nType: ${ArtifactTypeNames[token.artifactType]}\nBiome: ${BiomeNames[token.planetBiome]}`
   );
