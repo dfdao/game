@@ -14,7 +14,6 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Contract imports
 import {DFArtifactFacet} from "./DFArtifactFacet.sol";
-import "hardhat/console.sol";
 
 // Type imports
 import {Artifact, SpaceType, Spaceship, SpaceshipType, DFPInitPlanetArgs, AdminCreatePlanetArgs, DFTCreateArtifactArgs, ArtifactType, Player, Planet, TokenType} from "../DFTypes.sol";

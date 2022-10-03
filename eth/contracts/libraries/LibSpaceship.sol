@@ -5,8 +5,6 @@ pragma solidity ^0.8.0;
  * Library for all things Spaceships
  */
 
-// Contract imports
-import "hardhat/console.sol";
 
 // Library imports
 import {LibUtils} from "./LibUtils.sol";

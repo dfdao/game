@@ -5,8 +5,6 @@ pragma solidity ^0.8.0;
  * Library for all things Artifacts
  */
 
-// Contract imports
-import "hardhat/console.sol";
 
 // Library imports
 import {LibUtils} from "./LibUtils.sol";
@@ -277,9 +275,6 @@ library LibArtifact {
         return (artifactType, bonus);
     }
 
-    // planets can have multiple artifacts on them. this function updates all the
-    // internal contract book-keeping to reflect that the given artifact was
-    // put on. note that this function does not transfer the artifact.
     function putArtifactOnPlanet(uint256 locationId, uint256 artifactId) internal {
         gs().planetArtifacts[locationId].push(artifactId);
     }
@@ -323,8 +318,6 @@ library LibArtifact {
         }
     }
 
-    // if the given planet has an activated artifact on it, then return the artifact
-    // otherwise, return a 'null artifact'
     function hasActiveArtifact(uint256 locationId) internal view returns (bool) {
         uint256 artifactId = gs().planetActiveArtifact[locationId];
         return artifactId != 0;
