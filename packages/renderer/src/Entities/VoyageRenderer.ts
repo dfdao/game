@@ -124,6 +124,14 @@ export class VoyageRenderer implements VoyageRendererType {
         const y = screenCoords.y;
         sR.queueArtifact(voyage.artifact, { x, y }, artifactSizePixels);
       }
+      if (voyage.spaceship) {
+        const viewport = this.renderer.getViewport();
+        const screenCoords = viewport.worldToCanvasCoords(shipsLocation);
+        const distanceFromCenterOfFleet = fleetRadius * 1.5 + artifactSizePixels;
+        const x = distanceFromCenterOfFleet + screenCoords.x;
+        const y = screenCoords.y;
+        sR.queueSpaceship(voyage.spaceship, { x, y }, artifactSizePixels);
+      }
 
       // queue text
       tR.queueTextWorld(
