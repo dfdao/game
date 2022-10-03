@@ -1,4 +1,4 @@
-import { Artifact, LocatablePlanet, PlanetType } from '@dfdao/types';
+import { Artifact, LocatablePlanet } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
 import { Spacer } from '../../Components/CoreUI';
@@ -18,10 +18,7 @@ export function ManageArtifactsPane({
   playerAddress: string;
   modal: ModalHandle;
 }) {
-  const isMyTradingPost =
-    planet.owner === playerAddress &&
-    planet.planetType === PlanetType.TRADING_POST &&
-    !planet.destroyed;
+  const isMyPlanet = planet.owner === playerAddress && !planet.destroyed;
   const [viewingDepositList, setViewingDepositList] = useState(false);
 
   let action;
@@ -62,7 +59,7 @@ export function ManageArtifactsPane({
 
       <Spacer height={4} />
 
-      {isMyTradingPost && (
+      {isMyPlanet && (
         <SelectArtifactsContainer>
           <SelectArtifactList
             selected={!viewingDepositList}
@@ -78,7 +75,7 @@ export function ManageArtifactsPane({
               setViewingDepositList(true);
             }}
           >
-            Deposit Artifact
+            Activate Artifact
           </SelectArtifactList>
         </SelectArtifactsContainer>
       )}

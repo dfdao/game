@@ -14,6 +14,7 @@ export const TOGGLE_TRANSACTIONS_PANE = "'";
 export const TOGGLE_PLANET_ARTIFACTS_PANE = 's';
 export const TOGGLE_HAT_PANE = 'x';
 export const TOGGLE_ABANDON = 'r';
+export const TOGGLE_WITHDRAW = ']';
 export const INVADE = 'y';
 export const MINE_ARTIFACT = 'f';
 export const TOGGLE_BROADCAST_PANE = 'z';

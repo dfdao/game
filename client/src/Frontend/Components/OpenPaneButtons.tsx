@@ -133,7 +133,7 @@ export function OpenPlanetInfoButton({
   return (
     <OpenPaneButton
       modal={modal}
-      title='Info'
+      title='More Info'
       shortcut={TOGGLE_PLANET_INFO_PANE}
       element={() => <PlanetInfoPane initialPlanetId={planetId} />}
       helpContent={PlanetInfoHelpContent()}
