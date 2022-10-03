@@ -168,23 +168,6 @@ export function getActiveBlackDomain(artifacts: Artifact[]): Artifact | undefine
   return undefined;
 }
 
-export function canActivateArtifact(
-  _artifact: Artifact,
-  _planet: Planet | undefined,
-  _artifactsOnPlanet: Artifact[]
-) {
-  const available = undefined;
-  if (available !== undefined) {
-    const now = Date.now();
-    const anyArtifactActive = false;
-    const waitUntilAvailable = available - now;
-    const availableToActivate = waitUntilAvailable <= -0 && !anyArtifactActive;
-    return availableToActivate;
-  }
-
-  return false;
-}
-
 export function canWithdrawArtifact(account: EthAddress, artifact: Artifact, planet?: Planet) {
   return (
     planet &&
