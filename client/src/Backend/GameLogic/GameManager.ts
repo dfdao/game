@@ -62,6 +62,8 @@ import {
   RevealedLocation,
   Setting,
   SignedMessage,
+  Spaceship,
+  SpaceshipId,
   SpaceType,
   Transaction,
   TxIntent,
@@ -89,7 +91,7 @@ import {
 } from '@dfdao/types';
 import bigInt, { BigInteger } from 'big-integer';
 import delay from 'delay';
-import { BigNumber, Contract, ContractInterface, ethers, providers } from 'ethers';
+import { BigNumber, Contract, ContractInterface, providers } from 'ethers';
 import { EventEmitter } from 'events';
 import NotificationManager from '../../Frontend/Game/NotificationManager';
 import { MIN_CHUNK_SIZE } from '../../Frontend/Utils/constants';
@@ -370,7 +372,9 @@ class GameManager extends EventEmitter {
     homeLocation: WorldLocation | undefined,
     useMockHash: boolean,
     ethConnection: EthConnection,
-    paused: boolean
+    paused: boolean,
+    myArtifacts: Map<ArtifactId, Artifact>,
+    mySpaceships: Map<SpaceshipId, Spaceship>
   ) {
     super();
 
@@ -455,6 +459,7 @@ class GameManager extends EventEmitter {
       }
     }
 
+    // TODO: Untangle this mess
     this.entityStore = new GameObjects(
       account,
       touchedPlanets,
@@ -465,7 +470,9 @@ class GameManager extends EventEmitter {
       unprocessedArrivals,
       unprocessedPlanetArrivalIds,
       contractConstants,
-      worldRadius
+      worldRadius,
+      myArtifacts,
+      mySpaceships
     );
 
     this.contractsAPI = contractsAPI;
@@ -605,10 +612,16 @@ class GameManager extends EventEmitter {
     await otherStore.saveTouchedPlanetIds(initialState.allTouchedPlanetIds);
     await otherStore.saveRevealedCoords(initialState.allRevealedCoords);
 
-    const knownArtifacts: Map<ArtifactId, Artifact> = new Map();
+    const myArtifacts: Map<ArtifactId, Artifact> = new Map();
 
     for (const myArtifact of initialState.myArtifacts) {
-      knownArtifacts.set(myArtifact.id, myArtifact);
+      myArtifacts.set(myArtifact.id, myArtifact);
+    }
+
+    const mySpaceships: Map<SpaceshipId, Spaceship> = new Map();
+
+    for (const mySpaceship of initialState.mySpaceships) {
+      mySpaceships.set(mySpaceship.id, mySpaceship);
     }
 
     // figure out what's my home planet
@@ -655,7 +668,9 @@ class GameManager extends EventEmitter {
       homeLocation,
       useMockHash,
       connection,
-      initialState.paused
+      initialState.paused,
+      myArtifacts,
+      mySpaceships
     );
 
     gameManager.setPlayerTwitters(initialState.twitters);
@@ -1285,19 +1300,20 @@ class GameManager extends EventEmitter {
   }
 
   /**
-   * gets both deposited artifacts that are on planets i own as well as artifacts i own
+   * Gets the artifacts in the players wallet
    */
   getMyArtifacts(): Artifact[] {
     if (!this.account) return [];
-    // const ownedByMe = this.entityStore.getArtifactsOwnedBy(this.account);
-    // const onPlanetsOwnedByMe = this.entityStore
-    //   .getArtifactsOnPlanetsOwnedBy(this.account)
-    //   // filter out space ships because they always show up
-    //   // in the `ownedByMe` array.
-    //   .filter((a) => !isSpaceShip(a.artifactType));
 
-    // return [...ownedByMe, ...onPlanetsOwnedByMe];
-    return [];
+    return Array.from(this.entityStore.getMyArtifactMap().values());
+  }
+  /**
+   * Gets the spaceships in the players wallet
+   */
+  getMySpaceships(): Spaceship[] {
+    if (!this.account) return [];
+
+    return Array.from(this.entityStore.getMySpaceshipMap().values());
   }
 
   /**
@@ -2244,7 +2260,7 @@ class GameManager extends EventEmitter {
 
       tx.confirmedPromise.then(() => {
         this.getGameObjects().updatePlanet(locationId, (planet) => {
-          const artifact = decodeArtifact(ethers.BigNumber.from(artifactId));
+          const artifact = decodeArtifact(BigNumber.from(artifactId));
           planet.artifacts.push(artifact);
         });
       });
@@ -3250,7 +3266,7 @@ class GameManager extends EventEmitter {
     return this.entityStore.myPlanetsUpdated$;
   }
 
-  public getMyArtifactsUpdated$(): Monomitter<Map<ArtifactId, Artifact>> {
+  public getMyArtifactsUpdated$(): Monomitter<[ArtifactId, Artifact]> {
     return this.entityStore.myArtifactsUpdated$;
   }
 

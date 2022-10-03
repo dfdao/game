@@ -49,6 +49,8 @@ import {
   QueuedArrival,
   Radii,
   RevealedLocation,
+  Spaceship,
+  SpaceshipId,
   SpaceType,
   Transaction,
   TransactionCollection,
@@ -117,11 +119,17 @@ export class GameObjects {
   private readonly myPlanets: Map<LocationId, Planet>;
 
   /**
-   * Cached index of artifacts owned by the player.
+   * Cached index of artifacts in a players wallet.
    *
    * @see The same warning applys as the one on {@link GameObjects.planets}
    */
   private readonly myArtifacts: Map<ArtifactId, Artifact>;
+  /**
+   * Cached index of spaceships in a players wallet.
+   *
+   * @see The same warning applys as the one on {@link GameObjects.planets}
+   */
+  private readonly mySpaceships: Map<SpaceshipId, Spaceship>;
 
   /**
    * Map from artifact ids to wormholes.
@@ -200,10 +208,15 @@ export class GameObjects {
   public readonly myPlanetsUpdated$: Monomitter<Map<LocationId, Planet>>;
 
   /**
-   * Whenever one of the player's artifacts are updated, this event emitter publishes. See
+   * Whenever an artifact changes in a player's wallet, this event emitter publishes. See
    * {@link GameObjects.myPlanetsUpdated$} for more info.
    */
-  public readonly myArtifactsUpdated$: Monomitter<Map<ArtifactId, Artifact>>;
+  public readonly myArtifactsUpdated$: Monomitter<[ArtifactId, Artifact]>;
+  /**
+   * Whenever a spaceship changes in a player's wallet, this event emitter publishes. See
+   * {@link GameObjects.myPlanetsUpdated$} for more info.
+   */
+  public readonly mySpaceshipsUpdated$: Monomitter<[SpaceshipId, Spaceship]>;
 
   constructor(
     address: EthAddress | undefined,
@@ -215,7 +228,9 @@ export class GameObjects {
     unprocessedArrivals: Map<VoyageId, QueuedArrival>,
     unprocessedPlanetArrivalIds: Map<LocationId, VoyageId[]>,
     contractConstants: ContractConstants,
-    worldRadius: number
+    worldRadius: number,
+    myArtifacts: Map<ArtifactId, Artifact>,
+    mySpaceships: Map<SpaceshipId, Spaceship>
   ) {
     autoBind(this);
 
@@ -225,7 +240,8 @@ export class GameObjects {
     this.touchedPlanetIds = allTouchedPlanetIds;
     this.revealedLocations = revealedLocations;
     this.claimedLocations = claimedLocations;
-    this.myArtifacts = new Map();
+    this.myArtifacts = myArtifacts;
+    this.mySpaceships = mySpaceships;
     this.contractConstants = contractConstants;
     this.coordsToLocation = new Map();
     this.planetLocationMap = new Map();
@@ -237,6 +253,7 @@ export class GameObjects {
 
     this.planetUpdated$ = monomitter();
     this.myArtifactsUpdated$ = monomitter();
+    this.mySpaceshipsUpdated$ = monomitter();
     this.myPlanetsUpdated$ = monomitter();
 
     for (const chunk of allChunks) {
@@ -784,6 +801,9 @@ export class GameObjects {
 
   public getMyArtifactMap(): Map<ArtifactId, Artifact> {
     return this.myArtifacts;
+  }
+  public getMySpaceshipMap(): Map<SpaceshipId, Spaceship> {
+    return this.mySpaceships;
   }
 
   public getRevealedLocations(): Map<LocationId, RevealedLocation> {
