@@ -1,6 +1,7 @@
 import { formatNumber, isSpaceShip } from '@dfdao/gamelogic';
+import { nameOfArtifact } from '@dfdao/procedural';
 import { isUnconfirmedMoveTx, isUnconfirmedReleaseTx } from '@dfdao/serde';
-import { Artifact, artifactNameFromArtifact, Planet, TooltipName } from '@dfdao/types';
+import { Artifact, Planet, TooltipName } from '@dfdao/types';
 import React, { useCallback } from 'react';
 import styled from 'styled-components';
 import { Wrapper } from '../../Backend/Utils/Wrapper';
@@ -166,7 +167,7 @@ function SendRow({
 }) {
   let content = 'Send';
   if (artifact) {
-    const artifactName = artifactNameFromArtifact(artifact);
+    const artifactName = nameOfArtifact(artifact);
     if (isSpaceShip(artifact.artifactType)) {
       // Call it "Move" with a spaceship, instead of "Send"
       content = `Move ${artifactName}`;

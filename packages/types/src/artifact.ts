@@ -109,61 +109,6 @@ export type Artifact = {
   transactions?: TransactionCollection;
 };
 
-// TODO: get this out of here
-
-const godGrammar = {
-  god1: [
-    "c'",
-    'za',
-    "ry'",
-    "ab'",
-    "bak'",
-    "dt'",
-    "ek'",
-    "fah'",
-    "q'",
-    'qo',
-    'van',
-    'bow',
-    'gui',
-    'si',
-  ],
-  god2: [
-    'thun',
-    'tchalla',
-    'thovo',
-    'saron',
-    'zoth',
-    'sharrj',
-    'thulu',
-    'ra',
-    'wer',
-    'doin',
-    'renstad',
-    'nevere',
-    'goth',
-    'anton',
-    'layton',
-  ],
-};
-
-/**
- * Deterministically generates the name of the artifact from its ID.
- *
- * @param artifact The artifact to generate a name for
- */
-export function artifactNameFromArtifact(artifact: Artifact) {
-  const idNum = parseInt(artifact.id, 16);
-
-  const roll1 = (idNum % 7919) % godGrammar.god1.length; // 7919 is a big prime
-  const roll2 = (idNum % 7883) % godGrammar.god2.length; // 7883 is a big prime
-
-  const name = godGrammar.god1[roll1] + godGrammar.god2[roll2];
-  const nameCapitalized = name.charAt(0).toUpperCase() + name.slice(1);
-
-  return nameCapitalized;
-}
-
 /**
  * type interface for ERC721 metadata.
  */
