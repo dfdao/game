@@ -236,6 +236,43 @@ library LibPlanet {
         emit PlanetUpgraded(msg.sender, _location, _branch, upgradeBranchCurrentLevel + 1);
     }
 
+    function upgradePlanetMax(uint256 _location, uint256 _branch) public {
+        Planet storage planet = gs().planets[_location];
+        require(
+            planet.owner == msg.sender,
+            "Only owner account can perform that operation on planet."
+        );
+        uint256 planetLevel = planet.planetLevel;
+        require(planetLevel > 0, "Planet level is not high enough for this upgrade");
+        require(_branch <= uint256(UpgradeBranch.SPEED), "Upgrade branch not valid");
+        require(planet.planetType == PlanetType.PLANET, "Can only upgrade regular planets");
+        require(!planet.destroyed, "planet is destroyed");
+
+        uint256 totalLevel = planet.upgradeState0 + planet.upgradeState1 + planet.upgradeState2;
+        // Only max upgrade if planet hasn't been upgraded.
+        if (totalLevel != 0) return;
+
+        Upgrade memory upgrade = LibStorage.maxUpgrades()[_branch];
+        // Divided for contract precision
+        uint256 upgradeCost = (planet.silverCap * 3) / 1000;
+        require(
+            DFTokenFacet(address(this)).getSilverBalance(msg.sender) >= upgradeCost,
+            "Insufficient silver to upgrade"
+        );
+
+        // do upgrade
+        LibGameUtils._buffPlanet(_location, upgrade);
+        DFTokenFacet(address(this)).burn(msg.sender, LibSilver.create(), upgradeCost);
+        if (_branch == uint256(UpgradeBranch.DEFENSE)) {
+            planet.upgradeState0 += 5;
+        } else if (_branch == uint256(UpgradeBranch.RANGE)) {
+            planet.upgradeState1 += 5;
+        } else if (_branch == uint256(UpgradeBranch.SPEED)) {
+            planet.upgradeState2 += 5;
+        }
+        emit PlanetUpgraded(msg.sender, _location, _branch, 5);
+    }
+
     function checkPlayerInit(
         uint256 _location,
         uint256 _perlin,

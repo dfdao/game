@@ -26,6 +26,9 @@ contract DFWhitelistFacet is WithStorage {
         if (!ws().enabled) {
             return true;
         }
+        if (LibPermissions.contractOwner() == _addr) {
+            return true;
+        }
         return ws().allowedAccounts[_addr];
     }
 
