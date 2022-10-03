@@ -27,7 +27,6 @@ import {
   Initializers,
 } from '@dfdao/settings';
 import { workspace } from '@projectsophon/workspace';
-import './tasks/artifact';
 import './tasks/circom';
 import './tasks/debug';
 import './tasks/deploy';
