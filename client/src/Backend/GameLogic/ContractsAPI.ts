@@ -18,8 +18,10 @@ import {
   decodePlanetTypeWeights,
   decodePlayer,
   decodeRevealedCoords,
+  decodeSpaceship,
   decodeUpgradeBranches,
   isArtifact,
+  isSpaceship,
   locationIdFromEthersBN,
   locationIdToDecStr,
 } from '@dfdao/serde';
@@ -35,6 +37,7 @@ import {
   QueuedArrival,
   RevealedCoords,
   Setting,
+  Spaceship,
   Transaction,
   TransactionId,
   TxIntent,
@@ -792,9 +795,30 @@ export class ContractsAPI extends EventEmitter {
 
     const tokenIds = await this.makeCall(this.contract.tokensByAccount, [playerId]);
     if (onProgress) {
-      onProgress(95);
+      onProgress(0.95);
     }
-    return tokenIds.filter(isArtifact).map(decodeArtifact);
+    const artifacts = tokenIds.filter(isArtifact).map(decodeArtifact);
+    if (onProgress) {
+      onProgress(1);
+    }
+    return artifacts;
+  }
+
+  public async getPlayerSpaceships(
+    playerId?: EthAddress,
+    onProgress?: (percent: number) => void
+  ): Promise<Spaceship[]> {
+    if (playerId === undefined) return [];
+
+    const tokenIds = await this.makeCall(this.contract.tokensByAccount, [playerId]);
+    if (onProgress) {
+      onProgress(0.95);
+    }
+    const spaceships = tokenIds.filter(isSpaceship).map(decodeSpaceship);
+    if (onProgress) {
+      onProgress(1);
+    }
+    return spaceships;
   }
 
   public setDiagnosticUpdater(diagnosticUpdater?: DiagnosticUpdater) {
