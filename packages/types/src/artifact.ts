@@ -4,6 +4,22 @@ import type { TransactionCollection } from './transaction';
 import type { Abstract } from './utility';
 
 /**
+ * Abstract type representing an artifact info.
+ */
+export type ArtifactInfo = Abstract<number, 'ArtifactInfo'>;
+
+/**
+ * Enumeration of artifact info.
+ */
+export const ArtifactInfo = {
+  Unknown: 0 as ArtifactInfo,
+  TokenType: 1 as ArtifactInfo,
+  ArtifactRarity: 2 as ArtifactInfo,
+  ArtifactType: 3 as ArtifactInfo,
+  Biome: 4 as ArtifactInfo,
+} as const;
+
+/**
  * Abstract type representing an artifact type.
  */
 export type ArtifactType = Abstract<number, 'ArtifactType'>;

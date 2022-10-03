@@ -2,6 +2,7 @@ import type { DarkForest } from '@dfdao/contracts/typechain';
 import {
   Artifact,
   ArtifactId,
+  ArtifactInfo,
   ArtifactPointValues,
   ArtifactRarity,
   ArtifactType,
@@ -108,10 +109,11 @@ export function decodeArtifact(tokenId: EthersBN): Artifact {
   // Type: Colossus
   // Biome: Forest
 
-  const tokenIdx = 0;
-  const rarityIdx = 0;
-  const typeIdx = 0;
-  const biomeIdx = 0;
+  // These acocunt for unknown at the 0-th index
+  const tokenIdx = ArtifactInfo.TokenType - 1;
+  const rarityIdx = ArtifactInfo.ArtifactRarity - 1;
+  const typeIdx = ArtifactInfo.ArtifactType - 1;
+  const biomeIdx = ArtifactInfo.Biome - 1;
 
   const _tokenType = calculateByteUInt(tokenId, tokenIdx, tokenIdx);
   const rarity = calculateByteUInt(tokenId, rarityIdx, rarityIdx);
