@@ -6,6 +6,7 @@ import {
   Player,
   QueuedArrival,
   RevealedCoords,
+  Spaceship,
   VoyageId,
 } from '@dfdao/types';
 import _ from 'lodash';
@@ -31,6 +32,7 @@ export interface InitialGameState {
   pendingMoves: QueuedArrival[];
   touchedAndLocatedPlanets: Map<LocationId, Planet>;
   myArtifacts: Artifact[];
+  mySpaceships: Spaceship[];
   loadedPlanets: LocationId[];
   revealedCoordsMap: Map<LocationId, RevealedCoords>;
   claimedCoordsMap?: Map<LocationId, ClaimedCoords>;
@@ -86,6 +88,7 @@ export class InitialGameStateDownloader {
     const pendingMovesLoadingBar = this.makeProgressListener('Pending Moves');
     const planetsLoadingBar = this.makeProgressListener('Planets');
     const yourArtifactsLoadingBar = this.makeProgressListener('Your Artifacts');
+    const yourSpaceshipsLoadingBar = this.makeProgressListener('Your Spaceships');
 
     const contractConstants = contractsAPI.getConstants();
     const worldRadius = contractsAPI.getWorldRadius();
@@ -158,6 +161,10 @@ export class InitialGameStateDownloader {
       contractsAPI.getAddress(),
       yourArtifactsLoadingBar
     );
+    const mySpaceships = contractsAPI.getPlayerSpaceships(
+      contractsAPI.getAddress(),
+      yourSpaceshipsLoadingBar
+    );
 
     const twitters = await tryGetAllTwitters();
     const paused = contractsAPI.getIsPaused();
@@ -171,6 +178,7 @@ export class InitialGameStateDownloader {
       pendingMoves,
       touchedAndLocatedPlanets,
       myArtifacts: await myArtifacts,
+      mySpaceships: await mySpaceships,
       loadedPlanets: planetsToLoad,
       revealedCoordsMap,
       claimedCoordsMap,

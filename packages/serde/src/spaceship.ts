@@ -86,3 +86,13 @@ export function decodeSpaceship(tokenId: EthersBN): Spaceship {
     spaceshipType: spaceshipType as SpaceshipType,
   };
 }
+
+export function isSpaceship(tokenId: EthersBN): boolean {
+  // These acocunt for unknown at the 0-th index
+  const tokenIdx = SpaceshipInfo.TokenType - 1;
+
+  const tokenType = calculateByteUInt(tokenId, tokenIdx, tokenIdx);
+
+  // TODO: put this into types
+  return tokenType === 2;
+}
