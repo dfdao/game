@@ -11,6 +11,7 @@ import {
 import {
   address,
   decodeArrival,
+  decodeArtifact,
   decodeArtifactPointValues,
   decodePlanet,
   decodePlanetDefaults,
@@ -18,6 +19,7 @@ import {
   decodePlayer,
   decodeRevealedCoords,
   decodeUpgradeBranches,
+  isArtifact,
   locationIdFromEthersBN,
   locationIdToDecStr,
 } from '@dfdao/serde';
@@ -784,15 +786,15 @@ export class ContractsAPI extends EventEmitter {
 
   public async getPlayerArtifacts(
     playerId?: EthAddress,
-    _onProgress?: (percent: number) => void
+    onProgress?: (percent: number) => void
   ): Promise<Artifact[]> {
     if (playerId === undefined) return [];
 
-    return [];
-    // const myArtifactIds = (await this.makeCall(this.contract.getPlayerArtifactIds, [playerId])).map(
-    //   artifactIdFromEthersBN
-    // );
-    // return this.bulkGetArtifacts(myArtifactIds, onProgress);
+    const tokenIds = await this.makeCall(this.contract.tokensByAccount, [playerId]);
+    if (onProgress) {
+      onProgress(95);
+    }
+    return tokenIds.filter(isArtifact).map(decodeArtifact);
   }
 
   public setDiagnosticUpdater(diagnosticUpdater?: DiagnosticUpdater) {
