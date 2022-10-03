@@ -16,7 +16,6 @@ import {LibStorage, GameStorage, GameConstants} from "./LibStorage.sol";
 
 // Type imports
 import {Biome, Planet, PlanetType, ArtifactType, ArtifactRarity, TokenType, DFPFindArtifactArgs, DFTCreateArtifactArgs, Artifact, ArtifactInfo, Spaceship, SpaceshipType} from "../DFTypes.sol";
-import "hardhat/console.sol";
 
 library LibArtifactUtils {
     function gs() internal pure returns (GameStorage storage) {
@@ -247,7 +246,6 @@ library LibArtifactUtils {
         }
 
         if (shouldDeactivateAndBurn) {
-            // artifact.lastDeactivated = block.timestamp; // immediately deactivate
             gs().planetActiveArtifact[locationId] = 0; // immediately remove activate artifact
 
             emit ArtifactDeactivated(msg.sender, locationId, artifactId);

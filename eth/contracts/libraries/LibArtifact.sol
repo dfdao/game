@@ -262,7 +262,6 @@ library LibArtifact {
             } else {
                 artifactType = ArtifactType.Wormhole;
             }
-            artifactType = ArtifactType.PhotoidCannon;
         }
 
         uint256 bonus = 0;
