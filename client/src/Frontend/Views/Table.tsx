@@ -6,13 +6,14 @@ import dfstyles from '../Styles/dfstyles';
 
 const TableElement = styled.table`
   width: 100%;
-  overflow-y: scroll;
+  overflow-y: hidden;
   scrollbar-width: initial;
   border-radius: ${dfstyles.borderRadius};
 `;
 
 const ScrollableBody = styled.tbody`
   width: 100%;
+  overflow-y: scroll;
 `;
 
 const AlignmentOptions: { [key: string]: CSSProperties['textAlign'] } = {
@@ -45,6 +46,7 @@ export function Table<T>({
   alignments,
   headerStyle,
   paginated,
+  itemsPerPage = 10
 }: {
   rows: T[];
   headers: React.ReactNode[];
@@ -52,8 +54,8 @@ export function Table<T>({
   alignments?: Array<'r' | 'c' | 'l'>;
   headerStyle?: React.CSSProperties;
   paginated?: boolean;
+  itemsPerPage? : number;
 }) {
-  const itemsPerPage = 10;
   const [page, setPage] = useState(0);
   const visibleRows = paginated
     ? rows.slice(page * itemsPerPage, page * itemsPerPage + itemsPerPage)
@@ -83,7 +85,7 @@ export function Table<T>({
                   key={colIdx}
                   style={(alignments && { textAlign: AlignmentOptions[alignments[colIdx]] }) || {}}
                 >
-                  {column(row, rowIdx)}
+                  {column(row, (rowIdx + page * itemsPerPage))}
                 </td>
               ))}
             </tr>

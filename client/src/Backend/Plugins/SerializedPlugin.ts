@@ -1,4 +1,4 @@
-import { PluginId } from '@dfdao/types';
+import { PluginId } from '@darkforest_eth/types';
 
 /**
  * Represents a plugin that the user has added to their game. Used

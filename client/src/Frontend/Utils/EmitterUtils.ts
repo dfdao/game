@@ -1,5 +1,6 @@
-import { monomitter, Monomitter } from '@dfdao/events';
-import { Artifact, EthAddress, Planet } from '@dfdao/types';
+import { monomitter, Monomitter } from '@darkforest_eth/events';
+import { isSpaceShip } from '@darkforest_eth/gamelogic';
+import { Artifact, EthAddress, Planet } from '@darkforest_eth/types';
 import _ from 'lodash';
 
 /**
@@ -135,3 +136,10 @@ export const getPlanetId = (p: Planet) => p.locationId;
 export const getPlanetOwner = (p: Planet) => p.owner;
 
 export const getArtifactId = (a: Artifact) => a.id;
+export const getArtifactOwner = (a: Artifact) => {
+  if (isSpaceShip(a.artifactType)) {
+    return a.controller;
+  }
+
+  return a.currentOwner;
+};

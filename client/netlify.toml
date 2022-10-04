@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "yarn build"
   functions = "functions"
   publish = "dist"
 
@@ -8,10 +8,15 @@
   to = "/index.html"
   status = 200
 
+[[redirects]]
+  from = "/archive/8d8a7d2a/*"
+  to = "https://6247dc3ca1de3b6ce0c8e184--df-prod.netlify.app/:splat"
+  status = 200
+
 ## (optional) Settings for Netlify Dev
 ## https://github.com/netlify/cli/blob/master/docs/netlify-dev.md#project-detection
 #[dev]
-#  command = "npm start" # Command to start your dev server
+#  command = "yarn start" # Command to start your dev server
 #  port = 3000 # Port that the dev server will be listening on
 #  publish = "dist" # Folder with the static content for _redirect file
 

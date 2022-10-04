@@ -1,4 +1,4 @@
-import { biomeName, isLocatable } from '@dfdao/gamelogic';
+import { biomeName, isLocatable } from '@darkforest_eth/gamelogic';
 import {
   Artifact,
   Biome,
@@ -8,7 +8,7 @@ import {
   LocatablePlanet,
   Planet,
   TxIntent,
-} from '@dfdao/types';
+} from '@darkforest_eth/types';
 import EventEmitter from 'events';
 import { startCase } from 'lodash';
 import React from 'react';
@@ -37,6 +37,7 @@ import {
   PlanetAttacked,
   PlanetConquered,
   PlanetLost,
+  PlanetSupported,
   Quasar,
   TxDeclined,
 } from '../Components/Icons';
@@ -75,6 +76,7 @@ export const enum NotificationType {
   PlanetLost,
   PlanetWon,
   PlanetAttacked,
+  PlanetSupported,
   ArtifactProspected,
   ArtifactFound,
   ReceivedPlanet,
@@ -190,6 +192,9 @@ class NotificationManager extends EventEmitter {
         break;
       case NotificationType.PlanetAttacked:
         return <PlanetAttacked height={'48px'} width={'48px'} />;
+        break;
+      case NotificationType.PlanetSupported:
+        return <PlanetSupported height={'48px'} width={'48px'} />;
         break;
       case NotificationType.PlanetLost:
         return <PlanetLost height={'48px'} width={'48px'} />;
@@ -399,6 +404,15 @@ class NotificationManager extends EventEmitter {
     );
   }
 
+  planetSupported(planet: LocatablePlanet): void {
+    this.notify(
+      NotificationType.PlanetSupported,
+      <span>
+        A friend has supported your Planet <PlanetNameLink planet={planet}></PlanetNameLink>!
+      </span>
+    );
+  }
+
   planetCanUpgrade(planet: Planet): void {
     this.notify(
       NotificationType.CanUpgrade,
@@ -425,6 +439,16 @@ class NotificationManager extends EventEmitter {
       <span>
         Someone just sent you their planet: <PlanetNameLink planet={planet} />.{' '}
         {!isLocatable(planet) && "You'll need to ask the person who sent it for its location."}
+      </span>
+    );
+  }
+
+  targetPlanetInvaded(planet: Planet) {
+    this.notify(
+      NotificationType.PlanetAttacked,
+      <span>
+        Someone just invaded a target planet: <PlanetNameLink planet={planet} />.{' '}
+        Don't let them win!
       </span>
     );
   }

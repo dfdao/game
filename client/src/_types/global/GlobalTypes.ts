@@ -1,4 +1,4 @@
-import { Rectangle } from '@dfdao/types';
+import { Rectangle } from '@darkforest_eth/types';
 import { Dispatch, SetStateAction } from 'react';
 import GameManager from '../../Backend/GameLogic/GameManager';
 import GameUIManager from '../../Backend/GameLogic/GameUIManager';
@@ -29,6 +29,7 @@ export type HashConfig = {
   perlinMirrorX: boolean;
   perlinMirrorY: boolean;
   planetRarity: number; // only for fakeHash (DISABLE_ZK_CHECKS on)
+  planetLevelThresholds: number[];
 };
 
 export const enum StatIdx {
@@ -53,6 +54,7 @@ export interface MinerWorkerMessage {
   perlinLengthScale: number;
   perlinMirrorX: boolean;
   perlinMirrorY: boolean;
+  planetLevelThresholds: number[];
 }
 
 // info about when the player can next reveal coordinates

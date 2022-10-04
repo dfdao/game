@@ -1,9 +1,14 @@
-import { BLOCK_EXPLORER_URL } from '@dfdao/constants';
-import { isLocatable } from '@dfdao/gamelogic';
-import { artifactName, getPlanetName, spaceshipName } from '@dfdao/procedural';
-import { decodeArtifact, decodeSpaceship } from '@dfdao/serde';
-import { ArtifactId, Chunk, Planet, SpaceshipId, Transaction, WorldCoords } from '@dfdao/types';
-import { BigNumber } from 'ethers';
+import { BLOCK_EXPLORER_URL } from '@darkforest_eth/constants';
+import { isLocatable } from '@darkforest_eth/gamelogic';
+import { artifactName, getPlanetName } from '@darkforest_eth/procedural';
+import {
+  Artifact,
+  ArtifactId,
+  Chunk,
+  Planet,
+  Transaction,
+  WorldCoords,
+} from '@darkforest_eth/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Viewport from '../Game/Viewport';
@@ -46,7 +51,13 @@ export const Red = styled.span`
   color: ${dfstyles.colors.dfred};
 `;
 export const Gold = styled.span`
-  color: ${dfstyles.colors.dfyellow};
+  color: ${dfstyles.colors.dfgold};
+`;
+export const Silver = styled.span`
+color: ${dfstyles.colors.dfsilver};
+`;
+export const Bronze = styled.span`
+color: ${dfstyles.colors.dfbronze};
 `;
 
 export const Colored = styled.span<{ color: string }>`
@@ -110,23 +121,14 @@ export function CenterPlanetLink({
 }
 
 export function ArtifactNameLink({ id }: { id: ArtifactId }) {
-  const artifact = decodeArtifact(BigNumber.from(id));
+  const uiManager = useUIManager();
+  const artifact: Artifact | undefined = uiManager && uiManager.getArtifactWithId(id);
 
   const click = () => {
     UIEmitter.getInstance().emit(UIEmitterEvent.ShowArtifact, artifact);
   };
 
   return <Link onClick={click}>{artifactName(artifact)}</Link>;
-}
-
-export function SpaceshipNameLink({ id }: { id: SpaceshipId }) {
-  const spaceship = decodeSpaceship(BigNumber.from(id));
-
-  const click = () => {
-    UIEmitter.getInstance().emit(UIEmitterEvent.ShowSpaceship, spaceship);
-  };
-
-  return <Link onClick={click}>{spaceshipName(spaceship)}</Link>;
 }
 
 export function PlanetNameLink({ planet }: { planet: Planet }) {

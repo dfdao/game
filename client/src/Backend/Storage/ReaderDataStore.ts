@@ -1,6 +1,7 @@
-import { isLocatable } from '@dfdao/gamelogic';
-import { EthConnection } from '@dfdao/network';
+import { isLocatable } from '@darkforest_eth/gamelogic';
+import { EthConnection } from '@darkforest_eth/network';
 import {
+  ArtifactId,
   Biome,
   EthAddress,
   LocatablePlanet,
@@ -8,7 +9,7 @@ import {
   Planet,
   SpaceType,
   WorldLocation,
-} from '@dfdao/types';
+} from '@darkforest_eth/types';
 import { ContractConstants } from '../../_types/darkforest/api/ContractsAPITypes';
 import { AddressTwitterMap } from '../../_types/darkforest/api/UtilityServerAPITypes';
 import { arrive, updatePlanetToTime } from '../GameLogic/ArrivalUtils';
@@ -74,7 +75,7 @@ class ReaderDataStore {
     const addressTwitterMap = await getAllTwitters();
     const contractConstants = await contractsAPI.getConstants();
     const persistentChunkStore =
-      viewer && new PersistentChunkStore({ account: viewer, contractAddress });
+      viewer && (await PersistentChunkStore.create({ account: viewer, contractAddress }));
 
     const singlePlanetStore = new ReaderDataStore({
       contractAddress,
@@ -98,7 +99,7 @@ class ReaderDataStore {
     }
   }
 
-  private async setPlanetLocationIfKnown(planet: Planet): Promise<void> {
+  private setPlanetLocationIfKnown(planet: Planet): void {
     let planetLocation = undefined;
 
     if (planet && isLocatable(planet)) {
@@ -110,7 +111,6 @@ class ReaderDataStore {
     }
 
     if (this.persistentChunkStore) {
-      await this.persistentChunkStore.chunksLoaded();
       for (const chunk of this.persistentChunkStore.allChunks()) {
         for (const loc of chunk.planetLocations) {
           if (loc.hash === planet.locationId) {
@@ -143,13 +143,23 @@ class ReaderDataStore {
 
     for (const arrival of arrivals) {
       if (nowInSeconds < arrival.arrivalTime) break;
-      arrive(planet, arrival, contractConstants);
+      arrive(planet, [], arrival, undefined, contractConstants, undefined, undefined);
     }
 
-    updatePlanetToTime(planet, Date.now(), contractConstants);
-    await this.setPlanetLocationIfKnown(planet);
+    updatePlanetToTime(planet, [], Date.now(), contractConstants);
+    this.setPlanetLocationIfKnown(planet);
 
     return planet;
+  }
+
+  public async loadArtifactFromContract(artifactId: ArtifactId) {
+    const artifact = await this.contractsAPI.getArtifactById(artifactId);
+
+    if (!artifact) {
+      throw new Error(`unable to load artifact with id ${artifactId}`);
+    }
+
+    return artifact;
   }
 
   // copied from GameEntityMemoryStore. needed to determine biome if we know planet location

@@ -1,4 +1,4 @@
-import { PluginId } from '@dfdao/types';
+import { PluginId } from '@darkforest_eth/types';
 
 /**
  * This interface represents an embedded plugin, which is stored in `embedded_plugins/`.
@@ -13,44 +13,30 @@ export interface EmbeddedPlugin {
  * Load all of the embedded plugins in the dist directory of the `embedded_plugins/` project
  * as Plain Text files. This means that `embedded_plugins/` can't use `import` for relative paths.
  */
-const pluginsContext: Record<string, { default: string }> = import.meta.glob(
-  [
-    '../../../embedded_plugins/**/*.ts',
-    '../../../embedded_plugins/**/*.tsx',
-    '../../../embedded_plugins/**/*.js',
-    '../../../embedded_plugins/**/*.jsx',
-  ],
-  {
-    eager: true,
-  }
-);
-
-function flattenPath(filename: string) {
-  // TODO: Remove the `./` when possible, only added for parity with the old webpack code
-  return filename.replace('../../../embedded_plugins/', './');
-}
+const pluginsContext = require.context('../../../embedded_plugins/', false, /\.[jt]sx?$/);
 
 function cleanFilename(filename: string) {
-  return flattenPath(filename)
+  return filename
     .replace(/^\.\//, '')
     .replace(/[_-]/g, ' ')
     .replace(/\.[jt]sx?$/, '');
 }
 
 export function getEmbeddedPlugins(isAdmin: boolean) {
-  return Object.keys(pluginsContext)
+  return pluginsContext
+    .keys()
     .filter((filename) => {
       if (isAdmin) {
         return true;
       } else {
-        return !filename.includes('./Admin-Controls');
+        return !filename.startsWith('./Admin-Controls') && !filename.startsWith('./Metrics');
       }
     })
     .map((filename) => {
       return {
-        id: flattenPath(filename) as PluginId,
+        id: filename as PluginId,
         name: cleanFilename(filename),
-        code: pluginsContext[filename].default,
+        code: pluginsContext<{ default: string }>(filename).default,
       };
     });
 }

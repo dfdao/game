@@ -1,6 +1,6 @@
-import { isLocatable } from '@dfdao/gamelogic';
-import { getPlanetBlurb, getPlanetName, getPlanetTagline } from '@dfdao/procedural';
-import { LocationId, Planet } from '@dfdao/types';
+import { isLocatable } from '@darkforest_eth/gamelogic';
+import { getPlanetBlurb, getPlanetName, getPlanetTagline } from '@darkforest_eth/procedural';
+import { LocationId, Planet } from '@darkforest_eth/types';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import styled from 'styled-components';
@@ -8,7 +8,7 @@ import ReaderDataStore from '../../Backend/Storage/ReaderDataStore';
 import { getPlanetShortHash } from '../../Backend/Utils/Utils';
 import { Sub } from '../Components/Text';
 import dfstyles from '../Styles/dfstyles';
-import { Share } from '../Views/Share';
+import { Share } from '../Views/Game/Share';
 
 const PlanetCard = styled.div`
   width: 36em;

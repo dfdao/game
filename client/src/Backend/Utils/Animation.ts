@@ -1,4 +1,4 @@
-import { DFAnimation, DFStatefulAnimation, PlanetLevel } from '@dfdao/types';
+import { DFAnimation, DFStatefulAnimation, PlanetLevel } from '@darkforest_eth/types';
 import anime from 'animejs';
 
 export function sinusoidalAnimation(rps: number): DFAnimation {

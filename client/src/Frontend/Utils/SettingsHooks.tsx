@@ -1,5 +1,5 @@
-import { monomitter, Monomitter } from '@dfdao/events';
-import { AutoGasSetting, EthAddress, Setting } from '@dfdao/types';
+import { monomitter, Monomitter } from '@darkforest_eth/events';
+import { AutoGasSetting, EthAddress, Setting } from '@darkforest_eth/types';
 import React, { useCallback, useState } from 'react';
 import GameUIManager from '../../Backend/GameLogic/GameUIManager';
 import { SelectFrom } from '../Components/CoreUI';
@@ -27,24 +27,25 @@ export const ALL_AUTO_GAS_SETTINGS = [
 ];
 
 function onlyInProduction(): string {
-  return import.meta.env.PROD ? 'true' : 'false';
+  return JSON.stringify(process.env.NODE_ENV === 'production');
 }
 
 function onlyInDevelopment(): string {
-  return import.meta.env.DEV ? 'true' : 'false';
+  return JSON.stringify(process.env.NODE_ENV !== 'production');
 }
 
 const defaultSettings: Record<Setting, string> = {
   [Setting.OptOutMetrics]: onlyInDevelopment(),
-  [Setting.AutoApproveNonPurchaseTransactions]: onlyInDevelopment(),
+  [Setting.AutoApproveNonPurchaseTransactions]: 'true',
   [Setting.DrawChunkBorders]: 'false',
   [Setting.HighPerformanceRendering]: 'false',
   [Setting.MoveNotifications]: 'true',
   [Setting.HasAcceptedPluginRisk]: onlyInDevelopment(),
   [Setting.GasFeeGwei]: AutoGasSetting.Average,
-  [Setting.TerminalVisible]: 'true',
-  [Setting.TutorialOpen]: onlyInProduction(),
-
+  [Setting.TerminalVisible]: 'false',
+  [Setting.ShowTutorial]: 'false',
+  [Setting.ShowSpectatorInfo]: 'true',
+  [Setting.ShowArenaBriefing]: 'true',
   [Setting.FoundPirates]: 'false',
   [Setting.TutorialCompleted]: 'false',
   [Setting.FoundSilver]: 'false',
@@ -55,7 +56,7 @@ const defaultSettings: Record<Setting, string> = {
   [Setting.FoundDeepSpace]: 'false',
   [Setting.FoundSpace]: 'false',
   // prevent the tutorial and help pane popping up in development mode.
-  [Setting.NewPlayer]: onlyInProduction(),
+  [Setting.NewPlayer]: 'false',
   [Setting.MiningCores]: '1',
   [Setting.IsMining]: 'true',
   [Setting.DisableDefaultShortcuts]: 'false',
@@ -64,7 +65,7 @@ const defaultSettings: Record<Setting, string> = {
   [Setting.DisableHatRendering]: 'false',
   [Setting.AutoClearConfirmedTransactionsAfterSeconds]: '-1',
   [Setting.AutoClearRejectedTransactionsAfterSeconds]: '-1',
-  [Setting.DisableFancySpaceEffect]: 'false',
+  [Setting.DisableFancySpaceEffect]: 'true',
   [Setting.RendererColorInnerNebula]: '#186469',
   [Setting.RendererColorNebula]: '#0B2B5B',
   [Setting.RendererColorSpace]: '#0B0F34',

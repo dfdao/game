@@ -1,9 +1,9 @@
-import { isAncient, isLocatable } from '@dfdao/gamelogic';
-import { Artifact, Biome, BiomeNames, LocatablePlanet, Planet } from '@dfdao/types';
+import { isAncient, isLocatable } from '@darkforest_eth/gamelogic';
+import { Artifact, Biome, BiomeNames, LocatablePlanet, Planet } from '@darkforest_eth/types';
 import React from 'react';
 import styled from 'styled-components';
 import { BiomeTextColors } from '../../Styles/Colors';
-import { AncientLabel, AncientLabelAnim } from '../AncientLabel';
+import { AncientLabel, AncientLabelAnim } from './AncientLabel';
 import { icyAnim, shakeAnim } from '../BiomeAnims';
 import { LavaLabel } from './LavaLabel';
 import { WastelandLabel } from './WastelandLabel';
@@ -41,3 +41,7 @@ export const ArtifactBiomeLabel = ({ artifact }: { artifact: Artifact }) =>
 
 export const ArtifactBiomeLabelAnim = ({ artifact }: { artifact: Artifact }) =>
   isAncient(artifact) ? <AncientLabelAnim /> : <BiomeLabelAnim biome={artifact.planetBiome} />;
+
+export const ArtifactBiomeLabelAnimSimple = ({ biome }: { biome: Biome }) => (
+  <BiomeLabelAnim biome={biome} />
+);

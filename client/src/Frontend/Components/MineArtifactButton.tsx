@@ -1,11 +1,12 @@
-import { isUnconfirmedFindArtifactTx, isUnconfirmedProspectPlanetTx } from '@dfdao/serde';
-import { Planet, PlanetType, SpaceshipType, TooltipName } from '@dfdao/types';
+import { isUnconfirmedFindArtifactTx, isUnconfirmedProspectPlanetTx } from '@darkforest_eth/serde';
+import { ArtifactType, Planet, PlanetType, TooltipName } from '@darkforest_eth/types';
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { isFindable } from '../../Backend/GameLogic/ArrivalUtils';
+import TutorialManager, { TutorialState } from '../../Backend/GameLogic/TutorialManager';
 import { Wrapper } from '../../Backend/Utils/Wrapper';
 import { TooltipTrigger } from '../Panes/Tooltip';
-import { useAccount, useUIManager } from '../Utils/AppHooks';
+import { useAddress, useUIManager } from '../Utils/AppHooks';
 import { useEmitterValue } from '../Utils/EmitterHooks';
 import { MINE_ARTIFACT } from '../Utils/ShortcutConstants';
 import { ShortcutBtn } from './Btn';
@@ -28,7 +29,7 @@ export function MineArtifactButton({
   planetWrapper: Wrapper<Planet | undefined>;
 }) {
   const uiManager = useUIManager();
-  const account = useAccount(uiManager);
+  const account = useAddress(uiManager);
   const gameManager = uiManager.getGameManager();
   const currentBlockNumber = useEmitterValue(uiManager.getEthConnection().blockNumber$, undefined);
   const owned = planetWrapper.value?.owner === account;
@@ -42,15 +43,13 @@ export function MineArtifactButton({
 
   const hasGear = useMemo(
     () =>
-      planetWrapper.value?.spaceships?.some(
-        (spaceship) => spaceship.spaceshipType === SpaceshipType.ShipGear
-      ),
-    [planetWrapper]
+      planetWrapper.value?.heldArtifactIds
+        .map((id) => uiManager.getArtifactWithId(id))
+        .find((artifact) => artifact?.artifactType === ArtifactType.ShipGear),
+    [planetWrapper, uiManager]
   );
-  const gearEnabled = uiManager.contractConstants.SPACESHIPS.GEAR;
 
-  let prospectable = isRuins;
-  if (gearEnabled) prospectable = isRuins && !!hasGear;
+  const prospectable = isRuins && hasGear;
 
   const prospecting = useMemo(
     () => planetWrapper.value?.transactions?.hasTransaction(isUnconfirmedProspectPlanetTx),
@@ -72,6 +71,8 @@ export function MineArtifactButton({
   const mine = useCallback(async () => {
     if (!planetWrapper.value) return;
 
+    const tutorialManager = TutorialManager.getInstance(uiManager);
+    tutorialManager.acceptInput(TutorialState.Foundry);
     const tx = await gameManager.prospectPlanet(planetWrapper.value.locationId);
     await tx.confirmedPromise;
     await gameManager.findArtifact(planetWrapper.value.locationId);
@@ -95,14 +96,12 @@ export function MineArtifactButton({
               shortcutText={MINE_ARTIFACT}
             >
               <TooltipTrigger
-                name={!gearEnabled || hasGear ? TooltipName.FindArtifact : TooltipName.Empty}
+                name={hasGear ? TooltipName.FindArtifact : TooltipName.Empty}
                 extraContent={
-                  !gearEnabled || hasGear ? (
+                  hasGear ? (
                     ''
                   ) : (
-                    <>
-                      <Red>You must have a Gear ship on this planet to prospect artifacts.</Red>
-                    </>
+                    <Red>You must have a Gear ship on this planet to prospect artifacts.</Red>
                   )
                 }
               >
@@ -116,16 +115,16 @@ export function MineArtifactButton({
               className='button'
               size='stretch'
               active={finding}
-              disabled={!findable || !(gearEnabled && hasGear)}
+              disabled={!findable || !hasGear}
               onClick={find}
               onShortcutPressed={find}
               shortcutKey={MINE_ARTIFACT}
               shortcutText={MINE_ARTIFACT}
             >
               <TooltipTrigger
-                name={!gearEnabled || hasGear ? TooltipName.FindArtifact : TooltipName.Empty}
+                name={hasGear ? TooltipName.FindArtifact : TooltipName.Empty}
                 extraContent={
-                  !gearEnabled || hasGear ? (
+                  hasGear ? (
                     ''
                   ) : (
                     <>

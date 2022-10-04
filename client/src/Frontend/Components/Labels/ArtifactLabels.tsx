@@ -1,11 +1,11 @@
-import { isAncient } from '@dfdao/gamelogic';
+import { isAncient } from '@darkforest_eth/gamelogic';
 import {
   Artifact,
   ArtifactRarity,
   ArtifactRarityNames,
   ArtifactTypeNames,
   BiomeNames,
-} from '@dfdao/types';
+} from '@darkforest_eth/types';
 import React from 'react';
 import styled from 'styled-components';
 import { RarityColors } from '../../Styles/Colors';

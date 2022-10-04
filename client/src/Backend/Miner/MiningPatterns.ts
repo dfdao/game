@@ -1,4 +1,4 @@
-import { Rectangle, WorldCoords } from '@dfdao/types';
+import { Rectangle, WorldCoords } from '@darkforest_eth/types';
 
 export const enum MiningPatternType {
   Home,

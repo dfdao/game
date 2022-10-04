@@ -1,11 +1,11 @@
-import { EMPTY_ADDRESS } from '@dfdao/constants';
-import { isUnconfirmedCapturePlanetTx, isUnconfirmedInvadePlanetTx } from '@dfdao/serde';
-import { Planet, TooltipName } from '@dfdao/types';
+import { EMPTY_ADDRESS } from '@darkforest_eth/constants';
+import { isUnconfirmedCapturePlanetTx, isUnconfirmedInvadePlanetTx } from '@darkforest_eth/serde';
+import { Planet, TooltipName } from '@darkforest_eth/types';
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { Wrapper } from '../../Backend/Utils/Wrapper';
 import { TooltipTrigger } from '../Panes/Tooltip';
-import { useAccount, useUIManager } from '../Utils/AppHooks';
+import { useAddress, useUIManager } from '../Utils/AppHooks';
 import { useEmitterValue } from '../Utils/EmitterHooks';
 import { INVADE } from '../Utils/ShortcutConstants';
 import { ShortcutBtn } from './Btn';
@@ -27,7 +27,7 @@ export function CapturePlanetButton({
   planetWrapper: Wrapper<Planet | undefined>;
 }) {
   const uiManager = useUIManager();
-  const account = useAccount(uiManager);
+  const account = useAddress(uiManager);
   const gameManager = uiManager.getGameManager();
   const currentBlockNumber = useEmitterValue(uiManager.getEthConnection().blockNumber$, undefined);
   const owned = planetWrapper.value?.owner === account;
