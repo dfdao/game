@@ -2,16 +2,7 @@ import { BLOCK_EXPLORER_URL } from '@dfdao/constants';
 import { isLocatable } from '@dfdao/gamelogic';
 import { artifactName, getPlanetName, spaceshipName } from '@dfdao/procedural';
 import { decodeArtifact, decodeSpaceship } from '@dfdao/serde';
-import {
-  Artifact,
-  ArtifactId,
-  Chunk,
-  Planet,
-  Spaceship,
-  SpaceshipId,
-  Transaction,
-  WorldCoords,
-} from '@dfdao/types';
+import { ArtifactId, Chunk, Planet, SpaceshipId, Transaction, WorldCoords } from '@dfdao/types';
 import { BigNumber } from 'ethers';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
@@ -119,7 +110,7 @@ export function CenterPlanetLink({
 }
 
 export function ArtifactNameLink({ id }: { id: ArtifactId }) {
-  const artifact: Artifact | undefined = decodeArtifact(BigNumber.from(id));
+  const artifact = decodeArtifact(BigNumber.from(id));
 
   const click = () => {
     UIEmitter.getInstance().emit(UIEmitterEvent.ShowArtifact, artifact);
@@ -129,7 +120,7 @@ export function ArtifactNameLink({ id }: { id: ArtifactId }) {
 }
 
 export function SpaceshipNameLink({ id }: { id: SpaceshipId }) {
-  const spaceship: Spaceship | undefined = decodeSpaceship(BigNumber.from(id));
+  const spaceship = decodeSpaceship(BigNumber.from(id));
 
   const click = () => {
     UIEmitter.getInstance().emit(UIEmitterEvent.ShowSpaceship, spaceship);
