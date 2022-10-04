@@ -51,7 +51,7 @@ function PlanetContextPaneContent({
   }
 
   let upgradeRow = null;
-  if (!p?.destroyed && owned && p?.planetType == PlanetType.PLANET) {
+  if (!p?.destroyed && owned && p?.planetType == PlanetType.PLANET && p.planetLevel > 0) {
     upgradeRow = <OpenUpgradeDetailsPaneButton modal={modal} planetId={p?.locationId} />;
   }
 
