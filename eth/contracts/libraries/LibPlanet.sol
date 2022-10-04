@@ -383,9 +383,6 @@ library LibPlanet {
         // so any of those values coming from the contracts need to be divided by
         // `CONTRACT_PRECISION` to get their true integer value.
         uint256 scoreGained = silverToWithdraw / 1000;
-        // increase silver token count;
-        uint256 tokenId = 3 << 248;
-        DFTokenFacet(address(this)).mint(msg.sender, tokenId, scoreGained);
         scoreGained = (scoreGained * gameConstants().SILVER_SCORE_VALUE) / 100;
         gs().players[msg.sender].score += scoreGained;
     }
