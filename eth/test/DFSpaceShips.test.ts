@@ -216,4 +216,29 @@ describe('DarkForestSpaceShips', function () {
       );
     });
   });
+  describe('capturing unowned planet', async function () {
+    it('send ship but wont capture', async function () {
+      const mothership = await getSpaceshipOnPlanetByType(
+        world.contract,
+        SPAWN_PLANET_1.id,
+        SpaceshipType.ShipMothership
+      );
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 100, 0, 0, mothership.id)
+      );
+      await increaseBlockchainTime();
+      await world.contract.refreshPlanet(LVL1_ASTEROID_1.id);
+
+      // Ship move doesn't capture planet but does send Mothership to it.
+      expect((await world.contract.planets(LVL1_ASTEROID_1.id)).owner).to.not.equal(
+        world.user1.address
+      );
+      const mothershipAfterMove = await getSpaceshipOnPlanetByType(
+        world.contract,
+        LVL1_ASTEROID_1.id,
+        SpaceshipType.ShipMothership
+      );
+      expect(mothershipAfterMove.id).to.equal(mothership.id);
+    });
+  });
 });
