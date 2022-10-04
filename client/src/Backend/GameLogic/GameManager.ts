@@ -35,6 +35,7 @@ import {
   isUnconfirmedWithdrawSilverTx,
   locationIdFromBigInt,
   locationIdToDecStr,
+  spaceshipIdToDecStr,
 } from '@dfdao/serde';
 import {
   Artifact,
@@ -2673,8 +2674,29 @@ class GameManager extends EventEmitter {
 
       const oldPlanet = this.entityStore.getPlanetWithLocation(oldLocation);
 
-      if ((!bypassChecks && !this.account) || !oldPlanet || oldPlanet.owner !== this.account) {
+      if (
+        ((!bypassChecks && !this.account) || !oldPlanet || oldPlanet.owner !== this.account) &&
+        !spaceshipMoved
+      ) {
         throw new Error('attempted to move from a planet not owned by player');
+      }
+
+      if (artifactMoved) {
+        if (!bypassChecks) {
+          if (oldPlanet?.activeArtifact?.id === artifactMoved) {
+            throw new Error("can't move an activated artifact");
+          }
+          if (!oldPlanet?.artifacts?.find(({ id }) => id === artifactMoved)) {
+            throw new Error("that artifact isn't on this planet!");
+          }
+        }
+      }
+      if (spaceshipMoved) {
+        if (!bypassChecks) {
+          if (!oldPlanet?.spaceships?.find(({ id }) => id === spaceshipMoved)) {
+            throw new Error("that spaceship isn't on this planet!");
+          }
+        }
       }
 
       const getArgs = async (): Promise<unknown[]> => {
@@ -2708,6 +2730,9 @@ class GameManager extends EventEmitter {
         if (artifactMoved) {
           args[6] = artifactIdToDecStr(artifactMoved);
         }
+        if (spaceshipMoved) {
+          args[6] = spaceshipIdToDecStr(spaceshipMoved);
+        }
 
         return args;
       };
@@ -2724,17 +2749,6 @@ class GameManager extends EventEmitter {
         artifact: artifactMoved || spaceshipMoved,
         abandoning,
       };
-
-      if (artifactMoved) {
-        if (!bypassChecks) {
-          if (oldPlanet?.activeArtifact?.id === artifactMoved) {
-            throw new Error("can't move an activated artifact");
-          }
-          if (!oldPlanet?.artifacts?.find(({ id }) => id === artifactMoved)) {
-            throw new Error("that artifact isn't on this planet!");
-          }
-        }
-      }
 
       // Always await the submitTransaction so we can catch rejections
       const tx = await this.contractsAPI.submitTransaction(txIntent);
