@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 // Contract imports
 import {DFVerifierFacet} from "../facets/DFVerifierFacet.sol";
-import {DFArtifactFacet} from "../facets/DFArtifactFacet.sol";
+import {DFTokenFacet} from "../facets/DFTokenFacet.sol";
 
 // Library imports
 import {LibArtifact} from "./LibArtifact.sol";

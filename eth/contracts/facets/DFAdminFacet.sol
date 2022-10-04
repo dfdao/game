@@ -14,6 +14,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Contract imports
 import {DFArtifactFacet} from "./DFArtifactFacet.sol";
+import {DFSpaceshipFacet} from "./DFSpaceshipFacet.sol";
 
 // Type imports
 import {Artifact, SpaceType, Spaceship, SpaceshipType, DFPInitPlanetArgs, AdminCreatePlanetArgs, DFTCreateArtifactArgs, ArtifactType, Player, Planet, TokenType} from "../DFTypes.sol";
@@ -146,7 +147,7 @@ contract DFAdminFacet is WithStorage {
     ) public onlyAdmin {
         require(gs().planets[locationId].isInitialized, "planet is not initialized");
 
-        uint256 shipId = LibArtifactUtils.createAndPlaceSpaceship(locationId, owner, shipType);
+        uint256 shipId = LibSpaceship.createAndPlaceSpaceship(locationId, owner, shipType);
         Spaceship memory spaceship = LibSpaceship.decode(shipId);
         Planet memory planet = gs().planets[locationId];
 

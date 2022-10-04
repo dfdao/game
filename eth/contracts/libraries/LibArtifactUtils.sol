@@ -3,7 +3,8 @@ pragma solidity ^0.8.0;
 
 // External contract imports
 import {DFArtifactFacet} from "../facets/DFArtifactFacet.sol";
-import {DFGetterFacet} from "../facets/DFGetterFacet.sol";
+import {DFSpaceshipFacet} from "../facets/DFSpaceshipFacet.sol";
+import {DFTokenFacet} from "../facets/DFTokenFacet.sol";
 
 // Library imports
 import {LibArtifact} from "./LibArtifact.sol";
@@ -53,23 +54,6 @@ library LibArtifactUtils {
         }
 
         return true;
-    }
-
-    /**
-     * Create a new spaceship and place it on a planet owned by the given player. Returns the id
-     * of the newly created spaceship.
-     */
-    function createAndPlaceSpaceship(
-        uint256 planetId,
-        address owner,
-        SpaceshipType shipType
-    ) public returns (uint256) {
-        uint256 tokenId = LibSpaceship.create(shipType) + uint128(gs().miscNonce++);
-
-        Spaceship memory spaceship = DFArtifactFacet(address(this)).createSpaceship(tokenId, owner);
-        LibSpaceship.putSpaceshipOnPlanet(planetId, spaceship.id);
-
-        return spaceship.id;
     }
 
     function findArtifact(DFPFindArtifactArgs memory args) public returns (uint256 artifactId) {
@@ -286,7 +270,7 @@ library LibArtifactUtils {
         require(!gs().planets[locationId].destroyed, "planet is destroyed");
         require(planet.planetType == PlanetType.TRADING_POST, "can only deposit on trading posts");
         require(
-            DFArtifactFacet(address(this)).tokenExists(msg.sender, artifactId),
+            DFTokenFacet(address(this)).tokenIsOwnedBy(msg.sender, artifactId),
             "you can only deposit artifacts you own"
         );
         require(planet.owner == msg.sender, "you can only deposit on a planet you own");
@@ -345,13 +329,15 @@ library LibArtifactUtils {
         planet.prospectedBlockNumber = block.number;
     }
 
+    // Leaving this here because does a msg.sender check.
+    // Could put it in LibSpaceship but would need to delegatecall.
     function containsGear(uint256 locationId) public view returns (bool) {
         uint256[] memory tokenIds = gs().planets[locationId].spaceships;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             Spaceship memory spaceship = LibSpaceship.decode(tokenIds[i]);
             if (
                 spaceship.spaceshipType == SpaceshipType.ShipGear &&
-                DFArtifactFacet(address(this)).tokenExists(msg.sender, tokenIds[i])
+                DFTokenFacet(address(this)).tokenIsOwnedBy(msg.sender, tokenIds[i])
             ) {
                 return true;
             }
