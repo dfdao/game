@@ -25,6 +25,7 @@ import {
   Rectangle,
   Setting,
   Spaceship,
+  SpaceshipId,
   SpaceType,
   Transaction,
   UnconfirmedActivateArtifact,
@@ -116,6 +117,7 @@ class GameUIManager extends EventEmitter {
   public readonly hoverPlanetId$: Monomitter<LocationId | undefined>;
   public readonly hoverPlanet$: Monomitter<Planet | undefined>;
   public readonly hoverArtifactId$: Monomitter<ArtifactId | undefined>;
+  public readonly hoverSpaceshipId$: Monomitter<SpaceshipId | undefined>;
   public readonly myArtifacts$: Monomitter<[ArtifactId, Artifact]>;
 
   public readonly isSending$: Monomitter<boolean>;
@@ -164,6 +166,7 @@ class GameUIManager extends EventEmitter {
     );
 
     this.hoverArtifactId$ = monomitter<ArtifactId | undefined>();
+    this.hoverSpaceshipId$ = monomitter<SpaceshipId | undefined>();
     this.myArtifacts$ = this.gameManager.getMyArtifactsUpdated$();
     this.viewportEntities = new ViewportEntities(this.gameManager, this);
 
@@ -999,6 +1002,9 @@ class GameUIManager extends EventEmitter {
   public setHoveringOverArtifact(artifactId?: ArtifactId) {
     this.hoverArtifactId$.publish(artifactId);
   }
+  public setHoveringOverSpaceship(spaceshipId?: SpaceshipId) {
+    this.hoverSpaceshipId$.publish(spaceshipId);
+  }
 
   public getHoveringOverPlanet(): Planet | undefined {
     return this.mouseHoveringOverPlanet;
@@ -1086,6 +1092,9 @@ class GameUIManager extends EventEmitter {
 
   public getMyArtifacts(): Artifact[] {
     return this.gameManager.getMyArtifacts();
+  }
+  public getMySpaceships(): Spaceship[] {
+    return this.gameManager.getMySpaceships();
   }
 
   public getPlanetWithId(planetId: LocationId | undefined): Planet | undefined {

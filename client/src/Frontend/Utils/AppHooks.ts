@@ -122,6 +122,17 @@ export function useMyArtifactsList(uiManager: GameUIManager) {
   // );
   return myArtifacts;
 }
+export function useMySpaceshipsList(uiManager: GameUIManager) {
+  const [mySpaceships, _setMySpaceship] = useState(uiManager.getMySpaceships());
+  // useEmitterSubscribe(
+  //   uiManager.getArtifactUpdated$(),
+  //   () => {
+  //     setMyArtifacts(uiManager.getMyArtifacts());
+  //   },
+  //   [uiManager, setMyArtifacts]
+  // );
+  return mySpaceships;
+}
 
 // note that this is going to throw an error if the pointer to `artifacts` changes but not to `planet`
 export function usePlanetArtifacts(planet: Wrapper<Planet | undefined>): Artifact[] {
