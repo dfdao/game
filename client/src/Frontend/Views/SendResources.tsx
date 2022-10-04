@@ -191,9 +191,9 @@ function ExtractButton({
       shortcutText={TOGGLE_WITHDRAW}
       disabled={planet.isHomePlanet || disabled}
     >
-      <TooltipTrigger name={TooltipName.Abandon}>
-        {extracting ? 'Extracting' : `Extract all (${silver}) silver`}
-      </TooltipTrigger>
+      {/* <TooltipTrigger name={TooltipName.Abandon}> */}
+      {extracting ? 'Extracting' : `Extract all (${Math.floor(silver)}) silver`}
+      {/* </TooltipTrigger> */}
     </MaybeShortcutButton>
   );
 }
@@ -399,6 +399,7 @@ export function SendResources({
 
       {p.value && artifacts.length > 0 && (
         <SelectArtifactRow
+          planet={p.value}
           artifacts={artifacts}
           onArtifactChange={updateArtifactSending}
           selectedArtifact={artifactSending}
