@@ -1,7 +1,7 @@
-import { formatNumber, isSpaceShip } from '@dfdao/gamelogic';
-import { nameOfArtifact } from '@dfdao/procedural';
+import { formatNumber } from '@dfdao/gamelogic';
+import { nameOfArtifact, nameOfSpaceship } from '@dfdao/procedural';
 import { isUnconfirmedMoveTx, isUnconfirmedReleaseTx } from '@dfdao/serde';
-import { Artifact, Planet, TooltipName } from '@dfdao/types';
+import { Artifact, Planet, Spaceship, TooltipName } from '@dfdao/types';
 import React, { useCallback } from 'react';
 import styled from 'styled-components';
 import { Wrapper } from '../../Backend/Utils/Wrapper';
@@ -20,6 +20,7 @@ import { useEmitterValue } from '../Utils/EmitterHooks';
 import { useOnUp } from '../Utils/KeyEmitters';
 import { TOGGLE_ABANDON, TOGGLE_SEND } from '../Utils/ShortcutConstants';
 import { SelectArtifactRow } from './ArtifactRow';
+import { SelectSpaceshipRow } from './SpaceshipRow';
 
 const StyledSendResources = styled.div`
   display: flex;
@@ -155,12 +156,14 @@ function AbandonButton({
 function SendRow({
   toggleSending,
   artifact,
+  spaceship,
   sending,
   abandoning,
   disabled = false,
 }: {
   toggleSending: () => void;
   artifact: Artifact | undefined;
+  spaceship: Spaceship | undefined;
   sending: boolean;
   abandoning?: boolean;
   disabled?: boolean;
@@ -168,16 +171,17 @@ function SendRow({
   let content = 'Send';
   if (artifact) {
     const artifactName = nameOfArtifact(artifact);
-    if (isSpaceShip(artifact.artifactType)) {
-      // Call it "Move" with a spaceship, instead of "Send"
-      content = `Move ${artifactName}`;
-    } else {
-      // Only add the "+" if we are sending Energy & Artifact
-      content += ` + ${artifactName}`;
-    }
+    // Only add the "+" if we are sending Energy & Artifact
+    content += ` + ${artifactName}`;
   }
   if (abandoning) {
     content += ' and Abandon';
+  }
+  // Spaceship overrides everything
+  if (spaceship) {
+    const spaceshipName = nameOfSpaceship(spaceship);
+    // Call it "Move" with a spaceship, instead of "Send"
+    content = `Move ${spaceshipName}`;
   }
   /* Explicitly avoid binding to `onShortcutPressed` so we can support sending on subpanes */
   return (
@@ -215,6 +219,7 @@ export function SendResources({
   const energySending = uiManager.getForcesSending(locationId);
   const silverSending = uiManager.getSilverSending(locationId);
   const artifactSending = uiManager.getArtifactSending(locationId);
+  const spaceshipSending = uiManager.getSpaceshipSending(locationId);
 
   const disableSliders = isSendingShip || isAbandoning;
 
@@ -238,6 +243,13 @@ export function SendResources({
     (sendArtifact) => {
       if (!locationId) return;
       uiManager.setArtifactSending(locationId, sendArtifact);
+    },
+    [uiManager, locationId]
+  );
+  const updateSpaceshipSending = useCallback(
+    (sendSpaceship) => {
+      if (!locationId) return;
+      uiManager.setSpaceshipSending(locationId, sendSpaceship);
     },
     [uiManager, locationId]
   );
@@ -289,9 +301,6 @@ export function SendResources({
   );
 
   const artifacts = usePlanetInactiveArtifacts(p);
-  const spaceshipsYouOwn = artifacts.filter(
-    (a) => isSpaceShip(a.artifactType) /* && a.controller === account */
-  );
 
   let abandonRow;
   if (p.value && p.value.transactions?.hasTransaction(isUnconfirmedReleaseTx)) {
@@ -323,6 +332,7 @@ export function SendResources({
     sendRow = (
       <SendRow
         artifact={artifactSending}
+        spaceship={spaceshipSending}
         toggleSending={onToggleSendForces}
         sending={isSendingForces}
         disabled={isDisabled}
@@ -358,7 +368,14 @@ export function SendResources({
           selectedArtifact={artifactSending}
         />
       )}
-      {spaceshipsYouOwn.length > 0 || owned ? sendRow : null}
+      {p.value && p.value.spaceships.length > 0 && (
+        <SelectSpaceshipRow
+          spaceships={p.value.spaceships}
+          onSpaceshipChange={updateSpaceshipSending}
+          selectedSpaceship={spaceshipSending}
+        />
+      )}
+      {isSendingShip || owned ? sendRow : null}
 
       {uiManager.getSpaceJunkEnabled() && owned ? abandonRow : null}
     </StyledSendResources>
