@@ -1,4 +1,5 @@
 import { getActivatedArtifact, isActivated } from '@dfdao/gamelogic';
+import { EthConnection } from '@dfdao/network';
 import {
   Artifact,
   ArtifactId,
@@ -15,6 +16,7 @@ import GameUIManager from '../../Backend/GameLogic/GameUIManager';
 import { loadLeaderboard } from '../../Backend/Network/LeaderboardApi';
 import { Wrapper } from '../../Backend/Utils/Wrapper';
 import { ContractsAPIEvent } from '../../_types/darkforest/api/ContractsAPITypes';
+import { AddressTwitterMap } from '../../_types/darkforest/api/UtilityServerAPITypes';
 import { ModalHandle } from '../Views/ModalPane';
 import { createDefinedContext } from './createDefinedContext';
 import { useEmitterSubscribe, useEmitterValue, useWrappedEmitter } from './EmitterHooks';
@@ -29,6 +31,17 @@ export const { useDefinedContext: useTopLevelDiv, provider: TopLevelDivProvider 
 export function useOverlayContainer(): HTMLDivElement | null {
   return useUIManager()?.getOverlayContainer() ?? null;
 }
+
+export const { useDefinedContext: useEthConnection, provider: EthConnectionProvider } =
+  createDefinedContext<EthConnection>();
+
+export type TwitterContextType = {
+  twitters: AddressTwitterMap;
+  setTwitters: React.Dispatch<React.SetStateAction<AddressTwitterMap>>;
+};
+
+export const { useDefinedContext: useTwitters, provider: TwitterProvider } =
+  createDefinedContext<TwitterContextType>();
 
 /**
  * Get the currently used account on the client.
