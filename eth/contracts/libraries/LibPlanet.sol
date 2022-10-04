@@ -305,9 +305,10 @@ library LibPlanet {
         }
 
         if (artifact.artifactType == ArtifactType.ShipMothership) {
-            if (planet.energyGroDoublers == 0) {
-                planet.populationGrowth *= 2;
-            }
+            planet.populationGrowth *= 2;
+            // if (planet.energyGroDoublers == 0) {
+            //     planet.populationGrowth *= 2;
+            // }
             planet.energyGroDoublers++;
         } else if (artifact.artifactType == ArtifactType.ShipWhale) {
             if (planet.silverGroDoublers == 0) {

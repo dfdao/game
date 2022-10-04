@@ -106,6 +106,44 @@ describe('Space Ships', function () {
     });
   });
 
+  describe('using the Mothership', async function () {
+    it.only('applies mothership effects twice', async function () {
+      const mothership = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.ShipMothership
+      )?.artifact;
+
+      const planetBeforeShip = await world.contract.planets(LVL1_ASTEROID_1.id);
+
+      // Move Mothership to planet
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 1000, 0, 0, mothership?.id)
+      );
+
+      await increaseBlockchainTime();
+      await world.user1Core.refreshPlanet(LVL1_ASTEROID_1.id);
+
+      const planetAfterShip1 = await world.contract.planets(LVL1_ASTEROID_1.id);
+
+      await world.contract.adminGiveSpaceShip(
+        LVL1_ASTEROID_1.id,
+        world.user1.address,
+        ArtifactType.ShipMothership
+      );
+
+      const planetAfterShip2 = await world.contract.planets(LVL1_ASTEROID_1.id);
+
+      console.log(
+        `gro: ${planetBeforeShip.populationGrowth} doublers: ${planetBeforeShip.energyGroDoublers}`
+      );
+      console.log(
+        `gro: ${planetAfterShip1.populationGrowth} doublers: ${planetAfterShip1.energyGroDoublers}`
+      );
+      console.log(
+        `gro: ${planetAfterShip2.populationGrowth} doublers: ${planetAfterShip2.energyGroDoublers}`
+      );
+    });
+  });
+
   describe('spawning on non-home planet', async function () {
     let world: World;
 
