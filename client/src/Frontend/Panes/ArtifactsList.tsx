@@ -1,7 +1,7 @@
 import { artifactName } from '@dfdao/procedural';
 import { Artifact, ArtifactTypeNames, LocationId } from '@dfdao/types';
 import React, { useCallback, useEffect } from 'react';
-import { CenterBackgroundSubtext, Link } from '../Components/CoreUI';
+import { Link } from '../Components/CoreUI';
 import { ArtifactRarityLabelAnim } from '../Components/Labels/ArtifactLabels';
 import { Sub } from '../Components/Text';
 import { ArtifactDetailsPane } from '../Panes/ArtifactDetailsPane';
@@ -95,15 +95,6 @@ export function ArtifactsList({
       ) || 0,
     (left: Artifact, right: Artifact) => left.rarity - right.rarity,
   ];
-
-  if (artifacts.length === 0) {
-    return (
-      <CenterBackgroundSubtext width={'100%'} height='100px'>
-        You don't have any <br />
-        Artifacts in your wallet
-      </CenterBackgroundSubtext>
-    );
-  }
 
   return (
     <SortableTable
