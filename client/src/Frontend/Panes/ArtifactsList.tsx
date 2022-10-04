@@ -74,7 +74,7 @@ export function ArtifactsList({
   if (maxRarity !== undefined) {
     artifacts = artifacts.filter((a) => a.rarity <= maxRarity);
   }
-  const headers = ['Name', 'Location', 'Type', 'Rarity'];
+  const headers = ['Name', 'Type', 'Rarity'];
   const alignments: Array<'r' | 'c' | 'l'> = ['l', 'c', 'r'];
 
   const columns = [
