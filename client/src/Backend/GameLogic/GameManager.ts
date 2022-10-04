@@ -18,6 +18,7 @@ import {
 import { getPlanetName } from '@dfdao/procedural';
 import {
   artifactIdToDecStr,
+  artifactIdToEthersBN,
   decodeArtifact,
   isUnconfirmedActivateArtifactTx,
   isUnconfirmedBuyHatTx,
@@ -2261,7 +2262,7 @@ class GameManager extends EventEmitter {
 
       tx.confirmedPromise.then(() => {
         this.getGameObjects().updatePlanet(locationId, (planet) => {
-          const artifact = decodeArtifact(BigNumber.from(artifactId));
+          const artifact = decodeArtifact(artifactIdToEthersBN(artifactId));
           planet.artifacts.push(artifact);
         });
       });

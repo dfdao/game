@@ -69,6 +69,10 @@ export function artifactIdToDecStr(artifactId: ArtifactId): string {
   return bigInt(artifactId, 16).toString(10);
 }
 
+export function artifactIdToEthersBN(artifactId: ArtifactId): EthersBN {
+  return EthersBN.from(artifactIdToDecStr(artifactId));
+}
+
 export type RawArtifactPointValues = Awaited<ReturnType<DarkForest['getArtifactPointValues']>>;
 
 /**
