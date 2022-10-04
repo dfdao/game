@@ -955,7 +955,7 @@ describe('move rate limits', function () {
     expect(numShipsOnPlanet).to.be.eq(6);
   });
 
-  it('when moving 6 ships to planet, should not allow an enemy attack', async function () {
+  it('when moving 6 own ships to planet, SHOULD allow an enemy attack', async function () {
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL2_PLANET_SPACE);
     await increaseBlockchainTime();
 
@@ -973,8 +973,36 @@ describe('move rate limits', function () {
       );
     }
 
+    await world.user2Core.move(...makeMoveArgs(SPAWN_PLANET_2, LVL2_PLANET_SPACE, 1, 10000, 0));
+
+    await increaseBlockchainTime();
+    await world.user1Core.refreshPlanet(LVL2_PLANET_SPACE.id);
+
+    const numShipsOnPlanet = (await world.user1Core.getSpaceshipsOnPlanet(LVL2_PLANET_SPACE.id))
+      .length;
+
+    expect(numShipsOnPlanet).to.be.eq(6);
+  });
+  it('when moving 6 enemy ships to planet, should not allow an enemy attack', async function () {
+    await conquerUnownedPlanet(world, world.user2Core, SPAWN_PLANET_2, LVL2_PLANET_SPACE);
+    await increaseBlockchainTime();
+
+    for (let i = 0; i < 6; i++) {
+      await world.contract.adminGiveSpaceShip(
+        SPAWN_PLANET_1.id,
+        world.user1.address,
+        SpaceshipType.ShipMothership
+      );
+
+      const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id))[0];
+
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 10, 0, 0, ship.id)
+      );
+    }
+
     await expect(
-      world.user2Core.move(...makeMoveArgs(SPAWN_PLANET_2, LVL2_PLANET_SPACE, 1, 10000, 0))
+      world.user1Core.move(...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 1, 10000, 0))
     ).to.be.revertedWith('Planet is rate-limited');
 
     await increaseBlockchainTime();
