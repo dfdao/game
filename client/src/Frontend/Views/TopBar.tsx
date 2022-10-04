@@ -42,10 +42,12 @@ function BoardPlacement({ account }: { account: EthAddress | undefined }) {
     }
 
     content = (
-      <div style={{ gap: '8px' }}>
+      <div style={{ display: 'flex', gap: '8px' }}>
         <Sub>
           <TooltipTrigger name={TooltipName.Score}>
-            stockpile: <Text>{formattedScore}</Text>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <Text>{formattedScore}</Text> silver
+            </div>
           </TooltipTrigger>
         </Sub>
         <Btn size='small'>Extract all</Btn>
@@ -202,7 +204,7 @@ export function TopBar({ twitterVerifyHook }: { twitterVerifyHook: Hook<boolean>
           name={TooltipName.Empty}
           extraContent={<Text>Your burner wallet balance.</Text>}
         >
-          <Sub>({weiToEth(balance).toFixed(2)} xDAI)</Sub>
+          <Sub>{weiToEth(balance).toFixed(2)} xDAI</Sub>
         </TooltipTrigger>
         {import.meta.env.DF_WEBSERVER_URL && (
           <>
@@ -226,14 +228,16 @@ export function TopBar({ twitterVerifyHook }: { twitterVerifyHook: Hook<boolean>
         )}
         <BoardPlacement account={account} />
       </AlignCenterHorizontally>
-      <AlignCenterHorizontally style={{ justifyContent: 'space-around', width: '100%' }}>
-        {captureZones}
-        {uiManager.getSpaceJunkEnabled() && (
-          <>
-            <SpaceJunk account={account} />
-          </>
-        )}
-      </AlignCenterHorizontally>
+      {captureZones && (
+        <AlignCenterHorizontally style={{ justifyContent: 'space-around', width: '100%' }}>
+          {captureZones}
+          {uiManager.getSpaceJunkEnabled() && (
+            <>
+              <SpaceJunk account={account} />
+            </>
+          )}
+        </AlignCenterHorizontally>
+      )}
       <NetworkHealth />
       <Paused />
     </TopBarContainer>

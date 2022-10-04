@@ -313,7 +313,7 @@ export function PlanetCard({
                 <AccountLabel ethAddress={planet.owner} includeAddressIfHasTwitter={true} />
               </Sub>
             </SpreadApart>
-            <SelectArtifactRow artifacts={artifacts} />
+            {artifacts.length > 0 && <SelectArtifactRow planet={planet} artifacts={artifacts} />}
           </>
         )}
       </div>
