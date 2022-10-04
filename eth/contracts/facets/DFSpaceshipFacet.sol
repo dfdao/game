@@ -31,7 +31,7 @@ contract DFSpaceshipFacet is WithStorage {
     /**
      * Events
      */
-    event ArtifactFound(address player, uint256 artifactId, uint256 loc);
+    event SpaceshipFound(address player, uint256 artifactId, uint256 loc);
 
     /**
      * Getters
@@ -130,7 +130,7 @@ contract DFSpaceshipFacet is WithStorage {
                 owner,
                 SpaceshipType.ShipMothership
             );
-            emit ArtifactFound(msg.sender, id1, locationId);
+            emit SpaceshipFound(msg.sender, id1, locationId);
         }
 
         if (gameConstants().SPACESHIPS.CRESCENT) {
@@ -139,7 +139,7 @@ contract DFSpaceshipFacet is WithStorage {
                 owner,
                 SpaceshipType.ShipCrescent
             );
-            emit ArtifactFound(msg.sender, id2, locationId);
+            emit SpaceshipFound(msg.sender, id2, locationId);
         }
 
         if (gameConstants().SPACESHIPS.WHALE) {
@@ -148,7 +148,7 @@ contract DFSpaceshipFacet is WithStorage {
                 owner,
                 SpaceshipType.ShipWhale
             );
-            emit ArtifactFound(msg.sender, id3, locationId);
+            emit SpaceshipFound(msg.sender, id3, locationId);
         }
 
         if (gameConstants().SPACESHIPS.GEAR) {
@@ -157,7 +157,7 @@ contract DFSpaceshipFacet is WithStorage {
                 owner,
                 SpaceshipType.ShipGear
             );
-            emit ArtifactFound(msg.sender, id4, locationId);
+            emit SpaceshipFound(msg.sender, id4, locationId);
         }
 
         if (gameConstants().SPACESHIPS.TITAN) {
@@ -167,7 +167,7 @@ contract DFSpaceshipFacet is WithStorage {
                 SpaceshipType.ShipTitan
             );
 
-            emit ArtifactFound(msg.sender, id5, locationId);
+            emit SpaceshipFound(msg.sender, id5, locationId);
         }
 
         gs().players[msg.sender].claimedShips = true;
