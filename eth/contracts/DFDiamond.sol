@@ -57,7 +57,7 @@ contract DFDiamond is DiamondBase, DiamondReadable, DiamondWritable, Ownable, ER
 
         erc165.setSupportedInterface(type(IERC173).interfaceId, true);
 
-        // Store ERC721 interface
+        // Store ERC1155 interface
         erc165.setSupportedInterface(type(IERC1155).interfaceId, true);
         erc165.setSupportedInterface(type(IERC1155Metadata).interfaceId, true);
         erc165.setSupportedInterface(type(IERC1155Enumerable).interfaceId, true);
