@@ -1,6 +1,5 @@
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
-import { makeInitArgs, makeRevealArgs, ZERO_ADDRESS } from './utils/TestUtils';
+import { fixtureLoader, makeInitArgs, makeRevealArgs, ZERO_ADDRESS } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import {
   ADMIN_PLANET,
@@ -19,7 +18,7 @@ describe('DarkForestInit', function () {
   let world: World;
 
   beforeEach('load fixture', async function () {
-    world = await loadFixture(defaultWorldFixture);
+    world = await fixtureLoader(defaultWorldFixture);
   });
 
   it('initializes player successfully with the correct planet value', async function () {
@@ -137,10 +136,11 @@ describe('DarkForestInit', function () {
     });
 
     const adminPlanetData = await world.contract.planets(ADMIN_PLANET.id);
+    const adminPlanetInfo = await world.contract.planetsExtendedInfo(ADMIN_PLANET.id);
     expect(adminPlanetData.owner).to.equal(ZERO_ADDRESS);
     expect(adminPlanetData.planetLevel.toNumber()).to.equal(level);
     expect(adminPlanetData.planetType).to.equal(planetType);
-    expect(adminPlanetData.perlin.toNumber()).to.equal(perlin);
+    expect(adminPlanetInfo.perlin.toNumber()).to.equal(perlin);
 
     // compare to a newly initialized planet
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));

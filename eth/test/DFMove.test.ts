@@ -1,11 +1,11 @@
-import { ArtifactType } from '@dfdao/types';
-import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
+import { ArtifactType } from '@darkforest_eth/types';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
 import {
   conquerUnownedPlanet,
   createArtifactOnPlanet,
+  fixtureLoader,
   increaseBlockchainTime,
   makeInitArgs,
   makeMoveArgs,
@@ -33,7 +33,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      const world = await loadFixture(defaultWorldFixture);
+      const world = await fixtureLoader(defaultWorldFixture);
       let initArgs = makeInitArgs(SPAWN_PLANET_1);
       await world.user1Core.initializePlayer(...initArgs);
       await world.user1Core.giveSpaceShips(SPAWN_PLANET_1.id);
@@ -47,7 +47,7 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it('allows controller to move ships to places they do not own with infinite distance', async function () {
@@ -129,7 +129,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      const world = await loadFixture(defaultWorldFixture);
+      const world = await fixtureLoader(defaultWorldFixture);
       const initArgs = makeInitArgs(SPAWN_PLANET_1);
 
       await world.user1Core.initializePlayer(...initArgs);
@@ -138,7 +138,7 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it("should add space junk to the user's total space junk", async function () {
@@ -162,7 +162,7 @@ describe('DarkForestMove', function () {
   describe('move to an enemy planet', function () {
     let world: World;
     async function worldFixture() {
-      const world = await loadFixture(defaultWorldFixture);
+      const world = await fixtureLoader(defaultWorldFixture);
 
       let initArgs = makeInitArgs(SPAWN_PLANET_1);
       await world.user1Core.initializePlayer(...initArgs);
@@ -177,7 +177,7 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it("should not add space junk to the user's total space junk", async function () {
@@ -199,7 +199,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      const world = await loadFixture(defaultWorldFixture);
+      const world = await fixtureLoader(defaultWorldFixture);
       const initArgs = makeInitArgs(SPAWN_PLANET_1);
 
       await world.user1Core.initializePlayer(...initArgs);
@@ -224,7 +224,7 @@ describe('DarkForestMove', function () {
       return world;
     }
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it("removes space junk from the user's total", async function () {
@@ -249,7 +249,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      world = await loadFixture(defaultWorldFixture);
+      world = await fixtureLoader(defaultWorldFixture);
       const initArgs = makeInitArgs(SPAWN_PLANET_1);
 
       await world.user1Core.initializePlayer(...initArgs);
@@ -263,13 +263,13 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it('reverts', async function () {
       await expect(
         world.user1Core.move(...makeMoveArgs(LVL1_ASTEROID_1, SPAWN_PLANET_2, 100, 50000, 0, 0, 1))
-      ).to.be.revertedWith('Cannot abandon a planet that has incoming voyages.');
+      ).to.be.revertedWith('Cannot abandon a planet that has incoming voyages');
     });
   });
 
@@ -277,7 +277,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      const world = await loadFixture(defaultWorldFixture);
+      const world = await fixtureLoader(defaultWorldFixture);
       let initArgs = makeInitArgs(SPAWN_PLANET_1);
       await world.user1Core.initializePlayer(...initArgs);
       initArgs = makeInitArgs(SPAWN_PLANET_2);
@@ -292,13 +292,13 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it('reverts', async function () {
       await expect(
         world.user1Core.move(...makeMoveArgs(LVL1_ASTEROID_1, SPAWN_PLANET_2, 100, 50000, 0, 0, 1))
-      ).to.be.revertedWith('Cannot abandon a planet that has incoming voyages.');
+      ).to.be.revertedWith('Cannot abandon a planet that has incoming voyages');
     });
   });
 
@@ -306,7 +306,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      const world = await loadFixture(defaultWorldFixture);
+      const world = await fixtureLoader(defaultWorldFixture);
       const initArgs = makeInitArgs(SPAWN_PLANET_1);
 
       await world.user1Core.initializePlayer(...initArgs);
@@ -323,7 +323,7 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it('should emit event', async function () {
@@ -349,8 +349,8 @@ describe('DarkForestMove', function () {
 
     it('should init new toPlanet', async function () {
       const toId = SPAWN_PLANET_2.id;
-      const planet = await world.contract.planets(toId);
-      expect(planet.isInitialized).to.equal(true);
+      const toPlanetExtended = await world.contract.planetsExtendedInfo(toId);
+      expect(toPlanetExtended.isInitialized).to.equal(true);
     });
 
     it('should create new event and arrival with correct delay', async function () {
@@ -399,8 +399,10 @@ describe('DarkForestMove', function () {
 
     it('should not apply event before arrival time', async function () {
       const toId = SPAWN_PLANET_2.id;
-      const planet = await world.contract.planets(toId);
-      expect(planet.lastUpdated).to.be.equal((await ethers.provider.getBlock('latest')).timestamp);
+      const planetExtendedInfo = await world.contract.planetsExtendedInfo(toId);
+      expect(planetExtendedInfo.lastUpdated).to.be.equal(
+        (await ethers.provider.getBlock('latest')).timestamp
+      );
 
       await increaseBlockchainTime(SMALL_INTERVAL);
       await world.contract.refreshPlanet(toId);
@@ -412,8 +414,10 @@ describe('DarkForestMove', function () {
 
     it('should apply event after arrival time', async function () {
       const toId = SPAWN_PLANET_2.id;
-      const planet = await world.contract.planets(toId);
-      expect(planet.lastUpdated).to.be.equal((await ethers.provider.getBlock('latest')).timestamp);
+      const planetExtendedInfo = await world.contract.planetsExtendedInfo(toId);
+      expect(planetExtendedInfo.lastUpdated).to.be.equal(
+        (await ethers.provider.getBlock('latest')).timestamp
+      );
 
       await increaseBlockchainTime();
       await world.contract.refreshPlanet(toId);
@@ -479,7 +483,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      const world = await loadFixture(growingWorldFixture);
+      const world = await fixtureLoader(growingWorldFixture);
       initialRadius = await world.contract.worldRadius();
       const initArgs = makeInitArgs(SPAWN_PLANET_2, initialRadius.toNumber());
 
@@ -490,7 +494,7 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it('should expand world radius when init high level planet', async function () {
@@ -511,7 +515,7 @@ describe('move to friendly planet', function () {
   let world: World;
 
   before(async function () {
-    world = await loadFixture(defaultWorldFixture);
+    world = await fixtureLoader(defaultWorldFixture);
 
     const dist = 10;
     const shipsSent = 40000;
@@ -635,7 +639,7 @@ describe('move to enemy planet', function () {
   let world: World;
 
   before(async function () {
-    world = await loadFixture(defaultWorldFixture);
+    world = await fixtureLoader(defaultWorldFixture);
 
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     await world.user2Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_2));
@@ -732,7 +736,7 @@ describe('reject move with insufficient resources', function () {
   let world: World;
 
   beforeEach(async function () {
-    world = await loadFixture(defaultWorldFixture);
+    world = await fixtureLoader(defaultWorldFixture);
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
   });
 
@@ -806,7 +810,7 @@ describe('move rate limits', function () {
   let world: World;
 
   beforeEach(async function () {
-    world = await loadFixture(defaultWorldFixture);
+    world = await fixtureLoader(defaultWorldFixture);
 
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     await world.user2Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_2));
@@ -836,7 +840,9 @@ describe('move rate limits', function () {
 
     await world.user1Core.move(...moveArgs);
 
-    await time.increase(from.range.toNumber() / (from.speed.toNumber() / 100) - 10);
+    await ethers.provider.send('evm_increaseTime', [
+      from.range.toNumber() / (from.speed.toNumber() / 100) - 10,
+    ]);
 
     // do 5 moves after some time
 
@@ -847,7 +853,7 @@ describe('move rate limits', function () {
 
     await expect(world.user1Core.move(...moveArgs)).to.be.revertedWith('Planet is rate-limited');
 
-    await time.increase(20);
+    await ethers.provider.send('evm_increaseTime', [20]);
 
     // first move should be done
 

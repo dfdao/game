@@ -2,7 +2,18 @@
 pragma solidity ^0.8.0;
 
 // Type imports
-import {Planet, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData, Artifact} from "../DFTypes.sol";
+import {
+    Planet,
+    PlanetExtendedInfo,
+    PlanetExtendedInfo2,
+    PlanetEventMetadata,
+    PlanetDefaultStats,
+    Upgrade,
+    RevealedCoords,
+    Player,
+    ArrivalData,
+    Artifact
+} from "../DFTypes.sol";
 
 struct WhitelistStorage {
     bool enabled;
@@ -27,6 +38,7 @@ struct GameStorage {
     bool paused;
     uint256 TOKEN_MINT_END_TIMESTAMP;
     uint256 planetLevelsCount;
+    uint256[] planetLevelThresholds;
     uint256[] cumulativeRarities;
     uint256[] initializedPlanetCountByLevel;
     // Game world state
@@ -38,6 +50,8 @@ struct GameStorage {
     uint256 miscNonce;
     mapping(uint256 => Planet) planets;
     mapping(uint256 => RevealedCoords) revealedCoords;
+    mapping(uint256 => PlanetExtendedInfo) planetsExtendedInfo;
+    mapping(uint256 => PlanetExtendedInfo2) planetsExtendedInfo2;
     mapping(uint256 => uint256) artifactIdToPlanetId;
     mapping(uint256 => uint256) artifactIdToVoyageId;
     mapping(address => Player) players;
@@ -102,21 +116,12 @@ struct GameConstants {
     // Capture Zones
     uint256 GAME_START_BLOCK;
     bool CAPTURE_ZONES_ENABLED;
+    uint256 CAPTURE_ZONE_COUNT;
     uint256 CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
     uint256 CAPTURE_ZONE_RADIUS;
     uint256[10] CAPTURE_ZONE_PLANET_LEVEL_SCORE;
     uint256 CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
-    SpaceshipConstants SPACESHIPS;
-    uint256[64] ROUND_END_REWARDS_BY_RANK;
-}
-
-struct SpaceshipConstants {
-    bool GEAR;
-    bool MOTHERSHIP;
-    bool TITAN;
-    bool CRESCENT;
-    bool WHALE;
 }
 
 // SNARK keys and perlin params

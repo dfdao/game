@@ -1,18 +1,29 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.0;
 
-// Contract imports
-import {DFVerifierFacet} from "../facets/DFVerifierFacet.sol";
-
 // Library imports
 import {LibGameUtils} from "./LibGameUtils.sol";
 import {LibLazyUpdate} from "./LibLazyUpdate.sol";
+import {Verifier} from "../Verifier.sol";
 
 // Storage imports
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
 // Type imports
-import {Artifact, ArtifactType, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetType, RevealedCoords, SpaceType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
+import {
+    Artifact,
+    ArtifactType,
+    DFPInitPlanetArgs,
+    Planet,
+    PlanetEventMetadata,
+    PlanetExtendedInfo,
+    PlanetExtendedInfo2,
+    PlanetType,
+    RevealedCoords,
+    SpaceType,
+    Upgrade,
+    UpgradeBranch
+} from "../DFTypes.sol";
 
 library LibPlanet {
     function gs() internal pure returns (GameStorage storage) {
@@ -62,8 +73,8 @@ library LibPlanet {
         uint256 _perlin,
         bool _isHomePlanet
     ) public view returns (DFPInitPlanetArgs memory) {
-        (uint256 level, PlanetType planetType, SpaceType spaceType) = LibGameUtils
-            ._getPlanetLevelTypeAndSpaceType(_location, _perlin);
+        (uint256 level, PlanetType planetType, SpaceType spaceType) =
+            LibGameUtils._getPlanetLevelTypeAndSpaceType(_location, _perlin);
 
         if (_isHomePlanet) {
             require(level == 0, "Can only initialize on planet level 0");
@@ -93,10 +104,7 @@ library LibPlanet {
         bool isHomePlanet
     ) public {
         if (!snarkConstants().DISABLE_ZK_CHECKS) {
-            require(
-                DFVerifierFacet(address(this)).verifyInitProof(_a, _b, _c, _input),
-                "Failed init proof check"
-            );
+            require(Verifier.verifyInitProof(_a, _b, _c, _input), "Failed init proof check");
         }
 
         uint256 _location = _input[0];
@@ -118,11 +126,8 @@ library LibPlanet {
     ) public {
         require(LibGameUtils._locationIdValid(_location), "Not a valid planet location");
 
-        DFPInitPlanetArgs memory initArgs = getDefaultInitPlanetArgs(
-            _location,
-            _perlin,
-            _isHomePlanet
-        );
+        DFPInitPlanetArgs memory initArgs =
+            getDefaultInitPlanetArgs(_location, _perlin, _isHomePlanet);
 
         _initializePlanet(initArgs);
         gs().planetIds.push(_location);
@@ -131,20 +136,22 @@ library LibPlanet {
 
     function _initializePlanet(DFPInitPlanetArgs memory args) public {
         Planet storage _planet = gs().planets[args.location];
+        PlanetExtendedInfo storage _planetExtendedInfo = gs().planetsExtendedInfo[args.location];
+        PlanetExtendedInfo2 storage _planetExtendedInfo2 = gs().planetsExtendedInfo2[args.location];
         // can't initialize a planet twice
-        require(!_planet.isInitialized, "Planet is already initialized");
+        require(!_planetExtendedInfo.isInitialized, "Planet is already initialized");
 
         // planet initialize should set the planet to default state, including having the owner be adress 0x0
         // then it's the responsibility for the mechanics to set the owner to the player
 
-        Planet memory defaultPlanet = LibGameUtils._defaultPlanet(
-            args.location,
-            args.level,
-            args.planetType,
-            args.spaceType,
-            args.TIME_FACTOR_HUNDREDTHS
-        );
-        _planet.locationId = args.location;
+        Planet memory defaultPlanet =
+            LibGameUtils._defaultPlanet(
+                args.location,
+                args.level,
+                args.planetType,
+                args.spaceType,
+                args.TIME_FACTOR_HUNDREDTHS
+            );
         _planet.owner = defaultPlanet.owner;
         _planet.isHomePlanet = defaultPlanet.isHomePlanet;
         _planet.range = defaultPlanet.range;
@@ -159,34 +166,34 @@ library LibPlanet {
         _planet.planetLevel = defaultPlanet.planetLevel;
         _planet.planetType = defaultPlanet.planetType;
 
-        _planet.isInitialized = true;
-        _planet.perlin = args.perlin;
-        _planet.spaceType = args.spaceType;
-        _planet.createdAt = block.timestamp;
-        _planet.lastUpdated = block.timestamp;
-        _planet.upgradeState0 = 0;
-        _planet.upgradeState1 = 0;
-        _planet.upgradeState2 = 0;
+        _planetExtendedInfo.isInitialized = true;
+        _planetExtendedInfo.perlin = args.perlin;
+        _planetExtendedInfo.spaceType = args.spaceType;
+        _planetExtendedInfo.createdAt = block.timestamp;
+        _planetExtendedInfo.lastUpdated = block.timestamp;
+        _planetExtendedInfo.upgradeState0 = 0;
+        _planetExtendedInfo.upgradeState1 = 0;
+        _planetExtendedInfo.upgradeState2 = 0;
 
-        _planet.pausers = 0;
-        _planet.energyGroDoublers = 0;
-        _planet.silverGroDoublers = 0;
+        _planetExtendedInfo2.isInitialized = true;
+        _planetExtendedInfo2.pausers = 0;
 
         if (args.isHomePlanet) {
             _planet.isHomePlanet = true;
             _planet.owner = msg.sender;
             _planet.population = 50000;
         } else {
-            _planet.spaceJunk = LibGameUtils.getPlanetDefaultSpaceJunk(_planet);
+            _planetExtendedInfo.spaceJunk = LibGameUtils.getPlanetDefaultSpaceJunk(_planet);
 
             if (LibGameUtils.isHalfSpaceJunk(args.location)) {
-                _planet.spaceJunk /= 2;
+                _planetExtendedInfo.spaceJunk /= 2;
             }
         }
     }
 
     function upgradePlanet(uint256 _location, uint256 _branch) public {
         Planet storage planet = gs().planets[_location];
+        PlanetExtendedInfo storage info = gs().planetsExtendedInfo[_location];
         require(
             planet.owner == msg.sender,
             "Only owner account can perform that operation on planet."
@@ -195,24 +202,24 @@ library LibPlanet {
         require(planetLevel > 0, "Planet level is not high enough for this upgrade");
         require(_branch < 3, "Upgrade branch not valid");
         require(planet.planetType == PlanetType.PLANET, "Can only upgrade regular planets");
-        require(!planet.destroyed, "planet is destroyed");
+        require(!info.destroyed, "planet is destroyed");
 
-        uint256 totalLevel = planet.upgradeState0 + planet.upgradeState1 + planet.upgradeState2;
+        uint256 totalLevel = info.upgradeState0 + info.upgradeState1 + info.upgradeState2;
         require(
-            (planet.spaceType == SpaceType.NEBULA && totalLevel < 3) ||
-                (planet.spaceType == SpaceType.SPACE && totalLevel < 4) ||
-                (planet.spaceType == SpaceType.DEEP_SPACE && totalLevel < 5) ||
-                (planet.spaceType == SpaceType.DEAD_SPACE && totalLevel < 5),
+            (info.spaceType == SpaceType.NEBULA && totalLevel < 3) ||
+                (info.spaceType == SpaceType.SPACE && totalLevel < 4) ||
+                (info.spaceType == SpaceType.DEEP_SPACE && totalLevel < 5) ||
+                (info.spaceType == SpaceType.DEAD_SPACE && totalLevel < 5),
             "Planet at max total level"
         );
 
         uint256 upgradeBranchCurrentLevel;
         if (_branch == uint256(UpgradeBranch.DEFENSE)) {
-            upgradeBranchCurrentLevel = planet.upgradeState0;
+            upgradeBranchCurrentLevel = info.upgradeState0;
         } else if (_branch == uint256(UpgradeBranch.RANGE)) {
-            upgradeBranchCurrentLevel = planet.upgradeState1;
+            upgradeBranchCurrentLevel = info.upgradeState1;
         } else if (_branch == uint256(UpgradeBranch.SPEED)) {
-            upgradeBranchCurrentLevel = planet.upgradeState2;
+            upgradeBranchCurrentLevel = info.upgradeState2;
         }
         require(upgradeBranchCurrentLevel < 4, "Upgrade branch already maxed");
 
@@ -224,11 +231,11 @@ library LibPlanet {
         LibGameUtils._buffPlanet(_location, upgrade);
         planet.silver -= upgradeCost;
         if (_branch == uint256(UpgradeBranch.DEFENSE)) {
-            planet.upgradeState0 += 1;
+            info.upgradeState0 += 1;
         } else if (_branch == uint256(UpgradeBranch.RANGE)) {
-            planet.upgradeState1 += 1;
+            info.upgradeState1 += 1;
         } else if (_branch == uint256(UpgradeBranch.SPEED)) {
-            planet.upgradeState2 += 1;
+            info.upgradeState2 += 1;
         }
         emit PlanetUpgraded(msg.sender, _location, _branch, upgradeBranchCurrentLevel + 1);
     }
@@ -265,11 +272,15 @@ library LibPlanet {
         view
         returns (
             Planet memory,
+            PlanetExtendedInfo memory,
+            PlanetExtendedInfo2 memory,
             uint256[12] memory eventsToRemove,
             uint256[12] memory artifactsToAdd
         )
     {
         Planet memory planet = gs().planets[location];
+        PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[location];
+        PlanetExtendedInfo2 memory planetExtendedInfo2 = gs().planetsExtendedInfo2[location];
 
         // first 12 are event ids to remove
         // last 12 are artifact ids that are new on the planet
@@ -277,7 +288,8 @@ library LibPlanet {
 
         PlanetEventMetadata[] memory events = gs().planetEvents[location];
 
-        (planet, updates) = LibLazyUpdate.applyPendingEvents(timestamp, planet, events);
+        (planet, planetExtendedInfo, planetExtendedInfo2, updates) = LibLazyUpdate
+            .applyPendingEvents(timestamp, planet, planetExtendedInfo, planetExtendedInfo2, events);
 
         for (uint256 i = 0; i < 12; i++) {
             eventsToRemove[i] = updates[i];
@@ -287,50 +299,70 @@ library LibPlanet {
         for (uint256 i = 0; i < artifactsToAdd.length; i++) {
             Artifact memory artifact = gs().artifacts[artifactsToAdd[i]];
 
-            planet = applySpaceshipArrive(artifact, planet);
+            (planet, planetExtendedInfo, planetExtendedInfo2) = applySpaceshipArrive(
+                artifact,
+                planet,
+                planetExtendedInfo,
+                planetExtendedInfo2
+            );
         }
 
-        planet = LibLazyUpdate.updatePlanet(timestamp, planet);
+        (planet, planetExtendedInfo, planetExtendedInfo2) = LibLazyUpdate.updatePlanet(
+            timestamp,
+            planet,
+            planetExtendedInfo,
+            planetExtendedInfo2
+        );
 
-        return (planet, eventsToRemove, artifactsToAdd);
+        return (planet, planetExtendedInfo, planetExtendedInfo2, eventsToRemove, artifactsToAdd);
     }
 
-    function applySpaceshipArrive(Artifact memory artifact, Planet memory planet)
+    function applySpaceshipArrive(
+        Artifact memory artifact,
+        Planet memory planet,
+        PlanetExtendedInfo memory planetExtendedInfo,
+        PlanetExtendedInfo2 memory planetExtendedInfo2
+    )
         public
         pure
-        returns (Planet memory)
+        returns (
+            Planet memory,
+            PlanetExtendedInfo memory,
+            PlanetExtendedInfo2 memory
+        )
     {
         if (planet.isHomePlanet) {
-            return planet;
+            return (planet, planetExtendedInfo, planetExtendedInfo2);
         }
 
         if (artifact.artifactType == ArtifactType.ShipMothership) {
-            if (planet.energyGroDoublers == 0) {
-                planet.populationGrowth *= 2;
-            }
-            planet.energyGroDoublers++;
+            planet.populationGrowth *= 2;
         } else if (artifact.artifactType == ArtifactType.ShipWhale) {
-            if (planet.silverGroDoublers == 0) {
-                planet.silverGrowth *= 2;
-            }
-            planet.silverGroDoublers++;
+            planet.silverGrowth *= 2;
         } else if (artifact.artifactType == ArtifactType.ShipTitan) {
-            planet.pausers++;
+            planetExtendedInfo2.pausers++;
         }
 
-        return planet;
+        return (planet, planetExtendedInfo, planetExtendedInfo2);
     }
 
     function refreshPlanet(uint256 location) public {
-        require(gs().planets[location].isInitialized, "Planet has not been initialized");
+        require(
+            gs().planetsExtendedInfo[location].isInitialized,
+            "Planet has not been initialized"
+        );
 
         (
             Planet memory planet,
+            PlanetExtendedInfo memory planetInfo,
+            PlanetExtendedInfo2 memory planetInfo2,
             uint256[12] memory eventsToRemove,
             uint256[12] memory artifactIdsToAddToPlanet
         ) = getRefreshedPlanet(location, block.timestamp);
 
         gs().planets[location] = planet;
+        gs().planetsExtendedInfo[location] = planetInfo;
+        gs().planetsExtendedInfo2[location] = planetInfo2;
 
         PlanetEventMetadata[] storage events = gs().planetEvents[location];
 
@@ -353,12 +385,13 @@ library LibPlanet {
 
     function withdrawSilver(uint256 locationId, uint256 silverToWithdraw) public {
         Planet storage planet = gs().planets[locationId];
+        PlanetExtendedInfo storage info = gs().planetsExtendedInfo[locationId];
         require(planet.owner == msg.sender, "you must own this planet");
         require(
             planet.planetType == PlanetType.TRADING_POST,
             "can only withdraw silver from trading posts"
         );
-        require(!planet.destroyed, "planet is destroyed");
+        require(!info.destroyed, "planet is destroyed");
         require(
             planet.silver >= silverToWithdraw,
             "tried to withdraw more silver than exists on planet"

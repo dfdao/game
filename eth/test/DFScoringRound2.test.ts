@@ -1,6 +1,10 @@
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
-import { conquerUnownedPlanet, feedSilverToCap, makeInitArgs } from './utils/TestUtils';
+import {
+  conquerUnownedPlanet,
+  feedSilverToCap,
+  fixtureLoader,
+  makeInitArgs,
+} from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import { LVL1_ASTEROID_1, LVL3_SPACETIME_1, SPAWN_PLANET_1 } from './utils/WorldConstants';
 
@@ -11,7 +15,7 @@ describe('DFScoringRound2', async function () {
   let world: World;
 
   async function worldFixture() {
-    const world = await loadFixture(defaultWorldFixture);
+    const world = await fixtureLoader(defaultWorldFixture);
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
 
     // Conquer MINE_REGULAR and LVL3_SPACETIME_1 to accumulate silver
@@ -25,7 +29,7 @@ describe('DFScoringRound2', async function () {
   }
 
   beforeEach('load fixture', async function () {
-    world = await loadFixture(worldFixture);
+    world = await fixtureLoader(worldFixture);
   });
 
   it('allows player to withdraw silver from trading posts', async function () {

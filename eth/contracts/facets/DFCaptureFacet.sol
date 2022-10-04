@@ -7,7 +7,7 @@ import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
 
 // Library imports
 import {LibPlanet} from "../libraries/LibPlanet.sol";
-import {LibPermissions} from "../libraries/LibPermissions.sol";
+import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
@@ -17,7 +17,7 @@ import {LibTrig} from "../vendor/libraries/LibTrig.sol";
 import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 
 // Type imports
-import {Planet} from "../DFTypes.sol";
+import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2} from "../DFTypes.sol";
 
 contract DFCaptureFacet is WithStorage {
     modifier notPaused() {
@@ -28,7 +28,7 @@ contract DFCaptureFacet is WithStorage {
     modifier onlyWhitelisted() {
         require(
             DFWhitelistFacet(address(this)).isWhitelisted(msg.sender) ||
-                msg.sender == LibPermissions.contractOwner(),
+                msg.sender == LibDiamond.contractOwner(),
             "Player is not whitelisted"
         );
         _;
@@ -64,14 +64,16 @@ contract DFCaptureFacet is WithStorage {
 
         LibPlanet.refreshPlanet(locationId);
         Planet memory planet = gs().planets[locationId];
+        PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
+        PlanetExtendedInfo2 storage planetExtendedInfo2 = gs().planetsExtendedInfo2[locationId];
 
-        require(!planet.destroyed, "planet is destroyed");
-        require(planet.invader == address(0), "planet is already invaded");
-        require(planet.capturer == address(0), "planet has already been captured");
+        require(!planetExtendedInfo.destroyed, "planet is destroyed");
+        require(planetExtendedInfo2.invader == address(0), "planet is already invaded");
+        require(planetExtendedInfo2.capturer == address(0), "planet has already been captured");
         require(planet.owner == msg.sender, "you can only invade planets you own");
 
-        planet.invader = msg.sender;
-        planet.invadeStartBlock = block.number;
+        planetExtendedInfo2.invader = msg.sender;
+        planetExtendedInfo2.invadeStartBlock = block.number;
 
         emit PlanetInvaded(msg.sender, locationId);
     }
@@ -81,11 +83,16 @@ contract DFCaptureFacet is WithStorage {
 
         LibPlanet.refreshPlanet(locationId);
         Planet memory planet = gs().planets[locationId];
+        PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
+        PlanetExtendedInfo2 storage planetExtendedInfo2 = gs().planetsExtendedInfo2[locationId];
 
-        require(planet.capturer == address(0), "planets can only be captured once");
-        require(!planet.destroyed, "planet is destroyed");
+        require(planetExtendedInfo2.capturer == address(0), "planets can only be captured once");
+        require(!planetExtendedInfo.destroyed, "planet is destroyed");
         require(planet.owner == msg.sender, "you can only capture planets you own");
-        require(planet.invader != address(0), "you must invade the planet before capturing");
+        require(
+            planetExtendedInfo2.invader != address(0),
+            "you must invade the planet before capturing"
+        );
         require(
             (planet.population * 100) >= (planet.populationCap * 100) / 78,
             // We lie here, but it is a better UX
@@ -93,12 +100,13 @@ contract DFCaptureFacet is WithStorage {
         );
 
         require(
-            planet.invadeStartBlock + gameConstants().CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED <=
+            planetExtendedInfo2.invadeStartBlock +
+                gameConstants().CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED <=
                 block.number,
             "you have not held the planet long enough to capture it"
         );
 
-        planet.capturer = msg.sender;
+        planetExtendedInfo2.capturer = msg.sender;
 
         gs().players[msg.sender].score += gameConstants().CAPTURE_ZONE_PLANET_LEVEL_SCORE[
             planet.planetLevel
@@ -109,8 +117,8 @@ contract DFCaptureFacet is WithStorage {
     function planetInCaptureZone(uint256 x, uint256 y) public returns (bool) {
         setNextGenerationBlock();
 
-        uint256 generationBlock = gs().nextChangeBlock -
-            gameConstants().CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
+        uint256 generationBlock =
+            gs().nextChangeBlock - gameConstants().CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
         bytes32 generationBlockHash = blockhash(generationBlock);
 
         int256 planetX = getIntFromUInt(x);
@@ -174,7 +182,8 @@ contract DFCaptureFacet is WithStorage {
     }
 
     function getIntFromUInt(uint256 n) public pure returns (int256) {
-        uint256 LOCATION_ID_UB = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+        uint256 LOCATION_ID_UB =
+            21888242871839275222246405745257275088548364400416034343698204186575808495617;
         require(n < LOCATION_ID_UB, "Number outside of AbsoluteModP Range");
         if (n > (LOCATION_ID_UB / 2)) {
             return 0 - int256(LOCATION_ID_UB - n);

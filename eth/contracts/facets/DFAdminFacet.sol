@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Library imports
-import {LibPermissions} from "../libraries/LibPermissions.sol";
+import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
@@ -11,7 +11,17 @@ import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {SpaceType, DFPInitPlanetArgs, AdminCreatePlanetArgs, Artifact, ArtifactType, Player, Planet} from "../DFTypes.sol";
+import {
+    SpaceType,
+    DFPInitPlanetArgs,
+    AdminCreatePlanetArgs,
+    Artifact,
+    ArtifactType,
+    Player,
+    Planet,
+    PlanetExtendedInfo,
+    PlanetExtendedInfo2
+} from "../DFTypes.sol";
 
 contract DFAdminFacet is WithStorage {
     event AdminOwnershipChanged(uint256 loc, address newOwner);
@@ -24,7 +34,7 @@ contract DFAdminFacet is WithStorage {
     /////////////////////////////
 
     modifier onlyAdmin() {
-        LibPermissions.enforceIsContractOwner();
+        LibDiamond.enforceIsContractOwner();
         _;
     }
 
@@ -78,7 +88,7 @@ contract DFAdminFacet is WithStorage {
     ) public onlyAdmin {
         uint256 planetId = _input[0];
 
-        if (!gs().planets[planetId].isInitialized) {
+        if (!gs().planetsExtendedInfo[planetId].isInitialized) {
             LibPlanet.initializePlanet(_a, _b, _c, _input, false);
         }
 
@@ -138,22 +148,34 @@ contract DFAdminFacet is WithStorage {
         address owner,
         ArtifactType artifactType
     ) public onlyAdmin {
-        require(gs().planets[locationId].isInitialized, "planet is not initialized");
+        require(gs().planetsExtendedInfo2[locationId].isInitialized, "planet is not initialized");
         require(LibArtifactUtils.isSpaceship(artifactType), "artifact type must be a space ship");
 
         uint256 shipId = LibArtifactUtils.createAndPlaceSpaceship(locationId, owner, artifactType);
         Artifact memory artifact = gs().artifacts[shipId];
         Planet memory planet = gs().planets[locationId];
+        PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
+        PlanetExtendedInfo2 memory planetExtendedInfo2 = gs().planetsExtendedInfo2[locationId];
 
-        planet = LibPlanet.applySpaceshipArrive(artifact, planet);
+        (planet, planetExtendedInfo, planetExtendedInfo2) = LibPlanet.applySpaceshipArrive(
+            artifact,
+            planet,
+            planetExtendedInfo,
+            planetExtendedInfo2
+        );
 
         gs().planets[locationId] = planet;
+        gs().planetsExtendedInfo[locationId] = planetExtendedInfo;
+        gs().planetsExtendedInfo2[locationId] = planetExtendedInfo2;
 
         emit AdminGiveSpaceship(locationId, owner, artifactType);
     }
 
     function adminInitializePlanet(uint256 locationId, uint256 perlin) public onlyAdmin {
-        require(!gs().planets[locationId].isInitialized, "planet is already initialized");
+        require(
+            !gs().planetsExtendedInfo2[locationId].isInitialized,
+            "planet is already initialized"
+        );
 
         LibPlanet.initializePlanetWithDefaults(locationId, perlin, false);
     }

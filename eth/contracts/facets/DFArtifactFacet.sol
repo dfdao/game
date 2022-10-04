@@ -2,13 +2,13 @@
 pragma solidity ^0.8.0;
 
 // Contract imports
-import {SolidStateERC721} from "@solidstate/contracts/token/ERC721/SolidStateERC721.sol";
+import {ERC721} from "@solidstate/contracts/token/ERC721/ERC721.sol";
 import {ERC721BaseStorage} from "@solidstate/contracts/token/ERC721/base/ERC721BaseStorage.sol";
-import {DFVerifierFacet} from "./DFVerifierFacet.sol";
+import {Verifier} from "../Verifier.sol";
 import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
 
 // Library Imports
-import {LibPermissions} from "../libraries/LibPermissions.sol";
+import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 import {LibPlanet} from "../libraries/LibPlanet.sol";
@@ -19,7 +19,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 // Type imports
 import {Artifact, ArtifactType, DFTCreateArtifactArgs, DFPFindArtifactArgs} from "../DFTypes.sol";
 
-contract DFArtifactFacet is WithStorage, SolidStateERC721 {
+contract DFArtifactFacet is WithStorage, ERC721 {
     using ERC721BaseStorage for ERC721BaseStorage.Layout;
 
     event PlanetProspected(address player, uint256 loc);
@@ -32,7 +32,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC721 {
     modifier onlyWhitelisted() {
         require(
             DFWhitelistFacet(address(this)).isWhitelisted(msg.sender) ||
-                msg.sender == LibPermissions.contractOwner(),
+                msg.sender == LibDiamond.contractOwner(),
             "Player is not whitelisted"
         );
         _;
@@ -50,7 +50,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC721 {
 
     modifier onlyAdminOrCore() {
         require(
-            msg.sender == gs().diamondAddress || msg.sender == LibPermissions.contractOwner(),
+            msg.sender == gs().diamondAddress || msg.sender == LibDiamond.contractOwner(),
             "Only the Core or Admin addresses can fiddle with artifacts."
         );
         _;
@@ -58,7 +58,7 @@ contract DFArtifactFacet is WithStorage, SolidStateERC721 {
 
     modifier onlyAdmin() {
         require(
-            msg.sender == LibPermissions.contractOwner(),
+            msg.sender == LibDiamond.contractOwner(),
             "Only Admin address can perform this action."
         );
         _;
@@ -73,21 +73,22 @@ contract DFArtifactFacet is WithStorage, SolidStateERC721 {
 
         _mint(args.owner, args.tokenId);
 
-        Artifact memory newArtifact = Artifact(
-            true,
-            args.tokenId,
-            args.planetId,
-            args.rarity,
-            args.biome,
-            block.timestamp,
-            args.discoverer,
-            args.artifactType,
-            0,
-            0,
-            0,
-            0,
-            args.controller
-        );
+        Artifact memory newArtifact =
+            Artifact(
+                true,
+                args.tokenId,
+                args.planetId,
+                args.rarity,
+                args.biome,
+                block.timestamp,
+                args.discoverer,
+                args.artifactType,
+                0,
+                0,
+                0,
+                0,
+                args.controller
+            );
 
         gs().artifacts[args.tokenId] = newArtifact;
 
@@ -152,14 +153,13 @@ contract DFArtifactFacet is WithStorage, SolidStateERC721 {
 
         if (!snarkConstants().DISABLE_ZK_CHECKS) {
             require(
-                DFVerifierFacet(address(this)).verifyBiomebaseProof(_a, _b, _c, _input),
+                Verifier.verifyBiomebaseProof(_a, _b, _c, _input),
                 "biome zkSNARK failed doesn't check out"
             );
         }
 
-        uint256 foundArtifactId = LibArtifactUtils.findArtifact(
-            DFPFindArtifactArgs(planetId, biomebase, address(this))
-        );
+        uint256 foundArtifactId =
+            LibArtifactUtils.findArtifact(DFPFindArtifactArgs(planetId, biomebase, address(this)));
 
         emit ArtifactFound(msg.sender, foundArtifactId, planetId);
     }
@@ -228,62 +228,6 @@ contract DFArtifactFacet is WithStorage, SolidStateERC721 {
       by a given player. This is a first pass at getting spaceships into the game.
       Eventually ships will be able to spawn in the game naturally (construction, capturing, etc.)
      */
-    function giveSpaceShips(uint256 locationId) public onlyWhitelisted {
-        require(!gs().players[msg.sender].claimedShips, "player already claimed ships");
-        require(
-            gs().planets[locationId].owner == msg.sender && gs().planets[locationId].isHomePlanet,
-            "you can only spawn ships on your home planet"
-        );
-
-        address owner = gs().planets[locationId].owner;
-        if (gameConstants().SPACESHIPS.MOTHERSHIP) {
-            uint256 id1 = LibArtifactUtils.createAndPlaceSpaceship(
-                locationId,
-                owner,
-                ArtifactType.ShipMothership
-            );
-            emit ArtifactFound(msg.sender, id1, locationId);
-        }
-
-        if (gameConstants().SPACESHIPS.CRESCENT) {
-            uint256 id2 = LibArtifactUtils.createAndPlaceSpaceship(
-                locationId,
-                owner,
-                ArtifactType.ShipCrescent
-            );
-            emit ArtifactFound(msg.sender, id2, locationId);
-        }
-
-        if (gameConstants().SPACESHIPS.WHALE) {
-            uint256 id3 = LibArtifactUtils.createAndPlaceSpaceship(
-                locationId,
-                owner,
-                ArtifactType.ShipWhale
-            );
-            emit ArtifactFound(msg.sender, id3, locationId);
-        }
-
-        if (gameConstants().SPACESHIPS.GEAR) {
-            uint256 id4 = LibArtifactUtils.createAndPlaceSpaceship(
-                locationId,
-                owner,
-                ArtifactType.ShipGear
-            );
-            emit ArtifactFound(msg.sender, id4, locationId);
-        }
-
-        if (gameConstants().SPACESHIPS.TITAN) {
-            uint256 id5 = LibArtifactUtils.createAndPlaceSpaceship(
-                locationId,
-                owner,
-                ArtifactType.ShipTitan
-            );
-
-            emit ArtifactFound(msg.sender, id5, locationId);
-        }
-
-        gs().players[msg.sender].claimedShips = true;
-    }
 
     function adminGiveArtifact(DFTCreateArtifactArgs memory args) public onlyAdmin {
         Artifact memory artifact = createArtifact(args);

@@ -9,9 +9,20 @@ import {LibGameUtils} from "./LibGameUtils.sol";
 
 // Storage imports
 import {LibStorage, GameStorage, GameConstants} from "./LibStorage.sol";
+import {LibArenaStorage, ArenaConstants} from "./LibArenaStorage.sol";
 
 // Type imports
-import {Biome, Planet, PlanetType, Artifact, ArtifactType, ArtifactRarity, DFPFindArtifactArgs, DFTCreateArtifactArgs} from "../DFTypes.sol";
+import {
+    Biome,
+    Planet,
+    PlanetExtendedInfo,
+    PlanetType,
+    Artifact,
+    ArtifactType,
+    ArtifactRarity,
+    DFPFindArtifactArgs,
+    DFTCreateArtifactArgs
+} from "../DFTypes.sol";
 
 library LibArtifactUtils {
     function gs() internal pure returns (GameStorage storage) {
@@ -22,32 +33,32 @@ library LibArtifactUtils {
         return LibStorage.gameConstants();
     }
 
+    function arenaConstants() internal pure returns (ArenaConstants storage) {
+        return LibArenaStorage.arenaConstants();
+    }
+
     // also need to copy some of DFCore's event signatures
     event ArtifactActivated(address player, uint256 artifactId, uint256 loc);
     event ArtifactDeactivated(address player, uint256 artifactId, uint256 loc);
     event PlanetUpgraded(address player, uint256 loc, uint256 branch, uint256 toBranchLevel);
 
     // verifies that user is allowed to call findArtifact on this planet
-    function checkFindArtifact(uint256 locationId, Planet memory planet)
-        public
-        view
-        returns (bool)
-    {
-        require(!planet.hasTriedFindingArtifact, "artifact already minted from this planet");
+    function checkFindArtifact(
+        uint256 locationId,
+        PlanetExtendedInfo memory info,
+        Planet memory planet
+    ) public view returns (bool) {
+        require(!info.hasTriedFindingArtifact, "artifact already minted from this planet");
         require(planet.owner == msg.sender, "you can only find artifacts on planets you own");
-        require(planet.prospectedBlockNumber != 0, "planet never prospected");
+        require(info.prospectedBlockNumber != 0, "planet never prospected");
         require(
-            planet.prospectedBlockNumber < block.number,
+            info.prospectedBlockNumber < block.number,
             "can only call findArtifact after prospectedBlockNumber"
         );
-        require(block.number > planet.prospectedBlockNumber, "invalid prospectedBlockNumber");
-        require(block.number - planet.prospectedBlockNumber < 256, "planet prospect expired");
-        require(!planet.destroyed, "planet is destroyed");
-
-        if (gameConstants().SPACESHIPS.GEAR) {
-            require(containsGear(locationId), "gear ship must be present on planet");
-        }
-
+        require(block.number > info.prospectedBlockNumber, "invalid prospectedBlockNumber");
+        require(block.number - info.prospectedBlockNumber < 256, "planet prospect expired");
+        require(!info.destroyed, "planet is destroyed");
+        require(containsGear(locationId), "gear ship must be present on planet");
         return true;
     }
 
@@ -64,20 +75,20 @@ library LibArtifactUtils {
 
         uint256 id = uint256(keccak256(abi.encodePacked(planetId, gs().miscNonce++)));
 
-        DFTCreateArtifactArgs memory createArtifactArgs = DFTCreateArtifactArgs(
-            id,
-            msg.sender,
-            planetId,
-            ArtifactRarity.Unknown,
-            Biome.Unknown,
-            shipType,
-            address(this),
-            owner
-        );
+        DFTCreateArtifactArgs memory createArtifactArgs =
+            DFTCreateArtifactArgs(
+                id,
+                msg.sender,
+                planetId,
+                ArtifactRarity.Unknown,
+                Biome.Unknown,
+                shipType,
+                address(this),
+                owner
+            );
 
-        Artifact memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
-            createArtifactArgs
-        );
+        Artifact memory foundArtifact =
+            DFArtifactFacet(address(this)).createArtifact(createArtifactArgs);
         LibGameUtils._putArtifactOnPlanet(foundArtifact.id, planetId);
 
         return id;
@@ -85,42 +96,46 @@ library LibArtifactUtils {
 
     function findArtifact(DFPFindArtifactArgs memory args) public returns (uint256 artifactId) {
         Planet storage planet = gs().planets[args.planetId];
+        PlanetExtendedInfo storage info = gs().planetsExtendedInfo[args.planetId];
 
-        require(checkFindArtifact(args.planetId, planet));
+        require(checkFindArtifact(args.planetId, info, planet));
 
-        Biome biome = LibGameUtils._getBiome(planet.spaceType, args.biomebase);
-
-        uint256 artifactSeed = uint256(
-            keccak256(
-                abi.encodePacked(
-                    args.planetId,
-                    args.coreAddress,
-                    blockhash(planet.prospectedBlockNumber)
+        Biome biome = LibGameUtils._getBiome(info.spaceType, args.biomebase);
+        bytes memory randomness = "";
+        if(arenaConstants().RANDOM_ARTIFACTS) {
+            randomness = abi.encodePacked(args.coreAddress, blockhash(info.prospectedBlockNumber));
+        }
+        uint256 artifactSeed =
+            uint256(
+                keccak256(
+                    abi.encodePacked(
+                        args.planetId,
+                        randomness
+                    )
                 )
-            )
-        );
+            );
 
-        (ArtifactType artifactType, uint256 levelBonus) = LibGameUtils
-            ._randomArtifactTypeAndLevelBonus(artifactSeed, biome, planet.spaceType);
+        (ArtifactType artifactType, uint256 levelBonus) =
+            LibGameUtils._randomArtifactTypeAndLevelBonus(artifactSeed, biome, info.spaceType);
 
-        DFTCreateArtifactArgs memory createArtifactArgs = DFTCreateArtifactArgs(
-            artifactSeed,
-            msg.sender,
-            args.planetId,
-            LibGameUtils.artifactRarityFromPlanetLevel(levelBonus + planet.planetLevel),
-            biome,
-            artifactType,
-            args.coreAddress,
-            address(0)
-        );
+        DFTCreateArtifactArgs memory createArtifactArgs =
+            DFTCreateArtifactArgs(
+                artifactSeed,
+                msg.sender,
+                args.planetId,
+                LibGameUtils.artifactRarityFromPlanetLevel(levelBonus + planet.planetLevel),
+                biome,
+                artifactType,
+                args.coreAddress,
+                address(0)
+            );
 
-        Artifact memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
-            createArtifactArgs
-        );
+        Artifact memory foundArtifact =
+            DFArtifactFacet(address(this)).createArtifact(createArtifactArgs);
 
         LibGameUtils._putArtifactOnPlanet(foundArtifact.id, args.planetId);
 
-        planet.hasTriedFindingArtifact = true;
+        info.hasTriedFindingArtifact = true;
         gs().players[msg.sender].score += gameConstants().ARTIFACT_POINT_VALUES[
             uint256(foundArtifact.rarity)
         ];
@@ -156,6 +171,8 @@ library LibArtifactUtils {
         Planet storage planet,
         Artifact storage artifact
     ) private {
+        PlanetExtendedInfo storage extendedInfo = gs().planetsExtendedInfo[locationId];
+
         if (artifact.artifactType == ArtifactType.ShipCrescent) {
             require(artifact.activations == 0, "crescent cannot be activated more than once");
 
@@ -172,13 +189,14 @@ library LibArtifactUtils {
 
             if (planet.silver == 0) {
                 planet.silver = 1;
-                Planet memory defaultPlanet = LibGameUtils._defaultPlanet(
-                    locationId,
-                    planet.planetLevel,
-                    PlanetType.SILVER_MINE,
-                    planet.spaceType,
-                    gameConstants().TIME_FACTOR_HUNDREDTHS
-                );
+                Planet memory defaultPlanet =
+                    LibGameUtils._defaultPlanet(
+                        locationId,
+                        planet.planetLevel,
+                        PlanetType.SILVER_MINE,
+                        extendedInfo.spaceType,
+                        gameConstants().TIME_FACTOR_HUNDREDTHS
+                    );
 
                 planet.silverGrowth = defaultPlanet.silverGrowth;
             }
@@ -195,6 +213,8 @@ library LibArtifactUtils {
         Planet storage planet,
         Artifact memory artifact
     ) private {
+        PlanetExtendedInfo storage info = gs().planetsExtendedInfo[locationId];
+
         require(
             planet.owner == msg.sender,
             "you must own the planet you are activating an artifact on"
@@ -203,7 +223,7 @@ library LibArtifactUtils {
             !LibGameUtils.getActiveArtifact(locationId).isInitialized,
             "there is already an active artifact on this planet"
         );
-        require(!planet.destroyed, "planet is destroyed");
+        require(!info.destroyed, "planet is destroyed");
 
         require(artifact.isInitialized, "this artifact is not on this planet");
 
@@ -231,7 +251,7 @@ library LibArtifactUtils {
                 gs().planets[wormholeTo].owner == msg.sender,
                 "you can only create a wormhole to a planet you own"
             );
-            require(!gs().planets[wormholeTo].destroyed, "planet destroyed");
+            require(!gs().planetsExtendedInfo[wormholeTo].destroyed, "planet destroyed");
             artifact.wormholeTo = wormholeTo;
         } else if (artifact.artifactType == ArtifactType.BloomFilter) {
             require(
@@ -246,7 +266,7 @@ library LibArtifactUtils {
                 2 * uint256(artifact.rarity) >= planet.planetLevel,
                 "artifact is not powerful enough to apply effect to this planet level"
             );
-            planet.destroyed = true;
+            info.destroyed = true;
             shouldDeactivateAndBurn = true;
         }
 
@@ -273,7 +293,7 @@ library LibArtifactUtils {
             "you must own the planet you are deactivating an artifact on"
         );
 
-        require(!gs().planets[locationId].destroyed, "planet is destroyed");
+        require(!gs().planetsExtendedInfo[locationId].destroyed, "planet is destroyed");
 
         Artifact memory artifact = LibGameUtils.getActiveArtifact(locationId);
 
@@ -284,8 +304,9 @@ library LibArtifactUtils {
         emit ArtifactDeactivated(msg.sender, artifact.id, locationId);
         DFArtifactFacet(address(this)).updateArtifact(artifact);
 
-        bool shouldBurn = artifact.artifactType == ArtifactType.PlanetaryShield ||
-            artifact.artifactType == ArtifactType.PhotoidCannon;
+        bool shouldBurn =
+            artifact.artifactType == ArtifactType.PlanetaryShield ||
+                artifact.artifactType == ArtifactType.PhotoidCannon;
         if (shouldBurn) {
             // burn it after use. will be owned by contract but not on a planet anyone can control
             LibGameUtils._takeArtifactOffPlanet(artifact.id, locationId);
@@ -301,7 +322,7 @@ library LibArtifactUtils {
     ) public {
         Planet storage planet = gs().planets[locationId];
 
-        require(!gs().planets[locationId].destroyed, "planet is destroyed");
+        require(!gs().planetsExtendedInfo[locationId].destroyed, "planet is destroyed");
         require(planet.planetType == PlanetType.TRADING_POST, "can only deposit on trading posts");
         require(
             DFArtifactFacet(address(this)).ownerOf(artifactId) == msg.sender,
@@ -330,7 +351,7 @@ library LibArtifactUtils {
             planet.planetType == PlanetType.TRADING_POST,
             "can only withdraw from trading posts"
         );
-        require(!gs().planets[locationId].destroyed, "planet is destroyed");
+        require(!gs().planetsExtendedInfo[locationId].destroyed, "planet is destroyed");
         require(planet.owner == msg.sender, "you can only withdraw from a planet you own");
         Artifact memory artifact = LibGameUtils.getPlanetArtifact(locationId, artifactId);
         require(artifact.isInitialized, "this artifact is not on this planet");
@@ -347,17 +368,15 @@ library LibArtifactUtils {
 
     function prospectPlanet(uint256 locationId) public {
         Planet storage planet = gs().planets[locationId];
+        PlanetExtendedInfo storage planetInfo = gs().planetsExtendedInfo[locationId];
 
-        require(!planet.destroyed, "planet is destroyed");
+        require(!planetInfo.destroyed, "planet is destroyed");
         require(planet.planetType == PlanetType.RUINS, "you can't find an artifact on this planet");
+        require(containsGear(locationId), "gear ship must be present on planet");
         require(planet.owner == msg.sender, "you must own this planet");
-        require(planet.prospectedBlockNumber == 0, "this planet has already been prospected");
+        require(planetInfo.prospectedBlockNumber == 0, "this planet has already been prospected");
 
-        if (gameConstants().SPACESHIPS.GEAR) {
-            require(containsGear(locationId), "gear ship must be present on planet");
-        }
-
-        planet.prospectedBlockNumber = block.number;
+        planetInfo.prospectedBlockNumber = block.number;
     }
 
     function containsGear(uint256 locationId) public view returns (bool) {

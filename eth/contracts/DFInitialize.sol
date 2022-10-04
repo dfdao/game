@@ -19,12 +19,24 @@ pragma solidity ^0.8.0;
 // of the diamond. Add parameters to the init function if you need to.
 
 // Interface imports
+import {IDiamondLoupe} from "./vendor/interfaces/IDiamondLoupe.sol";
+import {IDiamondCut} from "./vendor/interfaces/IDiamondCut.sol";
+import {IERC173} from "./vendor/interfaces/IERC173.sol";
+import {IERC165} from "@solidstate/contracts/introspection/IERC165.sol";
+import {IERC721} from "@solidstate/contracts/token/ERC721/IERC721.sol";
+import {IERC721Metadata} from "@solidstate/contracts/token/ERC721/metadata/IERC721Metadata.sol";
+import {
+    IERC721Enumerable
+} from "@solidstate/contracts/token/ERC721/enumerable/IERC721Enumerable.sol";
 
 // Inherited storage
-import {ERC721MetadataStorage} from "@solidstate/contracts/token/ERC721/metadata/ERC721MetadataStorage.sol";
+import {
+    ERC721MetadataStorage
+} from "@solidstate/contracts/token/ERC721/metadata/ERC721MetadataStorage.sol";
 
 // Library imports
-import {WithStorage, SpaceshipConstants} from "./libraries/LibStorage.sol";
+import {LibDiamond} from "./vendor/libraries/LibDiamond.sol";
+import {WithStorage} from "./libraries/LibStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
 
 // Type imports
@@ -89,14 +101,20 @@ struct InitArgs {
     uint256 ABANDON_RANGE_CHANGE_PERCENT;
     // Capture Zones
     bool CAPTURE_ZONES_ENABLED;
+    uint256 CAPTURE_ZONE_COUNT;
     uint256 CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
     uint256 CAPTURE_ZONE_RADIUS;
     uint256[10] CAPTURE_ZONE_PLANET_LEVEL_SCORE;
     uint256 CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
-    SpaceshipConstants SPACESHIPS;
-    uint256[64] ROUND_END_REWARDS_BY_RANK;
 }
+
+struct AuxiliaryArgs {
+    bool allowListEnabled;
+    string artifactBaseURI;
+    address[] allowedAddresses;
+}
+
 
 contract DFInitialize is WithStorage {
     using ERC721MetadataStorage for ERC721MetadataStorage.Layout;
@@ -104,24 +122,34 @@ contract DFInitialize is WithStorage {
     // You can add parameters to this function in order to pass in
     // data to set initialize state variables
     function init(
-        bool whitelistEnabled,
-        string memory artifactBaseURI,
-        InitArgs memory initArgs
+        InitArgs memory initArgs,
+        AuxiliaryArgs memory auxArgs
     ) external {
+        // adding ERC165 data
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+        ds.supportedInterfaces[type(IERC165).interfaceId] = true;
+        ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
+        ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
+        ds.supportedInterfaces[type(IERC173).interfaceId] = true;
+        ds.supportedInterfaces[type(IERC721).interfaceId] = true;
+        ds.supportedInterfaces[type(IERC721Metadata).interfaceId] = true;
+        ds.supportedInterfaces[type(IERC721Enumerable).interfaceId] = true;
+
         // Setup the ERC721 metadata
         // TODO(#1925): Add name and symbol for the artifact tokens
         ERC721MetadataStorage.layout().name = "";
         ERC721MetadataStorage.layout().symbol = "";
-        ERC721MetadataStorage.layout().baseURI = artifactBaseURI;
+        ERC721MetadataStorage.layout().baseURI = auxArgs.artifactBaseURI;
 
         gs().diamondAddress = address(this);
 
-        ws().enabled = whitelistEnabled;
+        ws().enabled = auxArgs.allowListEnabled;
         ws().drip = 0.05 ether;
         ws().relayerRewardsEnabled = false;
         ws().relayerReward = 0.01 ether;
 
         gs().planetLevelsCount = 10;
+        gs().planetLevelThresholds = initArgs.PLANET_LEVEL_THRESHOLDS;
 
         snarkConstants().DISABLE_ZK_CHECKS = initArgs.DISABLE_ZK_CHECKS;
         snarkConstants().PLANETHASH_KEY = initArgs.PLANETHASH_KEY;
@@ -145,7 +173,6 @@ contract DFInitialize is WithStorage {
         gameConstants().BIOME_THRESHOLD_1 = initArgs.BIOME_THRESHOLD_1;
         gameConstants().BIOME_THRESHOLD_2 = initArgs.BIOME_THRESHOLD_2;
         gameConstants().PLANET_RARITY = initArgs.PLANET_RARITY;
-        gameConstants().PLANET_LEVEL_THRESHOLDS = initArgs.PLANET_LEVEL_THRESHOLDS;
         gameConstants().PLANET_TRANSFER_ENABLED = initArgs.PLANET_TRANSFER_ENABLED;
         gameConstants().PHOTOID_ACTIVATION_DELAY = initArgs.PHOTOID_ACTIVATION_DELAY;
         gameConstants().LOCATION_REVEAL_COOLDOWN = initArgs.LOCATION_REVEAL_COOLDOWN;
@@ -161,6 +188,7 @@ contract DFInitialize is WithStorage {
         // Capture Zones
         gameConstants().GAME_START_BLOCK = block.number;
         gameConstants().CAPTURE_ZONES_ENABLED = initArgs.CAPTURE_ZONES_ENABLED;
+        gameConstants().CAPTURE_ZONE_COUNT = initArgs.CAPTURE_ZONE_COUNT;
         gameConstants().CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL = initArgs
             .CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
         gameConstants().CAPTURE_ZONE_RADIUS = initArgs.CAPTURE_ZONE_RADIUS;
@@ -169,7 +197,6 @@ contract DFInitialize is WithStorage {
             .CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
         gameConstants().CAPTURE_ZONES_PER_5000_WORLD_RADIUS = initArgs
             .CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
-        gameConstants().SPACESHIPS = initArgs.SPACESHIPS;
 
         gs().nextChangeBlock = block.number + initArgs.CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
 
@@ -178,15 +205,13 @@ contract DFInitialize is WithStorage {
         gs().paused = initArgs.START_PAUSED;
         gs().TOKEN_MINT_END_TIMESTAMP = initArgs.TOKEN_MINT_END_TIMESTAMP;
 
-        gameConstants().ROUND_END_REWARDS_BY_RANK = initArgs.ROUND_END_REWARDS_BY_RANK;
-
         initializeDefaults();
         initializeUpgrades();
 
         gs().initializedPlanetCountByLevel = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        for (uint256 i = 0; i < gameConstants().PLANET_LEVEL_THRESHOLDS.length; i += 1) {
+        for (uint256 i = 0; i < gs().planetLevelThresholds.length; i += 1) {
             gs().cumulativeRarities.push(
-                (2**24 / gameConstants().PLANET_LEVEL_THRESHOLDS[i]) * initArgs.PLANET_RARITY
+                (2**24 / gs().planetLevelThresholds[i]) * initArgs.PLANET_RARITY
             );
         }
 

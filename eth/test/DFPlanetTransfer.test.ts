@@ -1,7 +1,11 @@
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { increaseBlockchainTime, makeInitArgs, makeMoveArgs } from './utils/TestUtils';
+import {
+  fixtureLoader,
+  increaseBlockchainTime,
+  makeInitArgs,
+  makeMoveArgs,
+} from './utils/TestUtils';
 import { defaultWorldFixture, noPlanetTransferFixture, World } from './utils/TestWorld';
 import { LVL0_PLANET_POPCAP_BOOSTED, SPAWN_PLANET_1, SPAWN_PLANET_2 } from './utils/WorldConstants';
 
@@ -12,7 +16,7 @@ describe('DarkForestTransferPlanet', function () {
 
   describe("when transferring is disabled it doesn't work", async function () {
     before(async function () {
-      world = await loadFixture(noPlanetTransferFixture);
+      world = await fixtureLoader(noPlanetTransferFixture);
       await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     });
 
@@ -31,7 +35,7 @@ describe('DarkForestTransferPlanet', function () {
     let world: World;
 
     before(async function () {
-      world = await loadFixture(defaultWorldFixture);
+      world = await fixtureLoader(defaultWorldFixture);
       await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     });
 
@@ -58,8 +62,12 @@ describe('DarkForestTransferPlanet', function () {
 
     it("new planet's owner must be the new owner", async function () {
       const planet1Id = SPAWN_PLANET_1.id;
-      const planet = await world.contract.planets(planet1Id);
-      expect(planet.lastUpdated).to.be.equal((await ethers.provider.getBlock('latest')).timestamp);
+      const planetExtendedInfo = await world.contract.planetsExtendedInfo(planet1Id);
+      await expect(planetExtendedInfo.lastUpdated).to.be.equal(
+        (
+          await ethers.provider.getBlock('latest')
+        ).timestamp
+      );
 
       await increaseBlockchainTime();
 

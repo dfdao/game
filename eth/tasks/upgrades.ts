@@ -11,8 +11,6 @@ import {
   deployLibraries,
   deployLobbyFacet,
   deployMoveFacet,
-  deployRewardFacet,
-  deployVerifierFacet,
   deployWhitelistFacet,
 } from './deploy';
 
@@ -26,10 +24,7 @@ async function upgrade({}, hre: HardhatRuntimeEnvironment) {
   // need to force a compile for tasks
   await hre.run('compile');
 
-  const diamond = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const diamond = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const previousFacets = await diamond.facets();
 
@@ -48,10 +43,8 @@ async function upgrade({}, hre: HardhatRuntimeEnvironment) {
   const getterFacet = await deployGetterFacet({}, libraries, hre);
   const whitelistFacet = await deployWhitelistFacet({}, libraries, hre);
   const adminFacet = await deployAdminFacet({}, libraries, hre);
-  const verifierFacet = await deployVerifierFacet({}, libraries, hre);
   const lobbyFacet = await deployLobbyFacet({}, libraries, hre);
   const captureFacet = await deployCaptureFacet({}, libraries, hre);
-  const rewardFacet = await deployRewardFacet({}, libraries, hre);
 
   // The `cuts` to perform for Dark Forest facets
   const darkForestCuts = [
@@ -60,11 +53,9 @@ async function upgrade({}, hre: HardhatRuntimeEnvironment) {
     ...changes.getFacetCuts('DFArtifactFacet', artifactFacet),
     ...changes.getFacetCuts('DFGetterFacet', getterFacet),
     ...changes.getFacetCuts('DFWhitelistFacet', whitelistFacet),
-    ...changes.getFacetCuts('DFVerifierFacet', verifierFacet),
     ...changes.getFacetCuts('DFAdminFacet', adminFacet),
     ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
     ...changes.getFacetCuts('DFCaptureFacet', captureFacet),
-    ...changes.getFacetCuts('DFRewardFacet', rewardFacet),
   ];
 
   if (isDev) {

@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.0;
 
-// Contract imports
-import {DFVerifierFacet} from "./DFVerifierFacet.sol";
-
 // Library imports
-import {LibPermissions} from "../libraries/LibPermissions.sol";
+import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
+import {Verifier} from "../Verifier.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
@@ -13,7 +11,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 contract DFWhitelistFacet is WithStorage {
     // administrative
     modifier onlyAdmin() {
-        LibPermissions.enforceIsContractOwner();
+        LibDiamond.enforceIsContractOwner();
         _;
     }
 
@@ -22,11 +20,12 @@ contract DFWhitelistFacet is WithStorage {
         return ws().allowedAccountsArray.length;
     }
 
+    function allowListEnabled() public view returns (bool) {
+        return ws().enabled;
+    }
+
     function isWhitelisted(address _addr) public view returns (bool) {
         if (!ws().enabled) {
-            return true;
-        }
-        if (LibPermissions.contractOwner() == _addr) {
             return true;
         }
         return ws().allowedAccounts[_addr];
@@ -55,10 +54,7 @@ contract DFWhitelistFacet is WithStorage {
         uint256[2] memory _c,
         uint256[2] memory _input
     ) public {
-        require(
-            DFVerifierFacet(address(this)).verifyWhitelistProof(_a, _b, _c, _input),
-            "Failed whitelist proof check"
-        );
+        require(Verifier.verifyWhitelistProof(_a, _b, _c, _input), "Failed whitelist proof check");
 
         uint256 hashedKey = _input[0];
         address payable recipient = payable(address(uint160(_input[1])));
@@ -86,12 +82,18 @@ contract DFWhitelistFacet is WithStorage {
         // xDAI ONLY
         payable(recipient).transfer(ws().drip);
     }
-
+    
     function addToWhitelist(address toAdd) public onlyAdmin {
         require(!ws().allowedAccounts[toAdd], "player is already allowed");
 
         ws().allowedAccounts[toAdd] = true;
         ws().allowedAccountsArray.push(toAdd);
+    }
+
+    function bulkAddToWhitelist(address[] memory addresses) public onlyAdmin {
+        for(uint256 i = 0; i < addresses.length; i++) {
+            addToWhitelist(addresses[i]);
+        }
     }
 
     function removeFromWhitelist(address toRemove) public onlyAdmin {
@@ -121,10 +123,6 @@ contract DFWhitelistFacet is WithStorage {
 
     function changeRelayerReward(uint256 newReward) public onlyAdmin {
         ws().relayerReward = newReward;
-    }
-
-    function relayerRewardsEnabled() public view returns (bool) {
-        return ws().relayerRewardsEnabled;
     }
 
     function relayerReward() public view returns (uint256) {

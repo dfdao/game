@@ -1,8 +1,7 @@
-import { generateKeys, keyHash, keysPerTx } from '@dfdao/whitelist';
+import { generateKeys, keyHash, keysPerTx } from '@darkforest_eth/whitelist';
 import * as fs from 'fs';
 import { subtask, task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import * as path from 'path';
 
 task('whitelist:changeDrip', 'change the faucet amount for whitelisted players')
   .addPositionalParam('value', 'drip value (in ether or xDAI)', undefined, types.float)
@@ -11,10 +10,7 @@ task('whitelist:changeDrip', 'change the faucet amount for whitelisted players')
 async function changeDrip(args: { value: number }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const txReceipt = await contract.changeDrip(hre.ethers.utils.parseEther(args.value.toString()));
   await txReceipt.wait();
@@ -36,10 +32,7 @@ async function whitelistDisable(args: { filePath: string }, hre: HardhatRuntimeE
   const keyFileContents = fs.readFileSync(args.filePath).toString();
   const keys = keyFileContents.split('\n').filter((k) => k.length > 0);
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   while (keys.length > 0) {
     const subset = keys.splice(0, Math.min(keys.length, 400));
@@ -51,26 +44,15 @@ async function whitelistDisable(args: { filePath: string }, hre: HardhatRuntimeE
 }
 
 task('whitelist:generate', 'create n keys and add to whitelist contract')
-  .addParam('output', 'the filepath in which to output', undefined, types.string)
-  .addParam('amount', 'number of keys', undefined, types.int)
+  .addPositionalParam('number', 'number of keys', undefined, types.int)
   .setAction(whitelistGenerate);
 
-async function whitelistGenerate(
-  args: { output: string; amount: number },
-  hre: HardhatRuntimeEnvironment
-) {
+async function whitelistGenerate(args: { number: number }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const nKeys = args.amount;
+  const nKeys = args.number;
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
-
-  const filepath = path.resolve(args.output);
-
-  await fs.promises.mkdir(path.dirname(filepath), { recursive: true });
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   let allKeys: string[] = [];
   let keysGenerated = 0;
@@ -89,7 +71,7 @@ async function whitelistGenerate(
       keysGenerated += keysPerTx;
 
       for (const key of keys) {
-        await fs.promises.appendFile(filepath, key + '\n');
+        fs.appendFileSync('./keys.txt', key + '\n');
       }
     } catch (e) {
       console.log(`Error generating keyset ${i}: ${e}`);
@@ -98,7 +80,9 @@ async function whitelistGenerate(
 
   const balance = await hre.ethers.provider.getBalance(contract.address);
   console.log('whitelist balance:', hre.ethers.utils.formatEther(balance));
-  console.log(`keys appended to: ${filepath}`);
+
+  console.log('generated keys: ');
+  console.log(allKeys);
 }
 
 task('whitelist:exists', 'check if previously whitelisted')
@@ -128,10 +112,7 @@ subtask('whitelist:existsAddress', 'determine if an address is whitelisted')
 async function whitelistExistsAddress(args: { address: string }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const isAddress = hre.ethers.utils.isAddress(args.address);
   if (!isAddress) {
@@ -153,10 +134,7 @@ subtask('whitelist:existsKeyHash', 'determine if a whitelist key is valid')
 async function whitelistExistsKeyHash(args: { key: string }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const hash = keyHash(args.key);
   const isValid = await contract.isKeyHashValid(hash);
@@ -179,10 +157,7 @@ task('whitelist:register', 'add address(es) to whitelist')
 async function whitelistRegister(args: { address: string }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   for (const address of args.address.split(',')) {
     const isAddress = hre.ethers.utils.isAddress(address);
@@ -202,49 +177,5 @@ async function whitelistRegister(args: { address: string }, hre: HardhatRuntimeE
     console.log('whitelist balance:', hre.ethers.utils.formatEther(balance));
 
     console.log(`[${new Date()}] Registered player ${address}.`);
-  }
-}
-
-task('whitelist:setRelayerReward', 'enable/disable relayer rewards and set the reward amount')
-  .addOptionalParam('enable', 'enable/disable relayer rewards', undefined, types.boolean)
-  .addOptionalParam(
-    'amount',
-    'the amount of XDAI to transfer to relayers as a reward',
-    undefined,
-    types.int
-  )
-  .setAction(whitelistSetRelayerReward);
-
-async function whitelistSetRelayerReward(
-  args: { enable: boolean; amount: number },
-  hre: HardhatRuntimeEnvironment
-) {
-  await hre.run('utils:assertChainId');
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
-
-  const enabled = await contract.relayerRewardsEnabled();
-  console.log(`Relayer rewards are currently: ${enabled ? 'ENABLED' : 'DISABLED'}`);
-  const amount = await contract.relayerReward();
-  console.log(
-    `Relayer rewards are set at a value of ${hre.ethers.utils.formatEther(amount.toString())} XDAI.`
-  );
-
-  if (args.enable !== undefined) {
-    console.log('...');
-    const tx = await contract.setRelayerRewardsEnabled(args.enable);
-    await tx.wait();
-    console.log(`Relayer rewards have been: ${args.enable ? 'ENABLED' : 'DISABLED'}`);
-  }
-
-  if (args.amount !== undefined) {
-    console.log('...');
-    const tx = await contract.changeRelayerReward(
-      hre.ethers.utils.parseEther(args.amount.toString(10))
-    );
-    await tx.wait();
-    console.log(`Relayer rewards have been set to: ${args.amount} XDAI`);
   }
 }

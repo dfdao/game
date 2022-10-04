@@ -1,5 +1,4 @@
-import { ArtifactRarity, ArtifactType, Biome } from '@dfdao/types';
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
+import { ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
 import { expect } from 'chai';
 import { BigNumberish } from 'ethers';
 import hre from 'hardhat';
@@ -7,6 +6,7 @@ import { TestLocation } from './utils/TestLocation';
 import {
   conquerUnownedPlanet,
   createArtifactOnPlanet,
+  fixtureLoader,
   getArtifactsOwnedBy,
   getCurrentTime,
   getStatSum,
@@ -38,7 +38,7 @@ describe('DarkForestArtifacts', function () {
   let world: World;
 
   async function worldFixture() {
-    const world = await loadFixture(defaultWorldFixture);
+    const world = await fixtureLoader(defaultWorldFixture);
 
     // Initialize player
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
@@ -72,7 +72,7 @@ describe('DarkForestArtifacts', function () {
 
   beforeEach('load fixture', async function () {
     this.timeout(0);
-    world = await loadFixture(worldFixture);
+    world = await fixtureLoader(worldFixture);
   });
 
   async function getArtifactsOnPlanet(world: World, locationId: BigNumberish) {
@@ -317,8 +317,7 @@ describe('DarkForestArtifacts', function () {
   });
 
   it('should mint randomly', async function () {
-    // This can take upwards of 90000ms in CI
-    this.timeout(0);
+    this.timeout(1000 * 60);
 
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL3_SPACETIME_1);
 
@@ -572,9 +571,6 @@ describe('DarkForestArtifacts', function () {
 
   describe('wormhole', function () {
     it('should increase movement speed, in both directions', async function () {
-      // This can take an upwards of 32000ms
-      this.timeout(0);
-
       const from = SPAWN_PLANET_1;
       const to = LVL0_PLANET;
       await conquerUnownedPlanet(world, world.user1Core, from, LVL3_UNOWNED_NEBULA);
@@ -831,8 +827,8 @@ describe('DarkForestArtifacts', function () {
       expect(blackDomainPostActivation.locationId.toString()).to.eq('0');
 
       // check the planet is destroyed
-      const newPlanet = await world.user1Core.planets(to.id);
-      expect(newPlanet.destroyed).to.eq(true);
+      const newInfo = await world.user1Core.planetsExtendedInfo(to.id);
+      expect(newInfo.destroyed).to.eq(true);
 
       await increaseBlockchainTime();
 

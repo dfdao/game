@@ -1,22 +1,35 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.0;
 
-// Contract imports
-import {DFVerifierFacet} from "./DFVerifierFacet.sol";
-
 // Library imports
 import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 import {LibPlanet} from "../libraries/LibPlanet.sol";
+import {Verifier} from "../Verifier.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
+import {WithArenaStorage} from "../libraries/LibArenaStorage.sol";
 
 // Type imports
-import {ArrivalData, ArrivalType, Artifact, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetEventMetadata, PlanetEventType, Upgrade} from "../DFTypes.sol";
+import {
+    ArrivalData,
+    ArrivalType,
+    Artifact,
+    ArtifactType,
+    DFPCreateArrivalArgs,
+    DFPMoveArgs,
+    Planet,
+    PlanetExtendedInfo,
+    PlanetExtendedInfo2,
+    PlanetEventMetadata,
+    PlanetEventType,
+    Upgrade,
+    ArenaPlayerInfo
+} from "../DFTypes.sol";
 
-contract DFMoveFacet is WithStorage {
+contract DFMoveFacet is WithStorage, WithArenaStorage {
     modifier notPaused() {
         require(!gs().paused, "Game is paused");
         _;
@@ -31,31 +44,30 @@ contract DFMoveFacet is WithStorage {
         uint256 abandoning
     );
 
+    event GameStarted(address startPlayer, uint256 startTime);
+
     function move(
         uint256[2] memory _a,
         uint256[2][2] memory _b,
         uint256[2] memory _c,
-        uint256[10] memory _input,
-        uint256 popMoved,
-        uint256 silverMoved,
-        uint256 movedArtifactId,
-        uint256 isAbandoning
+        uint256[14] memory _input
     ) public notPaused returns (uint256) {
         LibGameUtils.revertIfBadSnarkPerlinFlags(
             [_input[5], _input[6], _input[7], _input[8], _input[9]],
             false
         );
 
-        DFPMoveArgs memory args = DFPMoveArgs({
-            oldLoc: _input[0],
-            newLoc: _input[1],
-            maxDist: _input[4],
-            popMoved: popMoved,
-            silverMoved: silverMoved,
-            movedArtifactId: movedArtifactId,
-            abandoning: isAbandoning,
-            sender: msg.sender
-        });
+        DFPMoveArgs memory args =
+            DFPMoveArgs({
+                oldLoc: _input[0],
+                newLoc: _input[1],
+                maxDist: _input[4],
+                popMoved: _input[10],
+                silverMoved: _input[11],
+                movedArtifactId: _input[12],
+                abandoning: _input[13],
+                sender: msg.sender
+            });
 
         if (_isSpaceshipMove(args)) {
             // If spaceships moves are not address(0)
@@ -67,10 +79,20 @@ contract DFMoveFacet is WithStorage {
         uint256 newRadius = _input[3];
 
         if (!snarkConstants().DISABLE_ZK_CHECKS) {
-            require(
-                DFVerifierFacet(address(this)).verifyMoveProof(_a, _b, _c, _input),
-                "Failed move proof check"
-            );
+            uint256[10] memory _proofInput =
+                [
+                    args.oldLoc,
+                    args.newLoc,
+                    newPerlin,
+                    newRadius,
+                    args.maxDist,
+                    _input[5],
+                    _input[6],
+                    _input[7],
+                    _input[8],
+                    _input[9]
+                ];
+            require(Verifier.verifyMoveProof(_a, _b, _c, _proofInput), "Failed move proof check");
         }
 
         // check radius
@@ -82,7 +104,7 @@ contract DFMoveFacet is WithStorage {
         gs().planetEventsCount++;
 
         // Only perform if the toPlanet have never initialized previously
-        if (!gs().planets[args.newLoc].isInitialized) {
+        if (!gs().planetsExtendedInfo[args.newLoc].isInitialized) {
             LibPlanet.initializePlanetWithDefaults(args.newLoc, newPerlin, false);
         } else {
             // need to do this so people can't deny service to planets with gas limit
@@ -91,6 +113,14 @@ contract DFMoveFacet is WithStorage {
         }
 
         _executeMove(args);
+        
+        
+        if(!(arenaConstants().CONFIRM_START) && arenaStorage().startTime == 0) {
+           arenaStorage().startTime = block.timestamp; 
+           emit GameStarted(msg.sender, block.timestamp);
+        }
+
+        arenaStorage().arenaPlayerInfo[msg.sender].moves++;
 
         LibGameUtils.updateWorldRadius();
         emit ArrivalQueued(
@@ -207,7 +237,8 @@ contract DFMoveFacet is WithStorage {
                 "Tried to move more population that what exists"
             );
             require(
-                !gs().planets[args.newLoc].destroyed && !gs().planets[args.oldLoc].destroyed,
+                !gs().planetsExtendedInfo[args.newLoc].destroyed &&
+                    !gs().planetsExtendedInfo[args.oldLoc].destroyed,
                 "planet is destroyed"
             );
             require(
@@ -216,10 +247,18 @@ contract DFMoveFacet is WithStorage {
             );
         }
 
+        if(arenaConstants().BLOCK_MOVES) {
+            uint256 playerHomePlanet = gs().players[msg.sender].homePlanetId;
+            bool blocked = arenaStorage().blocklist[args.newLoc][playerHomePlanet];
+            require(!blocked, "you cannot move to a blocked planet");
+        }
+
         require(
             gs().planets[args.oldLoc].silver >= args.silverMoved,
             "Tried to move more silver than what exists"
         );
+
+
 
         if (args.movedArtifactId != 0) {
             require(
@@ -229,37 +268,36 @@ contract DFMoveFacet is WithStorage {
         }
     }
 
-    function applySpaceshipDepart(Artifact memory artifact, Planet memory planet)
+    function applySpaceshipDepart(
+        Artifact memory artifact,
+        Planet memory planet,
+        PlanetExtendedInfo memory planetExtendedInfo,
+        PlanetExtendedInfo2 memory planetExtendedInfo2
+    )
         public
         view
-        returns (Planet memory)
+        returns (
+            Planet memory,
+            PlanetExtendedInfo memory,
+            PlanetExtendedInfo2 memory
+        )
     {
         if (planet.isHomePlanet) {
-            return planet;
+            return (planet, planetExtendedInfo, planetExtendedInfo2);
         }
 
         if (artifact.artifactType == ArtifactType.ShipMothership) {
-            if (planet.energyGroDoublers == 1) {
-                planet.energyGroDoublers--;
-                planet.populationGrowth /= 2;
-            } else if (planet.energyGroDoublers > 1) {
-                planet.energyGroDoublers--;
-            }
+            planet.populationGrowth /= 2;
         } else if (artifact.artifactType == ArtifactType.ShipWhale) {
-            if (planet.silverGroDoublers == 1) {
-                planet.silverGroDoublers--;
-                planet.silverGrowth /= 2;
-            } else if (planet.silverGroDoublers > 1) {
-                planet.silverGroDoublers--;
-            }
+            planet.silverGrowth /= 2;
         } else if (artifact.artifactType == ArtifactType.ShipTitan) {
             // so that updating silver/energy starts from the current time,
             // as opposed to the last time that the planet was updated
-            planet.lastUpdated = block.timestamp;
-            planet.pausers--;
+            planetExtendedInfo.lastUpdated = block.timestamp;
+            planetExtendedInfo2.pausers--;
         }
 
-        return planet;
+        return (planet, planetExtendedInfo, planetExtendedInfo2);
     }
 
     /**
@@ -267,8 +305,21 @@ contract DFMoveFacet is WithStorage {
      */
     function _removeSpaceshipEffectsFromOriginPlanet(DFPMoveArgs memory args) private {
         Artifact memory movedArtifact = gs().artifacts[args.movedArtifactId];
-        Planet memory planet = applySpaceshipDepart(movedArtifact, gs().planets[args.oldLoc]);
+
+        Planet memory planet;
+        PlanetExtendedInfo memory planetExtendedInfo;
+        PlanetExtendedInfo2 memory planetExtendedInfo2;
+
+        (planet, planetExtendedInfo, planetExtendedInfo2) = applySpaceshipDepart(
+            movedArtifact,
+            gs().planets[args.oldLoc],
+            gs().planetsExtendedInfo[args.oldLoc],
+            gs().planetsExtendedInfo2[args.oldLoc]
+        );
+
         gs().planets[args.oldLoc] = planet;
+        gs().planetsExtendedInfo[args.oldLoc] = planetExtendedInfo;
+        gs().planetsExtendedInfo2[args.oldLoc] = planetExtendedInfo2;
     }
 
     /**
@@ -358,12 +409,17 @@ contract DFMoveFacet is WithStorage {
         remainingOriginPlanetPopulation =
             LibGameUtils
                 ._defaultPlanet(
-                    args.oldLoc,
-                    gs().planets[args.oldLoc].planetLevel,
-                    gs().planets[args.oldLoc].planetType,
-                    gs().planets[args.oldLoc].spaceType,
-                    gameConstants().TIME_FACTOR_HUNDREDTHS
-                )
+                args
+                    .oldLoc,
+                gs().planets[args.oldLoc]
+                    .planetLevel,
+                gs().planets[args.oldLoc]
+                    .planetType,
+                gs().planetsExtendedInfo[args.oldLoc]
+                    .spaceType,
+                gameConstants()
+                    .TIME_FACTOR_HUNDREDTHS
+            )
                 .population *
             2;
         temporaryUpgrade = LibGameUtils.abandoningUpgrade();
@@ -380,7 +436,7 @@ contract DFMoveFacet is WithStorage {
             gs().players[msg.sender].spaceJunk -= planetSpaceJunk;
         }
 
-        gs().planets[args.oldLoc].spaceJunk = planetSpaceJunk;
+        gs().planetsExtendedInfo[args.oldLoc].spaceJunk = planetSpaceJunk;
         gs().planets[args.oldLoc].owner = address(0);
     }
 
@@ -391,14 +447,14 @@ contract DFMoveFacet is WithStorage {
      */
     function _transferPlanetSpaceJunkToPlayer(DFPMoveArgs memory args) private {
         require(
-            (gs().players[msg.sender].spaceJunk + gs().planets[args.newLoc].spaceJunk <=
+            (gs().players[msg.sender].spaceJunk + gs().planetsExtendedInfo[args.newLoc].spaceJunk <=
                 gs().players[msg.sender].spaceJunkLimit),
             "Tried to take on more space junk than your limit"
         );
 
-        if (gs().planets[args.newLoc].spaceJunk != 0) {
-            gs().players[msg.sender].spaceJunk += gs().planets[args.newLoc].spaceJunk;
-            gs().planets[args.newLoc].spaceJunk = 0;
+        if (gs().planetsExtendedInfo[args.newLoc].spaceJunk != 0) {
+            gs().players[msg.sender].spaceJunk += gs().planetsExtendedInfo[args.newLoc].spaceJunk;
+            gs().planetsExtendedInfo[args.newLoc].spaceJunk = 0;
         }
     }
 
@@ -409,15 +465,15 @@ contract DFMoveFacet is WithStorage {
     function _createArrival(DFPCreateArrivalArgs memory args) private {
         // enter the arrival data for event id
         Planet memory planet = gs().planets[args.oldLoc];
-        uint256 popArriving = _getDecayedPop(
-            args.popMoved,
-            args.effectiveDistTimesHundred,
-            planet.range,
-            planet.populationCap
-        );
-        bool isSpaceship = LibArtifactUtils.isSpaceship(
-            gs().artifacts[args.movedArtifactId].artifactType
-        );
+        uint256 popArriving =
+            _getDecayedPop(
+                args.popMoved,
+                args.effectiveDistTimesHundred,
+                planet.range,
+                planet.populationCap
+            );
+        bool isSpaceship =
+            LibArtifactUtils.isSpaceship(gs().artifacts[args.movedArtifactId].artifactType);
         // space ship moves are implemented as 0-energy moves
         require(popArriving > 0 || isSpaceship, "Not enough forces to make move");
         require(isSpaceship ? args.popMoved == 0 : true, "spaceship moves must be 0 energy moves");
