@@ -1,8 +1,8 @@
-import { Leaderboard } from '@darkforest_eth/types';
+import { Leaderboard } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { GraphConfigPlayer } from '@darkforest_eth/types';
+import { GraphConfigPlayer } from '@dfdao/types';
 import { getRank, Rank } from '../../../Backend/Utils/Rank';
 import { Gnosis, Star, Twitter } from '../../Components/Icons';
 import { Red, Subber } from '../../Components/Text';
@@ -15,7 +15,7 @@ import { GenericErrorBoundary } from '../GenericErrorBoundary';
 import { SortableTable } from '../SortableTable';
 import { Table } from '../Table';
 import { scoreToTime, truncateAddress } from '../Portal/PortalUtils';
-import { address } from '@darkforest_eth/serde';
+import { address } from '@dfdao/serde';
 
 const errorMessage = 'Error Loading Leaderboard';
 

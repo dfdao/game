@@ -1,5 +1,5 @@
-import { RECOMMENDED_MODAL_WIDTH } from '@darkforest_eth/constants';
-import { ModalName } from '@darkforest_eth/types';
+import { RECOMMENDED_MODAL_WIDTH } from '@dfdao/constants';
+import { ModalName } from '@dfdao/types';
 import React, { useState } from 'react';
 import { Btn } from '../../Components/Btn';
 import { Expand, Spacer } from '../../Components/CoreUI';
@@ -30,7 +30,7 @@ export function TwitterVerifyPane({ visible, onClose }: { visible: boolean; onCl
   const onTweetClick = async () => {
     if (uiManager) {
       const tweetText = await uiManager.generateVerificationTweet(twitterHandleInputValue);
-      const str = `Verifying my @darkforest_eth @d_fdao arena account (https://arena.dfdao.xyz): ${tweetText}`;
+      const str = `Verifying my @dfdao @d_fdao arena account (https://arena.dfdao.xyz): ${tweetText}`;
       window.open(`https://twitter.com/intent/tweet?hashtags=darkforest&text=${encodeURI(str)}`);
     }
   };

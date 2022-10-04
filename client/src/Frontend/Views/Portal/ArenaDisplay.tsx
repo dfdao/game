@@ -1,5 +1,5 @@
-import { getConfigName } from '@darkforest_eth/procedural';
-import { GraphArena } from '@darkforest_eth/types';
+import { getConfigName } from '@dfdao/procedural';
+import { GraphArena } from '@dfdao/types';
 import _ from 'lodash';
 import React from 'react';
 import { Link } from 'react-router-dom';

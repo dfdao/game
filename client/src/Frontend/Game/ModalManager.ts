@@ -1,11 +1,11 @@
-import { monomitter, Monomitter } from '@darkforest_eth/events';
+import { monomitter, Monomitter } from '@dfdao/events';
 import {
   CursorState,
   ModalId,
   ModalManagerEvent,
   ModalPosition,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { EventEmitter } from 'events';
 import type PersistentChunkStore from '../../Backend/Storage/PersistentChunkStore';
 

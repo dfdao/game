@@ -1,5 +1,5 @@
-import { isUnconfirmedClaimVictoryTx } from '@darkforest_eth/serde';
-import { Planet, TooltipName } from '@darkforest_eth/types';
+import { isUnconfirmedClaimVictoryTx } from '@dfdao/serde';
+import { Planet, TooltipName } from '@dfdao/types';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
 import TutorialManager, { TutorialState } from '../../Backend/GameLogic/TutorialManager';

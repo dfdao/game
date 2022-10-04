@@ -1,4 +1,4 @@
-import { AutoGasSetting, TooltipName } from '@darkforest_eth/types';
+import { AutoGasSetting, TooltipName } from '@dfdao/types';
 import React from 'react';
 import { Spread } from '../../Components/CoreUI';
 import { Sub, Text } from '../../Components/Text';

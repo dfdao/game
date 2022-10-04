@@ -1,4 +1,4 @@
-import { Artifact, LocatablePlanet, PlanetType } from '@darkforest_eth/types';
+import { Artifact, LocatablePlanet, PlanetType } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
 import { Spacer } from '../../Components/CoreUI';

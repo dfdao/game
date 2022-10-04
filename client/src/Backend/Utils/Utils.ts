@@ -1,6 +1,6 @@
-import { formatNumber } from '@darkforest_eth/gamelogic';
-import { locationIdToDecStr } from '@darkforest_eth/serde';
-import { Initializers } from '@darkforest_eth/settings';
+import { formatNumber } from '@dfdao/gamelogic';
+import { locationIdToDecStr } from '@dfdao/serde';
+import { Initializers } from '@dfdao/settings';
 import {
   ArtifactRarity,
   ArtifactType,
@@ -12,7 +12,7 @@ import {
   SpaceType,
   Upgrade,
   UpgradeBranchName,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import * as bigInt from 'big-integer';
 import { BigInteger } from 'big-integer';
 import { BigNumber, ethers, utils } from 'ethers';

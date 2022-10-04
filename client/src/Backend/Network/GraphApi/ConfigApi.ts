@@ -1,4 +1,4 @@
-import { EthAddress, GraphArena, GraphPlanet, WorldCoords } from '@darkforest_eth/types';
+import { EthAddress, GraphArena, GraphPlanet, WorldCoords } from '@dfdao/types';
 import { BigNumber } from 'ethers';
 import _ from 'lodash';
 import { LobbyPlanet } from '../../../Frontend/Panes/Lobby/LobbiesUtils';

@@ -1,4 +1,4 @@
-import { EthAddress, WorldCoords } from '@darkforest_eth/types';
+import { EthAddress, WorldCoords } from '@dfdao/types';
 import React, { CSSProperties, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';

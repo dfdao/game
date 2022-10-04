@@ -1,5 +1,5 @@
-import { isUnconfirmedFindArtifactTx, isUnconfirmedProspectPlanetTx } from '@darkforest_eth/serde';
-import { ArtifactType, Planet, PlanetType, TooltipName } from '@darkforest_eth/types';
+import { isUnconfirmedFindArtifactTx, isUnconfirmedProspectPlanetTx } from '@dfdao/serde';
+import { ArtifactType, Planet, PlanetType, TooltipName } from '@dfdao/types';
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { isFindable } from '../../Backend/GameLogic/ArrivalUtils';

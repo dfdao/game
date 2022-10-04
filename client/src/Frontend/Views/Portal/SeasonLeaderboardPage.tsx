@@ -1,5 +1,5 @@
-import { getConfigName } from '@darkforest_eth/procedural';
-import { BadgeType } from '@darkforest_eth/types';
+import { getConfigName } from '@dfdao/procedural';
+import { BadgeType } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import styled from 'styled-components';

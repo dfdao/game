@@ -1,4 +1,4 @@
-import { EthAddress, GraphConfigPlayer } from '@darkforest_eth/types';
+import { EthAddress, GraphConfigPlayer } from '@dfdao/types';
 import { competitiveConfig } from '../../../Frontend/Utils/constants';
 import { getGraphQLData } from '../GraphApi';
 

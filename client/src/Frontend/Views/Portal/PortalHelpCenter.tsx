@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import ReactMarkdown from 'react-markdown';
-import { IconType } from '@darkforest_eth/ui';
+import { IconType } from '@dfdao/ui';
 
 import { useDisableScroll } from '../../Utils/AppHooks';
 import { PortalModal } from './Components/PortalModal';
@@ -10,7 +10,7 @@ import { CloseButton } from './Account';
 import { Icon } from '../../Components/Icons';
 
 const HelpContent = `
-Welcome to Dark Forest Arena Grand Prix! 
+Welcome to Dark Forest Arena Grand Prix!
 
 Grand Prix: Seasons is a formal competition based on the Dark Forest speedruns we introduced in June. During a season, players compete to get the fastest cumulative time across a new race every week.
 

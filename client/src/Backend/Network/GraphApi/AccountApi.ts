@@ -1,4 +1,4 @@
-import { EthAddress, RawAccount } from '@darkforest_eth/types';
+import { EthAddress, RawAccount } from '@dfdao/types';
 import { CONFIG_CONSTANTS } from '../../../Frontend/Utils/constants';
 import { getGraphQLData } from '../GraphApi';
 

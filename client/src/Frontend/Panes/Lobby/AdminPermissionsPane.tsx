@@ -1,4 +1,4 @@
-import { TooltipName } from '@darkforest_eth/types';
+import { TooltipName } from '@dfdao/types';
 import React from 'react';
 import { Checkbox, DarkForestCheckbox } from '../../Components/Input';
 import { Row } from '../../Components/Row';

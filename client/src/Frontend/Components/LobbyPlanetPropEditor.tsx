@@ -5,7 +5,7 @@ import { SelectFrom } from './CoreUI';
 import Select from 'react-select';
 import { Checkbox, NumberInput, DarkForestCheckbox, DarkForestNumberInput } from './Input';
 import styled from 'styled-components';
-import { TooltipName, WorldCoords } from '@darkforest_eth/types';
+import { TooltipName, WorldCoords } from '@dfdao/types';
 import stringify from 'json-stable-stringify';
 import dfstyles from '../Styles/dfstyles';
 import { PortalTooltipTrigger, TooltipTrigger } from '../Panes/Tooltip';

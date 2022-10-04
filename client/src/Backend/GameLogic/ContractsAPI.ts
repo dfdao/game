@@ -1,5 +1,5 @@
-import { EMPTY_LOCATION_ID, GNOSIS_CHAIN_ID, GNOSIS_OPTIMISM_CHAIN_ID, KOVAN_OPTIMISM_CHAIN_ID } from '@darkforest_eth/constants';
-import { DarkForest } from '@darkforest_eth/contracts/typechain';
+import { EMPTY_LOCATION_ID, GNOSIS_CHAIN_ID, GNOSIS_OPTIMISM_CHAIN_ID, KOVAN_OPTIMISM_CHAIN_ID } from '@dfdao/constants';
+import { DarkForest } from '@dfdao/contracts/typechain';
 import {
   aggregateBulkGetter,
   ContractCaller,
@@ -7,7 +7,7 @@ import {
   ethToWei,
   TxCollection,
   TxExecutor,
-} from '@darkforest_eth/network';
+} from '@dfdao/network';
 import {
   address,
   artifactIdFromEthersBN,
@@ -22,7 +22,7 @@ import {
   decodeUpgradeBranches,
   locationIdFromEthersBN,
   locationIdToDecStr,
-} from '@darkforest_eth/serde';
+} from '@dfdao/serde';
 import {
   Artifact,
   ArtifactId,
@@ -41,7 +41,7 @@ import {
   TransactionId,
   TxIntent,
   VoyageId,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { BigNumber, BigNumber as EthersBN, ContractFunction, Event, providers } from 'ethers';
 import { EventEmitter } from 'events';
 import _ from 'lodash';
@@ -640,7 +640,7 @@ export class ContractsAPI extends EventEmitter {
       RANKED
     };
 
-    return constants; 
+    return constants;
   }
 
   public async getPlayers(
@@ -1012,7 +1012,7 @@ export class ContractsAPI extends EventEmitter {
     /* Find a way to speed this up */
     const chainId = (await this.ethConnection.getProvider().getNetwork()).chainId;
     overrides = overrides ?? {};
-    
+
     if (chainId === GNOSIS_OPTIMISM_CHAIN_ID) overrides.gasPrice = '1';
     if (chainId === KOVAN_OPTIMISM_CHAIN_ID) overrides.gasPrice = '100000';
 

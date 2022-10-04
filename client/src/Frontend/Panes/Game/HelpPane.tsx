@@ -1,4 +1,4 @@
-import { ArtifactRarity, ModalName, PlanetLevel } from '@darkforest_eth/types';
+import { ArtifactRarity, ModalName, PlanetLevel } from '@dfdao/types';
 import React from 'react';
 import styled from 'styled-components';
 import { EmSpacer, Link, Section, SectionHeader } from '../../Components/CoreUI';

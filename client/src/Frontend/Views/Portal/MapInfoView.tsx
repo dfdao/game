@@ -1,5 +1,5 @@
-import { getConfigName } from '@darkforest_eth/procedural';
-import { EthAddress } from '@darkforest_eth/types';
+import { getConfigName } from '@dfdao/procedural';
+import { EthAddress } from '@dfdao/types';
 import _ from 'lodash';
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, RouteComponentProps } from 'react-router-dom';

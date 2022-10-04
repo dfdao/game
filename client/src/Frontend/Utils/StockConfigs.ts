@@ -1,4 +1,4 @@
-import { address } from '@darkforest_eth/serde';
+import { address } from '@dfdao/serde';
 import { LobbyInitializers } from '../Panes/Lobby/Reducer';
 
 const tutorial: LobbyInitializers = {

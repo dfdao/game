@@ -1,4 +1,4 @@
-import dfstyles from '@darkforest_eth/ui/dist/styles';
+import dfstyles from '@dfdao/ui/dist/styles';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';

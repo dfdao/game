@@ -1,5 +1,5 @@
-import { EthConnection } from '@darkforest_eth/network';
-import { AutoGasSetting, Chunk, ModalName, Setting } from '@darkforest_eth/types';
+import { EthConnection } from '@dfdao/network';
+import { AutoGasSetting, Chunk, ModalName, Setting } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TutorialManager from '../../../Backend/GameLogic/TutorialManager';

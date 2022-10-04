@@ -1,5 +1,5 @@
-import { monomitter, Monomitter } from '@darkforest_eth/events';
-import { AutoGasSetting, EthAddress, Setting } from '@darkforest_eth/types';
+import { monomitter, Monomitter } from '@dfdao/events';
+import { AutoGasSetting, EthAddress, Setting } from '@dfdao/types';
 import React, { useCallback, useState } from 'react';
 import GameUIManager from '../../Backend/GameLogic/GameUIManager';
 import { SelectFrom } from '../Components/CoreUI';

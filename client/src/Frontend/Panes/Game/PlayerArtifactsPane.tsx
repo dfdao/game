@@ -1,5 +1,5 @@
-import { RECOMMENDED_MODAL_WIDTH } from '@darkforest_eth/constants';
-import { ModalName } from '@darkforest_eth/types';
+import { RECOMMENDED_MODAL_WIDTH } from '@dfdao/constants';
+import { ModalName } from '@dfdao/types';
 import React from 'react';
 import { Spacer } from '../../Components/CoreUI';
 import { useMyArtifactsList, useUIManager } from '../../Utils/AppHooks';

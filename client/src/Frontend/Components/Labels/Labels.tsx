@@ -1,6 +1,6 @@
-import { EMPTY_ADDRESS } from '@darkforest_eth/constants';
-import { getPlayerColor } from '@darkforest_eth/procedural';
-import { EthAddress } from '@darkforest_eth/types';
+import { EMPTY_ADDRESS } from '@dfdao/constants';
+import { getPlayerColor } from '@dfdao/procedural';
+import { EthAddress } from '@dfdao/types';
 import colorFn from 'color';
 import React from 'react';
 import { usePlayer, useUIManager } from '../../Utils/AppHooks';
@@ -57,7 +57,7 @@ export function AccountLabel({
 
   return (
     <>
-      {label} 
+      {label}
       {teamsEnabled && <Sub style= {{color: color}}>(Team {player.value.team})</Sub>}
     </>
   );

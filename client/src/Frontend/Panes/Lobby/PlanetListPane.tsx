@@ -1,4 +1,4 @@
-import { BLOCK_EXPLORER_URL } from '@darkforest_eth/constants';
+import { BLOCK_EXPLORER_URL } from '@dfdao/constants';
 import _, { chunk } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';

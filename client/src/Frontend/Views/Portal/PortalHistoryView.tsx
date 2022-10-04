@@ -1,13 +1,13 @@
-import { getConfigName } from '@darkforest_eth/procedural';
-import { address } from '@darkforest_eth/serde';
+import { getConfigName } from '@dfdao/procedural';
+import { address } from '@dfdao/serde';
 import {
   BadgeType,
   EthAddress,
   GrandPrixHistory,
   GrandPrixMetadata,
   SeasonScore,
-} from '@darkforest_eth/types';
-import { IconType } from '@darkforest_eth/ui';
+} from '@dfdao/types';
+import { IconType } from '@dfdao/ui';
 import { isAddress } from 'ethers/lib/utils';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, RouteComponentProps, useHistory } from 'react-router-dom';

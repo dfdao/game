@@ -1,6 +1,6 @@
 // organize-imports-ignore
-import { BLOCK_EXPLORER_URL } from '@darkforest_eth/constants';
-import { DarkForest } from '@darkforest_eth/contracts/typechain';
+import { BLOCK_EXPLORER_URL } from '@dfdao/constants';
+import { DarkForest } from '@dfdao/contracts/typechain';
 import type {
   ContractMethodName,
   EthAddress,
@@ -9,7 +9,7 @@ import type {
   Planet,
   Transaction,
   TxIntent,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { ContractTransaction, logger } from 'ethers';
 import {
   MAX_ARTIFACT_RARITY,
@@ -18,20 +18,20 @@ import {
   MIN_ARTIFACT_TYPE,
   MIN_SPACESHIP_TYPE,
   //@ts-ignore
-} from 'https://cdn.skypack.dev/@darkforest_eth/constants';
+} from 'https://cdn.skypack.dev/@dfdao/constants';
 //@ts-ignore
-import { getPlanetNameHash } from 'https://cdn.skypack.dev/@darkforest_eth/procedural';
+import { getPlanetNameHash } from 'https://cdn.skypack.dev/@dfdao/procedural';
 import {
   locationIdToDecStr,
   artifactIdFromHexStr,
   //@ts-ignore
-} from 'https://cdn.skypack.dev/@darkforest_eth/serde';
+} from 'https://cdn.skypack.dev/@dfdao/serde';
 import {
   ArtifactRarityNames,
   ArtifactType,
   ArtifactTypeNames,
   //@ts-ignore
-} from 'https://cdn.skypack.dev/@darkforest_eth/types';
+} from 'https://cdn.skypack.dev/@dfdao/types';
 import {
   html,
   render,
@@ -55,12 +55,12 @@ async function dfWaitWithMetrics(tx: Tx): Promise<number> {
     const receipt = await tx.confirmedPromise;
     var endTime = performance.now()
     // console.log(`${tx.intent.methodName} confirmed ${endTime - startTime} milliseconds`)
-    //console.log(`confirmed with ${receipt.confirmations} blocks, ${receipt.gasUsed} gas used and ${submit.gasPrice} price (wei)`);  
+    //console.log(`confirmed with ${receipt.confirmations} blocks, ${receipt.gasUsed} gas used and ${submit.gasPrice} price (wei)`);
     return endTime - startTime;
   } catch (error) {
     console.log(`ERROR`, error);
     return 0;
-  } 
+  }
 }
 
 async function waitWithMetrics(tx: ContractTransaction, name?: string): Promise<number> {
@@ -70,7 +70,7 @@ async function waitWithMetrics(tx: ContractTransaction, name?: string): Promise<
     var endTime = performance.now()
     // console.log(`${name} confirmed ${endTime - startTime} milliseconds`)
     //console.log(`confirmed with ${receipt.confirmations} blocks, ${receipt.gasUsed} gas used and ${tx.gasPrice} price (wei)`);
-    return endTime - startTime;  
+    return endTime - startTime;
   } catch (error) {
     console.log(`ERROR`)
     return 0;
@@ -175,7 +175,7 @@ async function logPauseDifference(iterations = 1) {
 
     pauseTime += await pauseGame();
     unPauseTime += await unpauseGame();
-  
+
     console.log(`getting metrics for round ${i} of raw pause / unpause`);
     rawPauseTime += await rawPauseGame();
     rawUnPauseTime += await rawUnpauseGame();

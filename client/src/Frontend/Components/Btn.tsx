@@ -2,7 +2,7 @@ import {
   DarkForestButton,
   DarkForestShortcutButton,
   ShortcutPressedEvent,
-} from '@darkforest_eth/ui';
+} from '@dfdao/ui';
 import { createComponent } from '@lit-labs/react';
 import React from 'react';
 

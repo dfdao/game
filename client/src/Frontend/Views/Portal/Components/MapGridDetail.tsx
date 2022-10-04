@@ -1,16 +1,16 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { EthAddress } from '@darkforest_eth/types';
+import { EthAddress } from '@dfdao/types';
 import { generateMinimapConfig, MinimapConfig } from '../../../Panes/Lobby/MinimapUtils';
 import { debounce } from 'lodash';
 import styled from 'styled-components';
 import { Link, useHistory } from 'react-router-dom';
 import { LoadingSpinner } from '../../../Components/LoadingSpinner';
 import { Minimap } from '../../../Components/Minimap';
-import { getConfigName } from '@darkforest_eth/procedural';
+import { getConfigName } from '@dfdao/procedural';
 import { truncateAddress } from '../PortalUtils';
 import { Spacer } from '../../../Components/CoreUI';
 import { useConfigFromHash } from '../../../Utils/AppHooks';
-import dfstyles from '@darkforest_eth/ui/dist/styles';
+import dfstyles from '@dfdao/ui/dist/styles';
 import { useTwitters } from '../../../Utils/AppHooks';
 
 export const MapGridDetail: React.FC<{

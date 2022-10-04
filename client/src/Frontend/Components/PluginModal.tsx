@@ -1,4 +1,4 @@
-import { ModalId } from '@darkforest_eth/types';
+import { ModalId } from '@dfdao/types';
 import React, { useCallback, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useUIManager } from '../Utils/AppHooks';

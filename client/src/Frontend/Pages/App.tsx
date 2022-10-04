@@ -21,7 +21,7 @@ function App() {
   return (
     <>
       <GlobalStyle />
-      {/* Provides theming for WebComponents from the `@darkforest_eth/ui` package */}
+      {/* Provides theming for WebComponents from the `@dfdao/ui` package */}
       <Theme color='dark' scale='medium'>
         <Router>
           <Switch>

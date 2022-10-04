@@ -1,6 +1,6 @@
-import { isSpaceShip } from '@darkforest_eth/gamelogic';
-import { artifactName, getPlanetName } from '@darkforest_eth/procedural';
-import { Artifact, ArtifactTypeNames, LocationId } from '@darkforest_eth/types';
+import { isSpaceShip } from '@dfdao/gamelogic';
+import { artifactName, getPlanetName } from '@dfdao/procedural';
+import { Artifact, ArtifactTypeNames, LocationId } from '@dfdao/types';
 import React from 'react';
 import styled from 'styled-components';
 import GameUIManager from '../../../Backend/GameLogic/GameUIManager';

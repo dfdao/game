@@ -1,5 +1,5 @@
-import { monomitter, Monomitter } from '@darkforest_eth/events';
-import { CaptureZone, Chunk, LocationId } from '@darkforest_eth/types';
+import { monomitter, Monomitter } from '@dfdao/events';
+import { CaptureZone, Chunk, LocationId } from '@dfdao/types';
 import bigInt from 'big-integer';
 import { utils } from 'ethers';
 import GameManager, { GameManagerEvent } from './GameManager';

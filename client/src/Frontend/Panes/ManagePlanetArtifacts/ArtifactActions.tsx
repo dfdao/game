@@ -5,14 +5,14 @@ import {
   durationUntilArtifactAvailable,
   isActivated,
   isLocatable,
-} from '@darkforest_eth/gamelogic';
+} from '@dfdao/gamelogic';
 import {
   isUnconfirmedActivateArtifactTx,
   isUnconfirmedDeactivateArtifactTx,
   isUnconfirmedDepositArtifactTx,
   isUnconfirmedWithdrawArtifactTx,
-} from '@darkforest_eth/serde';
-import { Artifact, ArtifactId, ArtifactType, LocationId, TooltipName } from '@darkforest_eth/types';
+} from '@dfdao/serde';
+import { Artifact, ArtifactId, ArtifactType, LocationId, TooltipName } from '@dfdao/types';
 import React, { useCallback } from 'react';
 import { Btn } from '../../Components/Btn';
 import { Spacer } from '../../Components/CoreUI';

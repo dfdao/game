@@ -1,4 +1,4 @@
-import { Setting } from '@darkforest_eth/types';
+import { Setting } from '@dfdao/types';
 import { EventEmitter } from 'events';
 import NotificationManager from '../../Frontend/Game/NotificationManager';
 import { setBooleanSetting } from '../../Frontend/Utils/SettingsHooks';

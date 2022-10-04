@@ -1,4 +1,4 @@
-import { PlanetType, TooltipName } from '@darkforest_eth/types';
+import { PlanetType, TooltipName } from '@dfdao/types';
 import React from 'react';
 import { getPlanetRank, isFullRank } from '../../../Backend/Utils/Utils';
 import { ScoreLabel, SilverLabel } from '../../Components/Labels/KeywordLabels';

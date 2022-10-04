@@ -1,6 +1,6 @@
 /** This file contains some common utilities used by the Lobbies UI */
-import { Initializers } from '@darkforest_eth/settings';
-import { EthAddress, LocationId, WorldCoords } from '@darkforest_eth/types';
+import { Initializers } from '@dfdao/settings';
+import { EthAddress, LocationId, WorldCoords } from '@dfdao/types';
 import React, { ChangeEvent, MouseEventHandler, useCallback } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import styled from 'styled-components';

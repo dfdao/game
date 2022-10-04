@@ -2,13 +2,13 @@
 
 import { ArenaCreationManager } from '../GameLogic/ArenaCreationManager';
 import { stockConfig } from '../../Frontend/Utils/StockConfigs';
-import { EthConnection } from '@darkforest_eth/network';
-import { EthAddress, UnconfirmedInit } from '@darkforest_eth/types';
+import { EthConnection } from '@dfdao/network';
+import { EthAddress, UnconfirmedInit } from '@dfdao/types';
 import { HashConfig } from '../../_types/global/GlobalTypes';
 import SnarkArgsHelper from './SnarkArgsHelper';
 import { TerminalHandle } from '../../Frontend/Views/Terminal';
 import { useRef } from 'react';
-import { DarkForest } from '@darkforest_eth/contracts/typechain';
+import { DarkForest } from '@dfdao/contracts/typechain';
 import { loadDiamondContract } from '../Network/Blockchain';
 import { LobbyInitializers } from '../../Frontend/Panes/Lobby/Reducer';
 

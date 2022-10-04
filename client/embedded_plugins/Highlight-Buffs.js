@@ -4,8 +4,8 @@
 //
 // author: https://twitter.com/davidryan59
 
-import { PlanetType, PlanetTypeNames, PlanetLevel, PlanetLevelNames } from "https://cdn.skypack.dev/@darkforest_eth/types";
-import { isSpaceShip } from "https://cdn.skypack.dev/@darkforest_eth/gamelogic";
+import { PlanetType, PlanetTypeNames, PlanetLevel, PlanetLevelNames } from "https://cdn.skypack.dev/@dfdao/types";
+import { isSpaceShip } from "https://cdn.skypack.dev/@dfdao/gamelogic";
 
 // ----------------------------------------
 // User Configurable Options
@@ -82,7 +82,7 @@ const StatIdx = {
 // Miscellaneous constants
 const BASE_LINE_WIDTH_PX = 1.0;
 const LINE_WIDTH_PLANET_LEVEL_FACTOR = 0.5;
-const EXTRA_RADIUS_CANVAS_PX_ADD = 2.0; 
+const EXTRA_RADIUS_CANVAS_PX_ADD = 2.0;
 const EXTRA_RADIUS_WORLD_PX_LINE_MULTIPLY = 1.15;
 const EXTRA_RADIUS_WORLD_PX_PULSE_MULTIPLY = 1.30;
 const ELLIPSE_FACTOR = 1.1;
@@ -328,7 +328,7 @@ const initialiseSelectWrappers = plugin => {
     obj.element.label = label;
     obj.element.select = select;
     plugin.ui.select[obj.id] = obj;
-  });  
+  });
 }
 
 const buttonCreator = ({text, onclick, initialToggleState=false, bgOverrideOn=false, invertTextOn=false, smallText=false}) => {
@@ -412,9 +412,9 @@ const drawHighlights = (plugin, planetArr, colRgbArr, periodMs) => {
       if (drawOptions.ellipse.value && ctx.ellipse) {
         const cR1 = cR / ELLIPSE_FACTOR;
         const cR2 = cR * ELLIPSE_FACTOR;
-        ctx.ellipse(cX, cY, cR1, cR2, rotationRad, CIRC_START_RAD, CIRC_END_RAD);  
+        ctx.ellipse(cX, cY, cR1, cR2, rotationRad, CIRC_START_RAD, CIRC_END_RAD);
       } else {
-        ctx.arc(cX, cY, cR, CIRC_START_RAD + rotationRad, CIRC_END_RAD + rotationRad);  
+        ctx.arc(cX, cY, cR, CIRC_START_RAD + rotationRad, CIRC_END_RAD + rotationRad);
       }
       if (drawOptions.line.value) {
         ctx.stroke();

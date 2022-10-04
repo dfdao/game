@@ -1,6 +1,6 @@
-import { BLOCK_EXPLORER_URL } from '@darkforest_eth/constants';
-import { isLocatable } from '@darkforest_eth/gamelogic';
-import { artifactName, getPlanetName } from '@darkforest_eth/procedural';
+import { BLOCK_EXPLORER_URL } from '@dfdao/constants';
+import { isLocatable } from '@dfdao/gamelogic';
+import { artifactName, getPlanetName } from '@dfdao/procedural';
 import {
   Artifact,
   ArtifactId,
@@ -8,7 +8,7 @@ import {
   Planet,
   Transaction,
   WorldCoords,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Viewport from '../Game/Viewport';

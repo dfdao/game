@@ -4,7 +4,7 @@ import { Gold, Green } from '../../Components/Text';
 import { useUIManager } from '../../Utils/AppHooks';
 import { StyledTutorialPane } from './StyledTutorialPane';
 import { setBooleanSetting } from '../../Utils/SettingsHooks';
-import { Setting, WorldLocation } from '@darkforest_eth/types';
+import { Setting, WorldLocation } from '@dfdao/types';
 import { setObjectSyncState } from '../../Utils/EmitterUtils';
 
 const enum BriefingStep {

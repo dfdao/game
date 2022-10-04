@@ -1,4 +1,4 @@
-import { address } from '@darkforest_eth/serde';
+import { address } from '@dfdao/serde';
 import {
   BadgeType,
   CleanConfigPlayer,
@@ -8,7 +8,7 @@ import {
   GrandPrixMetadata,
   LiveMatch,
   SeasonScore,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { SeasonLeaderboardEntry } from '../../../Backend/Network/GraphApi/SeasonLeaderboardApi';
 import {
   HOUR_IN_SECONDS,

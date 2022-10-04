@@ -1,4 +1,4 @@
-import { LiveMatch } from '@darkforest_eth/types';
+import { LiveMatch } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { loadLiveMatches } from '../../../Backend/Network/GraphApi/SpyApi';

@@ -1,4 +1,4 @@
-import { ArtifactType, Upgrade } from '@darkforest_eth/types';
+import { ArtifactType, Upgrade } from '@dfdao/types';
 import React from 'react';
 import styled from 'styled-components';
 import { EmSpacer, Spacer } from '../../Components/CoreUI';

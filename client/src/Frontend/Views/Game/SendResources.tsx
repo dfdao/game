@@ -1,6 +1,6 @@
-import { formatNumber, isSpaceShip } from '@darkforest_eth/gamelogic';
-import { isUnconfirmedMoveTx, isUnconfirmedReleaseTx } from '@darkforest_eth/serde';
-import { Artifact, artifactNameFromArtifact, Planet, TooltipName } from '@darkforest_eth/types';
+import { formatNumber, isSpaceShip } from '@dfdao/gamelogic';
+import { isUnconfirmedMoveTx, isUnconfirmedReleaseTx } from '@dfdao/serde';
+import { Artifact, artifactNameFromArtifact, Planet, TooltipName } from '@dfdao/types';
 import React, { useCallback } from 'react';
 import styled from 'styled-components';
 import { Wrapper } from '../../../Backend/Utils/Wrapper';

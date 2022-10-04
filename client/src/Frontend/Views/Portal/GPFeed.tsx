@@ -1,6 +1,6 @@
-import { address } from '@darkforest_eth/serde';
-import { CleanMatchEntry, EthAddress } from '@darkforest_eth/types';
-import dfstyles from '@darkforest_eth/ui/dist/styles';
+import { address } from '@dfdao/serde';
+import { CleanMatchEntry, EthAddress } from '@dfdao/types';
+import dfstyles from '@dfdao/ui/dist/styles';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Btn } from '../../Components/Btn';
@@ -27,7 +27,7 @@ export const GPFeed: React.FC<MapDetailsProps> = ({ configHash }) => {
   const seasonData = useSeasonData()
   // Updates every 5s.
   const { liveMatches, spyError } = useLiveMatches(seasonData, configHash, !DUMMY ? 5000 : undefined);
-  
+
   const latest = liveMatches?.entries
     .map((m) => {
       return {

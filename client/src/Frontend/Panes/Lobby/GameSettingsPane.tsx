@@ -1,5 +1,5 @@
 import React from 'react';
-import { ModifierType, TooltipName } from '@darkforest_eth/types';
+import { ModifierType, TooltipName } from '@dfdao/types';
 import {
   Checkbox,
   DarkForestCheckbox,

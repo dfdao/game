@@ -1,5 +1,5 @@
-import { Initializers } from '@darkforest_eth/settings';
-import { EthAddress } from '@darkforest_eth/types';
+import { Initializers } from '@dfdao/settings';
+import { EthAddress } from '@dfdao/types';
 import { LobbyPlanet } from './LobbiesUtils';
 
 // MAX int32 for graph purposes.

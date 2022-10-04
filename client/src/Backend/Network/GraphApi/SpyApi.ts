@@ -1,4 +1,4 @@
-import { CleanMatchEntry, ExtendedMatchEntry, GrandPrixMetadata, LiveMatch } from '@darkforest_eth/types';
+import { CleanMatchEntry, ExtendedMatchEntry, GrandPrixMetadata, LiveMatch } from '@dfdao/types';
 import { getGraphQLData } from '../GraphApi';
 import { validGrandPrixMatch } from './SeasonLeaderboardApi';
 
@@ -16,7 +16,7 @@ export const loadLiveMatches = async (
       lobbyAddress
       firstMover {
         address
-      },  
+      },
       players {
         address
         moves
@@ -30,7 +30,7 @@ export const loadLiveMatches = async (
         spawnPlanet
       }
       gameOver
-      duration  
+      duration
       }
     }`;
 

@@ -1,4 +1,4 @@
-import { Planet, TooltipName } from '@darkforest_eth/types';
+import { Planet, TooltipName } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { getEmojiMessage } from '../../../Backend/GameLogic/ArrivalUtils';

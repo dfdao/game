@@ -1,5 +1,5 @@
-import { getBytesFromHex } from "@darkforest_eth/hexgen";
-import { LocationId } from "@darkforest_eth/types";
+import { getBytesFromHex } from "@dfdao/hexgen";
+import { LocationId } from "@dfdao/types";
 import * as bigInt from 'big-integer';
 
 export function planetLevelBelowLevel0Threshold(hex: LocationId, thresholds: number[]): boolean {

@@ -1,5 +1,5 @@
-import { isUnconfirmedWithdrawSilverTx } from '@darkforest_eth/serde';
-import { Planet, PlanetType, TooltipName } from '@darkforest_eth/types';
+import { isUnconfirmedWithdrawSilverTx } from '@dfdao/serde';
+import { Planet, PlanetType, TooltipName } from '@dfdao/types';
 import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { Wrapper } from '../../../Backend/Utils/Wrapper';

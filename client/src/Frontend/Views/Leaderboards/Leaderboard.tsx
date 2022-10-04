@@ -1,4 +1,4 @@
-import { ArtifactRarity, Leaderboard } from '@darkforest_eth/types';
+import { ArtifactRarity, Leaderboard } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Spacer } from '../../Components/CoreUI';

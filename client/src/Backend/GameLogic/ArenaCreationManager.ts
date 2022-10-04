@@ -1,18 +1,18 @@
-import { EMPTY_ADDRESS } from '@darkforest_eth/constants';
-import { INIT_ADDRESS } from '@darkforest_eth/contracts';
-import { DarkForest, DFArenaInitialize } from '@darkforest_eth/contracts/typechain';
-import { fakeHash, mimcHash, modPBigInt, perlin } from '@darkforest_eth/hashing';
-import { EthConnection } from '@darkforest_eth/network';
-import { address } from '@darkforest_eth/serde';
+import { EMPTY_ADDRESS } from '@dfdao/constants';
+import { INIT_ADDRESS } from '@dfdao/contracts';
+import { DarkForest, DFArenaInitialize } from '@dfdao/contracts/typechain';
+import { fakeHash, mimcHash, modPBigInt, perlin } from '@dfdao/hashing';
+import { EthConnection } from '@dfdao/network';
+import { address } from '@dfdao/serde';
 import {
   buildContractCallArgs,
   fakeProof,
   RevealSnarkContractCallArgs,
   RevealSnarkInput,
   SnarkJSProofAndSignals,
-} from '@darkforest_eth/snarks';
-import revealCircuitPath from '@darkforest_eth/snarks/reveal.wasm';
-import revealZkeyPath from '@darkforest_eth/snarks/reveal.zkey';
+} from '@dfdao/snarks';
+import revealCircuitPath from '@dfdao/snarks/reveal.wasm';
+import revealZkeyPath from '@dfdao/snarks/reveal.zkey';
 import {
   ContractMethodName,
   EthAddress,
@@ -23,7 +23,7 @@ import {
   UnconfirmedStartLobby,
   WorldCoords,
   WorldLocation,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import { TransactionReceipt } from '@ethersproject/providers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import _ from 'lodash';

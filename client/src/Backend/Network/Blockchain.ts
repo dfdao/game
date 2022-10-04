@@ -1,9 +1,9 @@
 // These are loaded as URL paths by a webpack loader
-import { NETWORK } from '@darkforest_eth/contracts';
-import diamondContractAbiUrl from '@darkforest_eth/contracts/abis/DarkForest.json';
-import faucetContractAbiUrl from '@darkforest_eth/contracts/abis/DFArenaFaucet.json';
-import initContractAbiUrl from '@darkforest_eth/contracts/abis/DFArenaInitialize.json';
-import { createContract, createEthConnection, EthConnection } from '@darkforest_eth/network';
+import { NETWORK } from '@dfdao/contracts';
+import diamondContractAbiUrl from '@dfdao/contracts/abis/DarkForest.json';
+import faucetContractAbiUrl from '@dfdao/contracts/abis/DFArenaFaucet.json';
+import initContractAbiUrl from '@dfdao/contracts/abis/DFArenaInitialize.json';
+import { createContract, createEthConnection, EthConnection } from '@dfdao/network';
 import type { Contract, providers, Wallet } from 'ethers';
 
 /**

@@ -1,4 +1,4 @@
-import { ArtifactPointValues, EthAddress, LocationId, UpgradeBranches } from '@darkforest_eth/types';
+import { ArtifactPointValues, EthAddress, LocationId, UpgradeBranches } from '@dfdao/types';
 import { BigNumber as EthersBN } from 'ethers';
 
 export const enum ZKArgIdx {

@@ -9,14 +9,14 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
-// This code is used to lookup where the `@darkforest_eth` packages exist in the tree
+// This code is used to lookup where the `@dfdao` packages exist in the tree
 // whether they are in a monorepo or installed as packages
 function findScopeDirectory() {
   // Just chose the most likely package to be here, it could really be anything
-  const pkg = '@darkforest_eth/contracts';
+  const pkg = '@dfdao/contracts';
   const contractsPackageJson = resolvePackage(pkg, __dirname);
   if (!contractsPackageJson) {
-    throw new Error(`Unable to find the @darkforest_eth scope. Exiting...`);
+    throw new Error(`Unable to find the @dfdao scope. Exiting...`);
   }
   const contractsDirectory = path.dirname(contractsPackageJson);
   const scopeDirectory = path.dirname(contractsDirectory);
@@ -44,9 +44,9 @@ module.exports = {
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '...'],
-    // Adding an alias for the `@darkforest_eth` packages, whether in a monorepo or packages
+    // Adding an alias for the `@dfdao` packages, whether in a monorepo or packages
     alias: {
-      '@darkforest_eth': findScopeDirectory(),
+      '@dfdao': findScopeDirectory(),
     },
   },
 

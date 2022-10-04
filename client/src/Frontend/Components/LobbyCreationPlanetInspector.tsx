@@ -1,4 +1,4 @@
-import { PlanetTypeNames } from '@darkforest_eth/types';
+import { PlanetTypeNames } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { CloseButton, LobbyPlanet } from '../Panes/Lobby/LobbiesUtils';

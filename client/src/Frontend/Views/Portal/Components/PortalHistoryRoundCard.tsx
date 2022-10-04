@@ -1,5 +1,5 @@
-import { getConfigName } from '@darkforest_eth/procedural';
-import { GrandPrixHistory } from '@darkforest_eth/types';
+import { getConfigName } from '@dfdao/procedural';
+import { GrandPrixHistory } from '@dfdao/types';
 import { debounce } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';

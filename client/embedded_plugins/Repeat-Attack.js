@@ -11,9 +11,9 @@ import {
   SpaceType,
   PlanetTypeNames,
   //@ts-ignore
-} from 'https://cdn.skypack.dev/@darkforest_eth/types';
+} from 'https://cdn.skypack.dev/@dfdao/types';
 //@ts-ignore
-import { isUnconfirmedMoveTx } from 'https://cdn.skypack.dev/@darkforest_eth/serde';
+import { isUnconfirmedMoveTx } from 'https://cdn.skypack.dev/@dfdao/serde';
 //@ts-ignore
 import {
   html,
@@ -24,7 +24,7 @@ import {
   //@ts-ignore
 } from 'https://unpkg.com/htm/preact/standalone.module.js';
 
-import { getPlanetName } from 'https://cdn.skypack.dev/@darkforest_eth/procedural';
+import { getPlanetName } from 'https://cdn.skypack.dev/@dfdao/procedural';
 
 
 // ----------------------------------------
@@ -316,7 +316,7 @@ function AddAttack({ repeater, startFiring, toggleOutgoingFiring, toggleIncoming
     repeater.currentPlanets[option] = value;
     setCurrentPlanetsUS(repeater.currentPlanets);
   }
-  
+
   const [currentAttack, setCurrentAttackUS] = useState(repeater.currentAttack);
   const getCurrentAttack = option => {
     currentAttack; // call UI state, but use repeater state
@@ -332,7 +332,7 @@ function AddAttack({ repeater, startFiring, toggleOutgoingFiring, toggleIncoming
     setCurrentPlanet('source', planet);
     setCurrentAttack('sourceId', planet?.locationId)
   }
-  
+
   const setTarget = () => {
     const planet = getCurrentPlanet('selected');
     setCurrentPlanet('target', planet);
@@ -387,8 +387,8 @@ function AddAttack({ repeater, startFiring, toggleOutgoingFiring, toggleIncoming
         <button style=${Margin_12B} onClick=${setSource}>
           Set Source <span style=${Keyboard_Shortcut}>[${KEY_SET_SOURCE}]</span>
         </button>
-        <span 
-          style=${getCurrentPlanet('source') ? { ...Margin_12L_12R, ...Clickable, marginRight: 'auto' } : {...Margin_12L_12R, marginRight: 'auto'}} 
+        <span
+          style=${getCurrentPlanet('source') ? { ...Margin_12L_12R, ...Clickable, marginRight: 'auto' } : {...Margin_12L_12R, marginRight: 'auto'}}
           onClick=${getCurrentPlanet('source') ? () => centerPlanet(getCurrentAttack('sourceId')) : () => {}}
         >
           ${getPlanetString(getCurrentAttack('sourceId'))}
@@ -398,8 +398,8 @@ function AddAttack({ repeater, startFiring, toggleOutgoingFiring, toggleIncoming
         <button style=${Margin_12B} onClick=${setTarget}>
           Set Target <span style=${Keyboard_Shortcut}>[${KEY_SET_TARGET}]</span>
         </button>
-        <span 
-          style=${getCurrentPlanet('target') ? { ...Margin_12L_12R, ...Clickable, marginRight: 'auto' } : {...Margin_12L_12R, marginRight: 'auto'}} 
+        <span
+          style=${getCurrentPlanet('target') ? { ...Margin_12L_12R, ...Clickable, marginRight: 'auto' } : {...Margin_12L_12R, marginRight: 'auto'}}
           onClick=${getCurrentPlanet('target') ? () => centerPlanet(getCurrentAttack('targetId')) : () => {}}
         >
           ${getPlanetString(getCurrentAttack('targetId'))}
@@ -425,8 +425,8 @@ function AddAttack({ repeater, startFiring, toggleOutgoingFiring, toggleIncoming
       <div style=${{fontSize: '99%'}}>
         <div style=${{marginBottom: '10px'}}>
           Selected:
-          <span 
-            style=${getCurrentPlanet('selected') ? { ...Margin_12L_12R, ...Clickable, marginRight: 'auto' } : {...Margin_12L_12R, marginRight: 'auto'}} 
+          <span
+            style=${getCurrentPlanet('selected') ? { ...Margin_12L_12R, ...Clickable, marginRight: 'auto' } : {...Margin_12L_12R, marginRight: 'auto'}}
             onClick=${getCurrentPlanet('selected') ? () => centerPlanet(getCurrentPlanet('selected').locationId) : () => {}}
           >
             ${getPlanetString(getCurrentPlanet('selected')?.locationId)}
@@ -445,7 +445,7 @@ function AddAttack({ repeater, startFiring, toggleOutgoingFiring, toggleIncoming
           `}
         </div>
       </div>
-      <hr style=${{borderColor: 'grey', marginBottom: '10px'}} /> 
+      <hr style=${{borderColor: 'grey', marginBottom: '10px'}} />
     </div>
   `;
 }
@@ -533,7 +533,7 @@ const drawHighlights = plugin => {
     const cY = viewport.worldToCanvasY(theCoords.y);
     const cR = 10 + viewport.worldToCanvasDist(1.4 * ui.getRadiusOfPlanetLevel(thePlanet.planetLevel));
     const START_RADIANS = PI_2 * getSawWave01(periodMs, thePlanet);
-    ctx.arc(cX, cY, cR, START_RADIANS, START_RADIANS + PI_2 * arcFraction);  
+    ctx.arc(cX, cY, cR, START_RADIANS, START_RADIANS + PI_2 * arcFraction);
     ctx.stroke();
     ctx.closePath();
   }

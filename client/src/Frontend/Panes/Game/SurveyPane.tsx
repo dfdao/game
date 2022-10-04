@@ -1,4 +1,4 @@
-import { Leaderboard, ModalName } from '@darkforest_eth/types';
+import { Leaderboard, ModalName } from '@dfdao/types';
 import React from 'react';
 
 import { getRank, Rank } from '../../../Backend/Utils/Rank';
@@ -99,7 +99,7 @@ function SurveyPaneContent({ numSpawnPlanets }: { numSpawnPlanets: number }) {
           Help us improve Grand Prix by {' '}
           <Link openInThisTab={false} to={'https://forms.gle/coFn68RvPrEKaXcKA'}> giving feedback on this survey</Link>
           {' 😊'}
-          
+
         </div>{' '}
       </div>
     );

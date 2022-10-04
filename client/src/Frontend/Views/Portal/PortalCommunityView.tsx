@@ -1,4 +1,4 @@
-import { MapInfo } from '@darkforest_eth/types';
+import { MapInfo } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { loadRecentMaps } from '../../../Backend/Network/GraphApi/MapsApi';

@@ -1,10 +1,10 @@
-import { EMPTY_ADDRESS } from '@darkforest_eth/constants';
-import { Monomitter, monomitter } from '@darkforest_eth/events';
-import { biomeName, isLocatable, isSpaceShip } from '@darkforest_eth/gamelogic';
-import { planetHasBonus } from '@darkforest_eth/hexgen';
-import { EthConnection } from '@darkforest_eth/network';
-import { GameGLManager, Renderer } from '@darkforest_eth/renderer';
-import { isUnconfirmedMoveTx } from '@darkforest_eth/serde';
+import { EMPTY_ADDRESS } from '@dfdao/constants';
+import { Monomitter, monomitter } from '@dfdao/events';
+import { biomeName, isLocatable, isSpaceShip } from '@dfdao/gamelogic';
+import { planetHasBonus } from '@dfdao/hexgen';
+import { EthConnection } from '@dfdao/network';
+import { GameGLManager, Renderer } from '@dfdao/renderer';
+import { isUnconfirmedMoveTx } from '@dfdao/serde';
 import {
   Artifact,
   ArtifactId,
@@ -35,7 +35,7 @@ import {
   WorldCoords,
   WorldLocation,
   Wormhole,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import autoBind from 'auto-bind';
 import { BigNumber } from 'ethers';
 import EventEmitter from 'events';

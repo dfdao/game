@@ -1,4 +1,4 @@
-import { EthAddress, LiveMatch, ExtendedMatchEntry, CleanMatchEntry } from '@darkforest_eth/types';
+import { EthAddress, LiveMatch, ExtendedMatchEntry, CleanMatchEntry } from '@dfdao/types';
 import React, { CSSProperties } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import styled from 'styled-components';
@@ -8,7 +8,7 @@ import { useTwitters } from '../../Utils/AppHooks';
 import { formatStartTime } from '../../Utils/TimeUtils';
 import { compPlayerToEntry } from '../Leaderboards/ArenaLeaderboard';
 import { GenericErrorBoundary } from '../GenericErrorBoundary';
-import { getConfigName } from '@darkforest_eth/procedural';
+import { getConfigName } from '@dfdao/procedural';
 import { Btn } from '../../Components/Btn';
 import { Row } from '../../Components/Row';
 import _ from 'lodash';

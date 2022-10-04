@@ -1,5 +1,5 @@
 // organize-imports-ignore
-import type { EthAddress, LocatablePlanet, LocationId, Planet } from '@darkforest_eth/types';
+import type { EthAddress, LocatablePlanet, LocationId, Planet } from '@dfdao/types';
 import {
   MAX_ARTIFACT_RARITY,
   MAX_SPACESHIP_TYPE,
@@ -9,17 +9,17 @@ import {
   MIN_BIOME,
   MAX_BIOME,
   //@ts-ignore
-} from 'https://cdn.skypack.dev/@darkforest_eth/constants';
+} from 'https://cdn.skypack.dev/@dfdao/constants';
   //@ts-ignore
-import { modPBigInt } from 'https://cdn.skypack.dev/@darkforest_eth/hashing';
+import { modPBigInt } from 'https://cdn.skypack.dev/@dfdao/hashing';
 //@ts-ignore
-import { getPlanetNameHash } from 'https://cdn.skypack.dev/@darkforest_eth/procedural';
+import { getPlanetNameHash } from 'https://cdn.skypack.dev/@dfdao/procedural';
 import {
   locationIdToDecStr,
   artifactIdFromHexStr,
   locationIdFromDecStr,
   //@ts-ignore
-} from 'https://cdn.skypack.dev/@darkforest_eth/serde';
+} from 'https://cdn.skypack.dev/@dfdao/serde';
 import {
   ArtifactRarityNames,
   ArtifactType,
@@ -30,7 +30,7 @@ import {
   PlanetTypeNames,
   WorldCoords,
   //@ts-ignore
-} from 'https://cdn.skypack.dev/@darkforest_eth/types';
+} from 'https://cdn.skypack.dev/@dfdao/types';
 import {
   html,
   render,

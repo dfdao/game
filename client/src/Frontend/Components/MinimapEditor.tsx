@@ -1,4 +1,4 @@
-import { WorldCoords } from '@darkforest_eth/types';
+import { WorldCoords } from '@dfdao/types';
 import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { removeAlphabet } from '../Panes/Lobby/LobbiesUtils';

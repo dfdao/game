@@ -1,4 +1,4 @@
-import { EthAddress, MapInfo } from '@darkforest_eth/types';
+import { EthAddress, MapInfo } from '@dfdao/types';
 import { getGraphQLData } from '../GraphApi';
 
 export async function loadRecentMaps(

@@ -1,7 +1,7 @@
-import { weiToEth } from '@darkforest_eth/network';
-import { getHatSizeName, getPlanetCosmetic } from '@darkforest_eth/procedural';
-import { isUnconfirmedBuyHatTx } from '@darkforest_eth/serde';
-import { LocationId, Planet } from '@darkforest_eth/types';
+import { weiToEth } from '@dfdao/network';
+import { getHatSizeName, getPlanetCosmetic } from '@dfdao/procedural';
+import { isUnconfirmedBuyHatTx } from '@dfdao/serde';
+import { LocationId, Planet } from '@dfdao/types';
 import { BigNumber } from 'ethers';
 import React from 'react';
 import styled from 'styled-components';

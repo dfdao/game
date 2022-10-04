@@ -1,5 +1,5 @@
-import { address } from '@darkforest_eth/serde';
-import { EthAddress, RawAccount } from '@darkforest_eth/types';
+import { address } from '@dfdao/serde';
+import { EthAddress, RawAccount } from '@dfdao/types';
 import { isAddress } from 'ethers/lib/utils';
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';

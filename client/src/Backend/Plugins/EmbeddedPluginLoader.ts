@@ -1,4 +1,4 @@
-import { PluginId } from '@darkforest_eth/types';
+import { PluginId } from '@dfdao/types';
 
 /**
  * This interface represents an embedded plugin, which is stored in `embedded_plugins/`.

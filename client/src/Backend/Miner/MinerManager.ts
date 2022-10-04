@@ -1,5 +1,5 @@
-import { perlin } from '@darkforest_eth/hashing';
-import { Chunk, PerlinConfig, Rectangle } from '@darkforest_eth/types';
+import { perlin } from '@dfdao/hashing';
+import { Chunk, PerlinConfig, Rectangle } from '@dfdao/types';
 import { EventEmitter } from 'events';
 import _ from 'lodash';
 import { ChunkStore } from '../../_types/darkforest/api/ChunkStoreTypes';

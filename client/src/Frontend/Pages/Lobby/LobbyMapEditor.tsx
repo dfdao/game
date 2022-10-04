@@ -1,4 +1,4 @@
-import { EthAddress, WorldCoords } from '@darkforest_eth/types';
+import { EthAddress, WorldCoords } from '@dfdao/types';
 import React, { useMemo, useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import styled, { css } from 'styled-components';
@@ -307,7 +307,7 @@ const EditorButton = styled.button<{ cancel: boolean }>`
   width: 100%;
 `;
 
-// styles copied from { DarkForestShortcutButton } from '@darkforest_eth/ui';
+// styles copied from { DarkForestShortcutButton } from '@dfdao/ui';
 const Key = styled.kbd<{ active: boolean }>`
   font-size: 0.7rem;
   line-height: 1.4;

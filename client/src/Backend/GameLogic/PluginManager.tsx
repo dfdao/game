@@ -1,5 +1,5 @@
-import { Monomitter, monomitter } from '@darkforest_eth/events';
-import { PluginId } from '@darkforest_eth/types';
+import { Monomitter, monomitter } from '@dfdao/events';
+import { PluginId } from '@dfdao/types';
 import { EmbeddedPlugin, getEmbeddedPlugins } from '../Plugins/EmbeddedPluginLoader';
 import { PluginProcess } from '../Plugins/PluginProcess';
 import { SerializedPlugin } from '../Plugins/SerializedPlugin';

@@ -1,6 +1,6 @@
-import { mimcHash, perlin } from '@darkforest_eth/hashing';
-import { locationIdFromBigInt } from '@darkforest_eth/serde';
-import { Chunk, PerlinConfig, Rectangle, WorldLocation } from '@darkforest_eth/types';
+import { mimcHash, perlin } from '@dfdao/hashing';
+import { locationIdFromBigInt } from '@dfdao/serde';
+import { Chunk, PerlinConfig, Rectangle, WorldLocation } from '@dfdao/types';
 import * as bigInt from 'big-integer';
 import { BigInteger } from 'big-integer';
 import { LOCATION_ID_UB } from '../../Frontend/Utils/constants';

@@ -2,7 +2,7 @@ import {
   BadgeSet,
   BadgeType,
   ConfigBadge,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 
 // Given a season, get all badges won by all Players
 export function graphBadgeToGrandPrixBadge(

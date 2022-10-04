@@ -10,7 +10,7 @@ import {
   QueuedArrival,
   RevealedCoords,
   VoyageId,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import _ from 'lodash';
 import React from 'react';
 import { Link } from '../../Frontend/Components/CoreUI';

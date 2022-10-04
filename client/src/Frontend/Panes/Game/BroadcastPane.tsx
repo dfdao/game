@@ -1,5 +1,5 @@
-import { isUnconfirmedRevealTx } from '@darkforest_eth/serde';
-import { EthAddress, LocationId } from '@darkforest_eth/types';
+import { isUnconfirmedRevealTx } from '@dfdao/serde';
+import { EthAddress, LocationId } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Btn } from '../../Components/Btn';

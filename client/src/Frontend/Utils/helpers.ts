@@ -1,6 +1,6 @@
-import { DarkForest } from '@darkforest_eth/contracts/typechain';
-import { address } from '@darkforest_eth/serde';
-import { EthAddress } from '@darkforest_eth/types';
+import { DarkForest } from '@dfdao/contracts/typechain';
+import { address } from '@dfdao/serde';
+import { EthAddress } from '@dfdao/types';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { TransactionReceipt } from '@ethersproject/providers';
 // THIS IS BAD BECAUSE NOT TYPE SAFE

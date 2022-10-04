@@ -1,4 +1,4 @@
-import { SpaceType, WorldCoords } from '@darkforest_eth/types';
+import { SpaceType, WorldCoords } from '@dfdao/types';
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import GameUIManager from '../../../Backend/GameLogic/GameUIManager';

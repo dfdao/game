@@ -1,6 +1,6 @@
 // should be able to be treated as a text element
-import { BadgeType } from '@darkforest_eth/types';
-import { DarkForestBadge, getBadgeElement } from '@darkforest_eth/ui';
+import { BadgeType } from '@dfdao/types';
+import { DarkForestBadge, getBadgeElement } from '@dfdao/ui';
 import { createComponent } from '@lit-labs/react';
 import React from 'react';
 import styled from 'styled-components';

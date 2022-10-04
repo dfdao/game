@@ -1,5 +1,5 @@
-import { isLocatable } from '@darkforest_eth/gamelogic';
-import { LocationId, TooltipName } from '@darkforest_eth/types';
+import { isLocatable } from '@dfdao/gamelogic';
+import { LocationId, TooltipName } from '@dfdao/types';
 import React from 'react';
 import { CenterBackgroundSubtext } from '../../Components/CoreUI';
 import { AccountLabel } from '../../Components/Labels/Labels';

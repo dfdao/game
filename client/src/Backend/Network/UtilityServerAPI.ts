@@ -1,12 +1,12 @@
-import { FAUCET_ADDRESS } from '@darkforest_eth/contracts';
-import { DFArenaFaucet } from '@darkforest_eth/contracts/typechain';
-import { EthConnection, weiToEth } from '@darkforest_eth/network';
+import { FAUCET_ADDRESS } from '@dfdao/contracts';
+import { DFArenaFaucet } from '@dfdao/contracts/typechain';
+import { EthConnection, weiToEth } from '@dfdao/network';
 import {
   EthAddress,
   RegisterResponse,
   SignedMessage,
   WhitelistStatusResponse,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import * as EmailValidator from 'email-validator';
 import timeout from 'p-timeout';
 import { TerminalHandle } from '../../Frontend/Views/Terminal';

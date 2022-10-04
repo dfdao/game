@@ -1,5 +1,5 @@
-import { ModalId } from '@darkforest_eth/types';
-import { IconType } from '@darkforest_eth/ui';
+import { ModalId } from '@dfdao/types';
+import { IconType } from '@dfdao/ui';
 import React, {
   CSSProperties,
   useCallback,

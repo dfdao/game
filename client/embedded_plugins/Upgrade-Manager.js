@@ -6,8 +6,8 @@
 import {
     SpaceType,
     PlanetType,
-  } from "https://cdn.skypack.dev/@darkforest_eth/types";
-  
+  } from "https://cdn.skypack.dev/@dfdao/types";
+
   // if planet is not at max rank and has enough silver
   const planetCanUpgrade = (planet) => {
     const totalRank = planet.upgradeState.reduce((a, b) => a + b);
@@ -21,16 +21,16 @@ import {
       planet.silver >= silverNeededForUpgrade(planet)
     );
   };
-  
+
   const silverNeededForUpgrade = (planet) => {
     const totalLevel = planet.upgradeState.reduce((a, b) => a + b);
     return (totalLevel + 1) * 0.2 * planet.silverCap;
   };
-  
+
   const upgradablePlanets = () => {
     return df.getMyPlanets().filter(planetCanUpgrade);
   };
-  
+
   // upgrades planet, using a pattern
   // just a rudimentary implementation that takes the branch that should be upgraded from the nth letter of the pattern, where n is the current rank
   const upgradePlanet = (planet, pattern) => {
@@ -39,11 +39,11 @@ import {
     const upgradeBranch = ["d", "r", "s"].indexOf(pattern[rank]);
     df.upgrade(planet.locationId, upgradeBranch);
   };
-  
+
   const upgradeAllPlanets = (pattern) => {
     upgradablePlanets().forEach((p) => upgradePlanet(p, pattern));
   };
-  
+
   class UpgradeManager {
     async render(container) {
       // brief explanation on the syntax
@@ -51,25 +51,25 @@ import {
       tutorial.innerText = "d = defense, r = range, s = speed";
       tutorial.style.fontSize = "11px";
       tutorial.style.marginBottom = "10px";
-  
+
       const patternLabel = document.createElement("label");
       patternLabel.innerText = "Upgrade pattern:";
       patternLabel.htmlFor = "pattern";
       patternLabel.style.display = "block";
-  
+
       const patternInput = document.createElement("input");
       patternInput.value = "rrrrs";
       patternInput.id = "pattern";
       patternInput.style.display = "block";
-  
+
       const upgradePlanetsButton = document.createElement("button");
       upgradePlanetsButton.innerText = "Start Upgrading!";
       upgradePlanetsButton.style.marginTop = "1em";
       upgradePlanetsButton.style.display = "block";
-  
+
       // determines to either start or cancel upgrading when the button above is clicked
       let upgradingToggle = true;
-  
+
       // upgrade all planets once per minute
       upgradePlanetsButton.onclick = () => {
         if (upgradingToggle) {
@@ -86,7 +86,7 @@ import {
           ? "Start Upgrading!"
           : "Stop Upgrading";
       };
-  
+
       container.append(
         tutorial,
         patternLabel,
@@ -95,7 +95,7 @@ import {
       );
       patternInput.focus();
     }
-  
+
     destroy() {
       window.clearInterval(this.upgradePlanetsInterval);
     }

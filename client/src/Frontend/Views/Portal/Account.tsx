@@ -1,4 +1,4 @@
-import { EthAddress } from '@darkforest_eth/types';
+import { EthAddress } from '@dfdao/types';
 import { BigNumber } from 'ethers';
 import { formatEther } from 'ethers/lib/utils';
 import React, { useEffect, useState } from 'react';

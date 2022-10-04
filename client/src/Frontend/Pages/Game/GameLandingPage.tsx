@@ -1,9 +1,9 @@
-import { BLOCK_EXPLORER_URL } from '@darkforest_eth/constants';
-import { CONTRACT_ADDRESS } from '@darkforest_eth/contracts';
-import { DarkForest, DFArenaFaucet } from '@darkforest_eth/contracts/typechain';
-import { EthConnection, neverResolves, weiToEth } from '@darkforest_eth/network';
-import { address } from '@darkforest_eth/serde';
-import { bigIntFromKey } from '@darkforest_eth/whitelist';
+import { BLOCK_EXPLORER_URL } from '@dfdao/constants';
+import { CONTRACT_ADDRESS } from '@dfdao/contracts';
+import { DarkForest, DFArenaFaucet } from '@dfdao/contracts/typechain';
+import { EthConnection, neverResolves, weiToEth } from '@dfdao/network';
+import { address } from '@dfdao/serde';
+import { bigIntFromKey } from '@dfdao/whitelist';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { RouteComponentProps, useHistory } from 'react-router-dom';
 import { makeContractsAPI } from '../../../Backend/GameLogic/ContractsAPI';
@@ -36,7 +36,7 @@ import UIEmitter, { UIEmitterEvent } from '../../Utils/UIEmitter';
 import { GameWindowLayout } from '../../Views/GameWindowLayout';
 import { Terminal, TerminalHandle } from '../../Views/Terminal';
 import { stockConfig } from '../../Utils/StockConfigs';
-import { EthAddress } from '@darkforest_eth/types';
+import { EthAddress } from '@dfdao/types';
 import { loadConfigFromAddress } from '../../../Backend/Network/GraphApi/ConfigApi';
 import { ArenaCreationManager } from '../../../Backend/GameLogic/ArenaCreationManager';
 import { LobbyInitializers } from '../../Panes/Lobby/Reducer';
@@ -110,7 +110,7 @@ export function GameLandingPage({ match, location }: RouteComponentProps<{ contr
           const { owner, lobby } = await newCreationManager.createAndInitArena(fetchedConfig);
 
           if (owner == playerAddress) {
-            setFromCreate(true);  
+            setFromCreate(true);
             history.push({ pathname: `${lobby}`, state: { contract: lobby } });
             setContractAddress(lobby);
           }

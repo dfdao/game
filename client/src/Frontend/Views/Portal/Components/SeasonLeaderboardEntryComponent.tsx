@@ -1,7 +1,7 @@
-import { getConfigName } from '@darkforest_eth/procedural';
-import { address } from '@darkforest_eth/serde';
-import { BadgeType, ConfigBadge, TooltipName } from '@darkforest_eth/types';
-import dfstyles from '@darkforest_eth/ui/dist/styles';
+import { getConfigName } from '@dfdao/procedural';
+import { address } from '@dfdao/serde';
+import { BadgeType, ConfigBadge, TooltipName } from '@dfdao/types';
+import dfstyles from '@dfdao/ui/dist/styles';
 import React, { useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import styled from 'styled-components';

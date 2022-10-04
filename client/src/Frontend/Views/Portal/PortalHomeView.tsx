@@ -1,4 +1,4 @@
-import { CleanConfigPlayer, Leaderboard, RegistryResponse } from '@darkforest_eth/types';
+import { CleanConfigPlayer, Leaderboard, RegistryResponse } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import {
@@ -41,7 +41,7 @@ export const PortalHomeView: React.FC<{}> = () => {
   ).length;
 
   if (!grandPrix) return <div>No active round</div>;
-  
+
   const { twitters } = useTwitters();
   const { allPlayers, setPlayers } = useSeasonPlayers();
   const seasonData = useSeasonData();

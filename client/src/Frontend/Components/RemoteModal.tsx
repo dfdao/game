@@ -1,4 +1,4 @@
-import { ModalId } from '@darkforest_eth/types';
+import { ModalId } from '@dfdao/types';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import { ModalPane } from '../Views/Game/ModalPane';

@@ -1,5 +1,5 @@
-import { address } from '@darkforest_eth/serde';
-import { TooltipName } from '@darkforest_eth/types';
+import { address } from '@dfdao/serde';
+import { TooltipName } from '@dfdao/types';
 import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import TutorialManager, { TutorialState } from '../../Backend/GameLogic/TutorialManager';

@@ -1,15 +1,15 @@
-import { EMPTY_ADDRESS, RECOMMENDED_MODAL_WIDTH } from '@darkforest_eth/constants';
-import { formatNumber } from '@darkforest_eth/gamelogic';
+import { EMPTY_ADDRESS, RECOMMENDED_MODAL_WIDTH } from '@dfdao/constants';
+import { formatNumber } from '@dfdao/gamelogic';
 import {
   getPlanetClass,
   getPlanetCosmetic,
   getPlanetName,
   getPlayerColor,
   rgbStr,
-} from '@darkforest_eth/procedural';
-import { engineConsts } from '@darkforest_eth/renderer';
-import { address, isUnconfirmedNotReadyTx, isUnconfirmedReadyTx } from '@darkforest_eth/serde';
-import { ModalName, Planet, PlanetType, Player, RGBVec } from '@darkforest_eth/types';
+} from '@dfdao/procedural';
+import { engineConsts } from '@dfdao/renderer';
+import { address, isUnconfirmedNotReadyTx, isUnconfirmedReadyTx } from '@dfdao/serde';
+import { ModalName, Planet, PlanetType, Player, RGBVec } from '@dfdao/types';
 import React, { useEffect, useState, useMemo } from 'react';
 import styled, { CSSProperties } from 'styled-components';
 import { getPlanetRank } from '../../../Backend/Utils/Utils';

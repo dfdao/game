@@ -1,4 +1,4 @@
-import { ModalName, Planet, PlanetType } from '@darkforest_eth/types';
+import { ModalName, Planet, PlanetType } from '@dfdao/types';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import GameUIManager from '../../../Backend/GameLogic/GameUIManager';
 import { Wrapper } from '../../../Backend/Utils/Wrapper';

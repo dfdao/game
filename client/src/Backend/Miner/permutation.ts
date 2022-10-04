@@ -1,6 +1,6 @@
-import { fakeHash, perlin, seededRandom } from '@darkforest_eth/hashing';
-import { locationIdFromBigInt } from '@darkforest_eth/serde';
-import { Rectangle, WorldCoords, WorldLocation } from '@darkforest_eth/types';
+import { fakeHash, perlin, seededRandom } from '@dfdao/hashing';
+import { locationIdFromBigInt } from '@dfdao/serde';
+import { Rectangle, WorldCoords, WorldLocation } from '@dfdao/types';
 import { planetLevelBelowLevel0Threshold } from './PlanetUtils';
 
 type IdxWithRand = {

@@ -1,4 +1,4 @@
-import { SpaceType } from '@darkforest_eth/types';
+import { SpaceType } from '@dfdao/types';
 import { hsl } from 'color';
 import {
   CreatedPlanet,

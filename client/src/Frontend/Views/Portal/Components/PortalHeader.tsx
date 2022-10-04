@@ -8,10 +8,10 @@ import { useConfigFromHash, useDisableScroll, useEthConnection } from '../../../
 import { tutorialConfig } from '../../../Utils/constants';
 import { MinimalButton } from '../PortalMainView';
 import { populate, populateBulk } from '../../../../Backend/Utils/Populate';
-import { address } from '@darkforest_eth/serde';
+import { address } from '@dfdao/serde';
 import { Logo } from '../../../Panes/Lobby/LobbiesUtils';
 import { loadRegistry } from '../../../../Backend/Network/GraphApi/GrandPrixApi';
-import { CONTRACT_ADDRESS } from '@darkforest_eth/contracts';
+import { CONTRACT_ADDRESS } from '@dfdao/contracts';
 import { PortalModal } from './PortalModal';
 import { PortalHelpCenter } from '../PortalHelpCenter';
 

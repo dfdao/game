@@ -1,4 +1,4 @@
-import { SpaceshipType, TooltipName } from '@darkforest_eth/types';
+import { SpaceshipType, TooltipName } from '@dfdao/types';
 import _ from 'lodash';
 import React from 'react';
 import { Checkbox, DarkForestCheckbox } from '../../Components/Input';

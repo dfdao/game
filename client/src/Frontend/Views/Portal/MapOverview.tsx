@@ -7,8 +7,8 @@ import { generateMinimapConfig, MinimapConfig } from '../../Panes/Lobby/MinimapU
 import { Link } from 'react-router-dom';
 import { debounce } from 'lodash';
 import { LobbyInitializers } from '../../Panes/Lobby/Reducer';
-import { EthAddress, GrandPrixMetadata, RegistryResponse } from '@darkforest_eth/types';
-import { getConfigName } from '@darkforest_eth/procedural';
+import { EthAddress, GrandPrixMetadata, RegistryResponse } from '@dfdao/types';
+import { getConfigName } from '@dfdao/procedural';
 import { PortalButton } from '../../Styles/dfstyles';
 import { LobbyButton } from '../../Pages/Lobby/LobbyMapEditor';
 import { theme } from './styleUtils';
@@ -45,7 +45,7 @@ export const MapOverview: React.FC<{
   useEffect(() => {
     const update = () => {
       const now = Math.floor(Date.now() / 1000);
-      
+
       if (now > round.endTime) {
         setStatus('ended');
         setCountdown(1);

@@ -1,4 +1,4 @@
-import { ModalId, ModalName, Setting } from '@darkforest_eth/types';
+import { ModalId, ModalName, Setting } from '@dfdao/types';
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { BorderlessPane } from '../Components/CoreUI';

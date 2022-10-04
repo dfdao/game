@@ -1,4 +1,4 @@
-import { address } from '@darkforest_eth/serde';
+import { address } from '@dfdao/serde';
 import {
   BadgeSet,
   BadgeType,
@@ -16,8 +16,8 @@ import {
   SeasonScore,
   Wallbreaker,
   WallbreakerArena,
-} from '@darkforest_eth/types';
-import { UniquePlayerBadges } from '@darkforest_eth/types/src/grand_prix';
+} from '@dfdao/types';
+import { UniquePlayerBadges } from '@dfdao/types/src/grand_prix';
 import {
   // SEASON_GRAND_PRIXS,
   HOUR_IN_SECONDS,
@@ -392,7 +392,7 @@ async function buildCleanConfigPlayer(
         ? cp.bestTime!.startTime < FIRST_CONFIG_FINAL_VALID_START
         : true)
   );
-  
+
   // Merge just for Grand Prix Week 1
   const configPlayersStage2 = mergeGrandPrix(
     configPlayersStage1,

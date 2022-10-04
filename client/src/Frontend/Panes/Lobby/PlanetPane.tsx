@@ -1,4 +1,4 @@
-import { TooltipName } from '@darkforest_eth/types';
+import { TooltipName } from '@dfdao/types';
 import _ from 'lodash';
 import React from 'react';
 import { DarkForestNumberInput, NumberInput } from '../../Components/Input';

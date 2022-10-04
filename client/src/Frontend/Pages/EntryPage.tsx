@@ -1,7 +1,7 @@
-import { CONTRACT_ADDRESS } from '@darkforest_eth/contracts';
-import { EthConnection, ThrottledConcurrentQueue, weiToEth } from '@darkforest_eth/network';
-import { address } from '@darkforest_eth/serde';
-import { CleanConfigPlayer, EthAddress, GrandPrixMetadata } from '@darkforest_eth/types';
+import { CONTRACT_ADDRESS } from '@dfdao/contracts';
+import { EthConnection, ThrottledConcurrentQueue, weiToEth } from '@dfdao/network';
+import { address } from '@dfdao/serde';
+import { CleanConfigPlayer, EthAddress, GrandPrixMetadata } from '@dfdao/types';
 import { utils, Wallet } from 'ethers';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Switch, Route, Redirect, useHistory } from 'react-router-dom';

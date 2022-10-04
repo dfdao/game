@@ -1,4 +1,4 @@
-import { NetworkHealthSummary } from '@darkforest_eth/types';
+import { NetworkHealthSummary } from '@dfdao/types';
 
 /**
  * The Dark Forest webserver keeps track of network health, this function loads that information

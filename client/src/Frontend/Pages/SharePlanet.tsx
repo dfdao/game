@@ -1,6 +1,6 @@
-import { isLocatable } from '@darkforest_eth/gamelogic';
-import { getPlanetBlurb, getPlanetName, getPlanetTagline } from '@darkforest_eth/procedural';
-import { LocationId, Planet } from '@darkforest_eth/types';
+import { isLocatable } from '@dfdao/gamelogic';
+import { getPlanetBlurb, getPlanetName, getPlanetTagline } from '@dfdao/procedural';
+import { LocationId, Planet } from '@dfdao/types';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import styled from 'styled-components';

@@ -1,13 +1,13 @@
-import { RECOMMENDED_MODAL_WIDTH } from '@darkforest_eth/constants';
-import { formatNumber } from '@darkforest_eth/gamelogic';
+import { RECOMMENDED_MODAL_WIDTH } from '@dfdao/constants';
+import { formatNumber } from '@dfdao/gamelogic';
 import {
   getPlanetClass,
   getPlanetCosmetic,
   getPlanetName,
   rgbStr,
-} from '@darkforest_eth/procedural';
-import { engineConsts } from '@darkforest_eth/renderer';
-import { ModalName, Planet, PlanetType, RGBVec } from '@darkforest_eth/types';
+} from '@dfdao/procedural';
+import { engineConsts } from '@dfdao/renderer';
+import { ModalName, Planet, PlanetType, RGBVec } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { getPlanetRank } from '../../../Backend/Utils/Utils';

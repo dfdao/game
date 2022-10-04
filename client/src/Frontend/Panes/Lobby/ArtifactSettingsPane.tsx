@@ -1,4 +1,4 @@
-import { ArtifactRarity, TooltipName } from '@darkforest_eth/types';
+import { ArtifactRarity, TooltipName } from '@dfdao/types';
 import React from 'react';
 import {
   Checkbox,

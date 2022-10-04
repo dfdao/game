@@ -1,5 +1,5 @@
-import { createContract, EthConnection } from '@darkforest_eth/network';
-import { address } from '@darkforest_eth/serde';
+import { createContract, EthConnection } from '@dfdao/network';
+import { address } from '@dfdao/serde';
 import {
   EthAddress,
   GrandPrixMetadata,
@@ -7,7 +7,7 @@ import {
   Leaderboard,
   LeaderboardEntry,
   RegistryResponse,
-} from '@darkforest_eth/types';
+} from '@dfdao/types';
 import {
   roundEndTimestamp,
   roundStartTimestamp,
@@ -35,7 +35,7 @@ export async function loadArenaLeaderboard(
   const QUERY = `
 query {
   arenas(
-    first:1000, 
+    first:1000,
     where: {configHash: "${config}", duration_not: null}
     orderBy: duration
     orderDirection: asc
@@ -46,7 +46,7 @@ query {
     winners(first :1) {
       address
       moves
-   }    
+   }
     gameOver
     endTime
     duration
@@ -119,7 +119,7 @@ export async function loadRegistry(
   if(DUMMY) {
     return SEASON_GRAND_PRIXS;
   }
-  
+
   const deployment = await fetch(deploymentUrl).then((r) => r.json());
 
   const registry = await ethConnection.loadContract<Registry>(deployment.registry, loadRegistryContract);
