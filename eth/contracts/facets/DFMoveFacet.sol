@@ -60,12 +60,6 @@ contract DFMoveFacet is WithStorage {
             sender: msg.sender
         });
 
-        if (_isSpaceshipMove(args)) {
-            // If spaceships moves are not address(0)
-            // they can conquer planets with 0 energy
-            args.sender = address(0);
-        }
-
         uint256 newPerlin = _input[2];
         uint256 newRadius = _input[3];
 
@@ -446,7 +440,7 @@ contract DFMoveFacet is WithStorage {
         require(isSpaceship ? args.popMoved == 0 : true, "spaceship moves must be 0 energy moves");
         gs().planetArrivals[gs().planetEventsCount] = ArrivalData({
             id: gs().planetEventsCount,
-            player: args.player, // player address or address(0) for ship moves
+            player: args.player, // player address
             fromPlanet: args.oldLoc,
             toPlanet: args.newLoc,
             popArriving: popArriving,

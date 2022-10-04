@@ -143,10 +143,10 @@ library LibLazyUpdate {
                 // player
 
                 /**
-                  This is the zero address so that ships moving to an unowned planet with
-                  no barbarians don't cause the planet to be conquered by the ship's controller.
+                  If the move is a spaceship move, the planet owner does not change.
+                  This prevents spaceship moves capturing planets with zero energy.
                  */
-                planet.owner = arrival.player == address(0) ? planet.owner : arrival.player;
+                planet.owner = arrival.carriedSpaceshipId != 0 ? planet.owner : arrival.player;
                 planet.population =
                     arrival.popArriving -
                     ((planet.population * planet.defense) / 100);
