@@ -1,9 +1,11 @@
 import { ModalId } from '@dfdao/types';
+import { IconType } from '@dfdao/ui';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { Btn } from '../Components/Btn';
 import { EmSpacer, Spacer, Title, Truncate } from '../Components/CoreUI';
 import { PaneProps } from '../Components/GameWindowComponents';
+import { Icon } from '../Components/Icons';
 import { MaybeShortcutButton } from '../Components/MaybeShortcutButton';
 import { DarkForestModal, Modal, PositionChangedEvent } from '../Components/Modal';
 import dfstyles from '../Styles/dfstyles';
@@ -239,19 +241,25 @@ export function ModalPane({
           {helpContent !== undefined && !minimized && (
             <>
               <Btn size='small' onClick={() => setShowingInformationSection((showing) => !showing)}>
-                help
+                <ModalIcon>
+                  <Icon type={IconType.Help} />
+                </ModalIcon>
               </Btn>
               <Spacer width={4} />
             </>
           )}
           <Btn size='small' onClick={() => setMinimized((minimized: boolean) => !minimized)}>
-            {minimized ? 'maximize' : 'minimize'}
+            <ModalIcon>
+              <Icon type={minimized ? IconType.Maximize : IconType.Minimize} />
+            </ModalIcon>
           </Btn>
           {!hideClose && (
             <>
               <Spacer width={4} />
               <Btn size='small' onClick={() => onClose()}>
-                close
+                <ModalIcon>
+                  <Icon type={IconType.X} />
+                </ModalIcon>
               </Btn>
             </>
           )}
@@ -262,3 +270,10 @@ export function ModalPane({
     );
   }
 }
+
+const ModalIcon = styled.span`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 0px;
+`;
