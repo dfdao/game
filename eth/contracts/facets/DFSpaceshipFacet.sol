@@ -2,7 +2,8 @@
 pragma solidity ^0.8.0;
 
 // External contract imports
-import {DFArtifactFacet} from "./DFArtifactFacet.sol";
+import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
+import {DFTokenFacet} from "./DFTokenFacet.sol";
 
 // Library imports
 import {LibPermissions} from "../libraries/LibPermissions.sol";
@@ -15,6 +16,9 @@ import {WithStorage, SnarkConstants, GameConstants} from "../libraries/LibStorag
 import {Spaceship, SpaceshipType} from "../DFTypes.sol";
 
 contract DFSpaceshipFacet is WithStorage {
+    /**
+     * Modifiers
+     */
     modifier onlyAdminOrCore() {
         require(
             msg.sender == gs().diamondAddress || msg.sender == LibPermissions.contractOwner(),
@@ -22,6 +26,19 @@ contract DFSpaceshipFacet is WithStorage {
         );
         _;
     }
+
+    modifier onlyWhitelisted() {
+        require(
+            DFWhitelistFacet(address(this)).isWhitelisted(msg.sender) ||
+                msg.sender == LibPermissions.contractOwner(),
+            "Player is not whitelisted"
+        );
+        _;
+    }
+    /**
+     * Events
+     */
+    event ArtifactFound(address player, uint256 artifactId, uint256 loc);
 
     /**
      * Getters
@@ -71,14 +88,16 @@ contract DFSpaceshipFacet is WithStorage {
     }
 
     function getPlayerSpaceships(address player) public view returns (Spaceship[] memory ret) {
-        uint256[] memory tokens = DFArtifactFacet(address(this)).tokensByAccount(player);
+        uint256[] memory tokens = DFTokenFacet(address(this)).tokensByAccount(player);
         uint256 numSpaceships = 0;
         for (uint256 i = 0; i < tokens.length; i++) {
             if (LibSpaceship.isShip(tokens[i])) numSpaceships += 1;
         }
         ret = new Spaceship[](numSpaceships);
+        numSpaceships = 0;
         for (uint256 i = 0; i < tokens.length; i++) {
-            if (LibSpaceship.isShip(tokens[i])) ret[i] = LibSpaceship.decode(tokens[i]);
+            if (LibSpaceship.isShip(tokens[i]))
+                ret[numSpaceships++] = LibSpaceship.decode(tokens[i]);
         }
     }
 
@@ -98,17 +117,66 @@ contract DFSpaceshipFacet is WithStorage {
      * Actions
      */
 
-    function createSpaceship(uint256 tokenId, address owner)
-        public
-        onlyAdminOrCore
-        returns (Spaceship memory)
-    {
-        require(tokenId >= 1, "token id must be positive");
-        require(LibSpaceship.isShip(tokenId), "token must be Spaceship");
+    /**
+      Gives players 5 spaceships on their home planet. Can only be called once
+      by a given player. This is a first pass at getting spaceships into the game.
+      Eventually ships will be able to spawn in the game naturally (construction, capturing, etc.)
+     */
 
-        // Account, Id, Amount, Data
-        DFArtifactFacet(address(this)).mint(owner, tokenId, 1, "");
+    function giveSpaceShips(uint256 locationId) public onlyWhitelisted {
+        require(!gs().players[msg.sender].claimedShips, "player already claimed ships");
+        require(
+            gs().planets[locationId].owner == msg.sender && gs().planets[locationId].isHomePlanet,
+            "you can only spawn ships on your home planet"
+        );
 
-        return getSpaceshipFromId(tokenId);
+        address owner = gs().planets[locationId].owner;
+        if (gameConstants().SPACESHIPS.MOTHERSHIP) {
+            uint256 id1 = LibSpaceship.createAndPlaceSpaceship(
+                locationId,
+                owner,
+                SpaceshipType.ShipMothership
+            );
+            emit ArtifactFound(msg.sender, id1, locationId);
+        }
+
+        if (gameConstants().SPACESHIPS.CRESCENT) {
+            uint256 id2 = LibSpaceship.createAndPlaceSpaceship(
+                locationId,
+                owner,
+                SpaceshipType.ShipCrescent
+            );
+            emit ArtifactFound(msg.sender, id2, locationId);
+        }
+
+        if (gameConstants().SPACESHIPS.WHALE) {
+            uint256 id3 = LibSpaceship.createAndPlaceSpaceship(
+                locationId,
+                owner,
+                SpaceshipType.ShipWhale
+            );
+            emit ArtifactFound(msg.sender, id3, locationId);
+        }
+
+        if (gameConstants().SPACESHIPS.GEAR) {
+            uint256 id4 = LibSpaceship.createAndPlaceSpaceship(
+                locationId,
+                owner,
+                SpaceshipType.ShipGear
+            );
+            emit ArtifactFound(msg.sender, id4, locationId);
+        }
+
+        if (gameConstants().SPACESHIPS.TITAN) {
+            uint256 id5 = LibSpaceship.createAndPlaceSpaceship(
+                locationId,
+                owner,
+                SpaceshipType.ShipTitan
+            );
+
+            emit ArtifactFound(msg.sender, id5, locationId);
+        }
+
+        gs().players[msg.sender].claimedShips = true;
     }
 }

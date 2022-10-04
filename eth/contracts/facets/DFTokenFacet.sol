@@ -11,8 +11,6 @@ import {LibSpaceship} from "../libraries/LibSpaceship.sol";
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
 
-import "hardhat/console.sol";
-
 contract DFTokenFacet is WithStorage, SolidStateERC1155 {
     modifier onlyAdminOrCore() {
         require(
@@ -100,7 +98,7 @@ contract DFTokenFacet is WithStorage, SolidStateERC1155 {
         _transfer(operator, sender, recipient, id, amount, data);
     }
 
-    function tokenExists(address owner, uint256 tokenId) public view returns (bool) {
+    function tokenIsOwnedBy(address owner, uint256 tokenId) public view returns (bool) {
         return balanceOf(owner, tokenId) > 0;
     }
 }

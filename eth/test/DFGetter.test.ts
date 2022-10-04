@@ -21,7 +21,7 @@ describe('DarkForestGetter', function () {
     world = await loadFixture(worldFixture);
   });
 
-  describe.only('tokens', function () {
+  describe('tokens', function () {
     it('gets spaceship tokens', async function () {
       expect((await world.contract.tokensByAccount(world.user1.address)).length).to.equal(5);
       expect((await world.contract.getPlayerSpaceships(world.user1.address)).length).to.equal(5);
