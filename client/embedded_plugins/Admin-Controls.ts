@@ -9,14 +9,14 @@ import {
   MIN_BIOME,
   MAX_BIOME,
   //@ts-ignore
-} from 'https://cdn.skypack.dev/@dfdao/constants';
+} from '@dfdao/constants';
 //@ts-ignore
-import { getPlanetNameHash } from 'https://cdn.skypack.dev/@dfdao/procedural';
+import { getPlanetNameHash } from '@dfdao/procedural';
 import {
   locationIdToDecStr,
   locationIdFromDecStr,
   //@ts-ignore
-} from 'https://cdn.skypack.dev/@dfdao/serde';
+} from '@dfdao/serde';
 import {
   ArtifactRarityNames,
   ArtifactType,
@@ -25,9 +25,9 @@ import {
   Player,
   PlanetType,
   PlanetTypeNames,
+  SpaceshipTypeNames,
   WorldCoords,
-  //@ts-ignore
-} from 'https://cdn.skypack.dev/@dfdao/types';
+} from '@dfdao/types';
 import {
   html,
   render,
@@ -257,7 +257,7 @@ function Heading({ title }: { title: string }) {
 function shipOptions() {
   const options = [] as HTMLOptionElement[];
   for (let i = MIN_SPACESHIP_TYPE; i <= MAX_SPACESHIP_TYPE; i++) {
-    options.push(html`<option value=${i}>${ArtifactTypeNames[i]}</option>`);
+    options.push(html`<option value=${i}>${SpaceshipTypeNames[i]}</option>`);
   }
   return options;
 }
@@ -428,6 +428,7 @@ function PlanetCreator() {
 }
 
 function App() {
+  console.log(`artifactTypeNames`, ArtifactTypeNames);
   const [selectedPlanet, setSelectedPlanet] = useState(null);
   const [selectedShip, setSelectedShip] = useState(MIN_SPACESHIP_TYPE);
   const [selectedArtifact, setSelectedArtifact] = useState(MIN_ARTIFACT_TYPE);

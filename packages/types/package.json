@@ -25,7 +25,8 @@
     "big-integer": "^1.6.48",
     "ethers": "^5.7.1",
     "gl-matrix": "3.3.0",
-    "type-fest": "^2.12.1"
+    "type-fest": "^2.12.1",
+    "decoders": "^1.25.5"
   },
   "devDependencies": {
     "del-cli": "^4.0.1",
