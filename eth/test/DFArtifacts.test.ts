@@ -685,9 +685,6 @@ describe.only('DarkForestArtifacts', function () {
         ArtifactRarity.Common,
         Biome.OCEAN
       );
-
-      await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, newTokenId);
-      await world.user1Core.move(...makeMoveArgs(LVL3_SPACETIME_1, to, 0, 500000, 0, newTokenId));
       await world.user1Core.activateArtifact(to.id, newTokenId, 0);
 
       // black domain is no longer on a planet (is instead owned by contract), and so is effectively
@@ -736,11 +733,6 @@ describe.only('DarkForestArtifacts', function () {
         Biome.OCEAN
       );
 
-      await increaseBlockchainTime(); // so that trading post can fill up to max energy
-      await world.user1Core.depositArtifact(LVL3_SPACETIME_1.id, newTokenId);
-      await world.user1Core.move(
-        ...makeMoveArgs(LVL3_SPACETIME_1, LVL4_UNOWNED_DEEP_SPACE, 0, 500000, 0, newTokenId)
-      );
       await expect(
         world.user1Core.activateArtifact(LVL4_UNOWNED_DEEP_SPACE.id, newTokenId, 0)
       ).to.be.revertedWith('artifact is not powerful enough to apply effect to this planet level');
@@ -802,7 +794,7 @@ describe.only('DarkForestArtifacts', function () {
         );
         prettyPrintToken(await world.contract.getArtifactFromId(newTokenId));
 
-        await world.user1Core.depositArtifact(LVL6_SPACETIME.id, newTokenId);
+        // await world.user1Core.depositArtifact(LVL6_SPACETIME.id, newTokenId);
 
         // Confirm photoid cannon is activated.
         await activateAndConfirm(world.user1Core, LVL6_SPACETIME.id, newTokenId);
