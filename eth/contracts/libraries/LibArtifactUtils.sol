@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 // External contract imports
 import {DFArtifactFacet} from "../facets/DFArtifactFacet.sol";
+import {DFTokenFacet} from "../facets/DFTokenFacet.sol";
 import {DFGetterFacet} from "../facets/DFGetterFacet.sol";
 
 // Library imports
@@ -126,9 +127,11 @@ library LibArtifactUtils {
                 5,
             "too many tokens on this planet"
         );
+        // Either artifact is owned by player OR is on planet.
         require(
-            DFArtifactFacet(address(this)).tokenExists(msg.sender, artifactId),
-            "you can only activate artifacts you own"
+            DFTokenFacet(address(this)).tokenExists(msg.sender, artifactId) ||
+                LibArtifact.isArtifactOnPlanet(locationId, artifactId),
+            "you can only activate artifacts you own or on planet"
         );
         if (LibSpaceship.isShip(artifactId)) {
             activateSpaceshipArtifact(locationId, artifactId, planet);
@@ -174,6 +177,8 @@ library LibArtifactUtils {
             // TODO: Why not actually burn?
             // burn it after use. will be owned by contract but not on a planet anyone can control
             LibSpaceship.takeSpaceshipOffPlanet(locationId, shipId);
+            // BURN
+            DFTokenFacet(address(this)).burn(msg.sender, shipId, 1);
             emit ArtifactDeactivated(msg.sender, shipId, locationId);
         }
     }
@@ -230,23 +235,28 @@ library LibArtifactUtils {
         if (shouldDeactivateAndBurn) {
             gs().planets[locationId].activeArtifact = 0; // immediately remove activate artifact
 
-            emit ArtifactDeactivated(msg.sender, artifactId, locationId);
             LibGameUtils._buffPlanet(locationId, LibArtifact.getUpgradeForArtifact(artifact));
-            return;
+            emit ArtifactDeactivated(msg.sender, artifactId, locationId);
+            DFTokenFacet(address(this)).burn(msg.sender, artifactId, 1);
             // burn it after use. will be owned by contract but not on a planet anyone can control
             // No need to take off, Artifact will never get placed.
             // LibArtifact.takeArtifactOffPlanet(locationId, artifactId);
+        } else {
+            // this is fine even tho some artifacts are immediately deactivated, because
+            // those artifacts do not buff the planet.
+            LibArtifact.putArtifactOnPlanet(locationId, artifactId);
+            LibGameUtils._buffPlanet(locationId, LibArtifact.getUpgradeForArtifact(artifact));
+            // Also transfer to contract
+
+            // Only transfer if player is activating from inventory
+            if (DFTokenFacet(address(this)).tokenExists(msg.sender, artifactId)) {
+                DFArtifactFacet(address(this)).transferArtifact(
+                    artifactId,
+                    msg.sender,
+                    gs().diamondAddress
+                );
+            }
         }
-        // this is fine even tho some artifacts are immediately deactivated, because
-        // those artifacts do not buff the planet.
-        LibArtifact.putArtifactOnPlanet(locationId, artifactId);
-        LibGameUtils._buffPlanet(locationId, LibArtifact.getUpgradeForArtifact(artifact));
-        // Also transfer to contract
-        DFArtifactFacet(address(this)).transferArtifact(
-            artifactId,
-            msg.sender,
-            gs().diamondAddress
-        );
     }
 
     function deactivateArtifact(uint256 locationId) public {

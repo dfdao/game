@@ -102,6 +102,7 @@ describe('DarkForestMove', function () {
     });
 
     it('should not consume a photoid if moving a ship off a planet with one activated', async function () {
+      await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL2_PLANET_SPACE);
       const artifactId = await createArtifact(
         world.contract,
         world.user1.address,
@@ -109,25 +110,31 @@ describe('DarkForestMove', function () {
         ArtifactType.PhotoidCannon
       );
 
-      await world.user1Core.activateArtifact(SPAWN_PLANET_1.id, artifactId, 0);
-      expect((await world.contract.getActiveArtifactOnPlanet(SPAWN_PLANET_1.id)).id).to.equal(
+      await world.user1Core.activateArtifact(LVL2_PLANET_SPACE.id, artifactId, 0);
+      expect((await world.contract.getActiveArtifactOnPlanet(LVL2_PLANET_SPACE.id)).id).to.equal(
         artifactId
       );
 
       await increaseBlockchainTime();
 
+      // Move
       const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id)).filter(
         (s) => s.spaceshipType === SpaceshipType.ShipGear
       )[0];
 
       await world.user1Core.move(
-        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 100, 0, 0, ship?.id)
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 100, 0, 0, ship?.id)
       );
 
-      await world.contract.refreshPlanet(SPAWN_PLANET_1.id);
-      const activePhotoid = await getArtifactsOnPlanet(world, SPAWN_PLANET_1.id);
+      await increaseBlockchainTime();
+      await world.user1Core.move(
+        ...makeMoveArgs(LVL2_PLANET_SPACE, LVL1_ASTEROID_1, 100, 0, 0, ship?.id)
+      );
+
+      await world.contract.refreshPlanet(LVL2_PLANET_SPACE.id);
+      const activePhotoid = await getArtifactsOnPlanet(world, LVL2_PLANET_SPACE.id);
       // If the photoid is not there, it was used during ship move
-      expect(activePhotoid).to.not.eq(undefined);
+      expect(activePhotoid[0].id).to.equal(artifactId);
     });
   });
 

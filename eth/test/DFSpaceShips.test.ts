@@ -189,7 +189,7 @@ describe('DarkForestSpaceShips', function () {
       // Cannot activate again.
       await expect(
         world.user1Core.activateArtifact(LVL1_PLANET_DEEP_SPACE.id, crescent.id, 0)
-      ).to.be.revertedWith("can't activate a ship on a planet it's not on");
+      ).to.be.revertedWith('you can only activate artifacts you own or on planet');
     });
   });
 

@@ -22,6 +22,7 @@ import {
   ARTIFACT_PLANET_1,
   LVL0_PLANET,
   LVL0_PLANET_DEAD_SPACE,
+  LVL1_ASTEROID_1,
   LVL3_SPACETIME_1,
   LVL3_SPACETIME_2,
   LVL3_SPACETIME_3,
@@ -33,7 +34,7 @@ import {
   ZERO_PLANET,
 } from './utils/WorldConstants';
 
-describe.only('DarkForestArtifacts', function () {
+describe('DarkForestArtifacts', function () {
   let world: World;
 
   async function worldFixture() {
@@ -180,7 +181,7 @@ describe.only('DarkForestArtifacts', function () {
       // user2 should not be able to deposit artifact
       await expect(
         world.user2Core.activateArtifact(LVL3_SPACETIME_2.id, newArtifactId, 0)
-      ).to.be.revertedWith('you can only activate artifacts you own');
+      ).to.be.revertedWith('you can only activate artifacts you own or on planet');
     });
 
     it('should be able to move an artifact from a planet you own', async function () {
@@ -358,7 +359,7 @@ describe.only('DarkForestArtifacts', function () {
       const artifactId = await createArtifact(
         world.contract,
         world.user1.address,
-        ARTIFACT_PLANET_1,
+        ZERO_PLANET,
         ArtifactType.Monolith
       );
       await world.user1Core.activateArtifact(ARTIFACT_PLANET_1.id, artifactId, 0);
@@ -401,6 +402,29 @@ describe.only('DarkForestArtifacts', function () {
           ...makeMoveArgs(ARTIFACT_PLANET_1, SPAWN_PLANET_1, 10, 50000, 0, 12345)
         )
       ).to.be.revertedWith('cannot move token of this type');
+    });
+    it('should be able to activate, deactivate, move, activate', async function () {
+      await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_1);
+      const artifactId = await createArtifact(
+        world.contract,
+        world.user1.address,
+        ZERO_PLANET,
+        ArtifactType.Monolith
+      );
+      await world.user1Core.activateArtifact(ARTIFACT_PLANET_1.id, artifactId, 0);
+
+      await world.user1Core.deactivateArtifact(ARTIFACT_PLANET_1.id);
+
+      await world.user1Core.move(
+        ...makeMoveArgs(ARTIFACT_PLANET_1, LVL1_ASTEROID_1, 10, 50000, 0, artifactId)
+      );
+
+      await increaseBlockchainTime();
+
+      await world.user1Core.activateArtifact(LVL1_ASTEROID_1.id, artifactId, 0);
+      expect((await world.user1Core.getActiveArtifactOnPlanet(LVL1_ASTEROID_1.id)).id).to.equal(
+        artifactId
+      );
     });
   });
 
