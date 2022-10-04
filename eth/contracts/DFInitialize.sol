@@ -21,7 +21,7 @@ pragma solidity ^0.8.0;
 // Interface imports
 
 // Inherited storage
-import {ERC721MetadataStorage} from "@solidstate/contracts/token/ERC721/metadata/ERC721MetadataStorage.sol";
+import {ERC1155MetadataStorage} from "@solidstate/contracts/token/ERC1155/metadata/ERC1155MetadataStorage.sol";
 
 // Library imports
 import {WithStorage, SpaceshipConstants} from "./libraries/LibStorage.sol";
@@ -99,7 +99,7 @@ struct InitArgs {
 }
 
 contract DFInitialize is WithStorage {
-    using ERC721MetadataStorage for ERC721MetadataStorage.Layout;
+    using ERC1155MetadataStorage for ERC1155MetadataStorage.Layout;
 
     // You can add parameters to this function in order to pass in
     // data to set initialize state variables
@@ -108,11 +108,8 @@ contract DFInitialize is WithStorage {
         string memory artifactBaseURI,
         InitArgs memory initArgs
     ) external {
-        // Setup the ERC721 metadata
-        // TODO(#1925): Add name and symbol for the artifact tokens
-        ERC721MetadataStorage.layout().name = "";
-        ERC721MetadataStorage.layout().symbol = "";
-        ERC721MetadataStorage.layout().baseURI = artifactBaseURI;
+        // Setup the ERC1155 metadata
+        ERC1155MetadataStorage.layout().baseURI = artifactBaseURI;
 
         gs().diamondAddress = address(this);
 

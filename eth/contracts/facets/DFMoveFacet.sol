@@ -3,18 +3,21 @@ pragma solidity ^0.8.0;
 
 // Contract imports
 import {DFVerifierFacet} from "./DFVerifierFacet.sol";
+import {DFArtifactFacet} from "./DFArtifactFacet.sol";
 
 // Library imports
+import {LibArtifact} from "../libraries/LibArtifact.sol";
 import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 import {LibPlanet} from "../libraries/LibPlanet.sol";
+import {LibSpaceship} from "../libraries/LibSpaceship.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {ArrivalData, ArrivalType, Artifact, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetEventMetadata, PlanetEventType, Upgrade} from "../DFTypes.sol";
+import {ArrivalData, ArrivalType, Artifact, ArtifactRarity, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetEventMetadata, PlanetEventType, Spaceship, SpaceshipType, Upgrade} from "../DFTypes.sol";
 
 contract DFMoveFacet is WithStorage {
     modifier notPaused() {
@@ -117,15 +120,15 @@ contract DFMoveFacet is WithStorage {
             arrivalType = ArrivalType.Wormhole;
         }
 
-        if (!_isSpaceshipMove(args)) {
+        if (_isSpaceshipMove(args)) {
+            _removeSpaceshipEffectsFromOriginPlanet(args.oldLoc, args.movedArtifactId);
+        } else if (_isArtifactMove(args)) {
             (bool photoidPresent, Upgrade memory newTempUpgrade) = _checkPhotoid(args);
             if (photoidPresent) {
                 temporaryUpgrade = newTempUpgrade;
                 arrivalType = ArrivalType.Photoid;
             }
         }
-
-        _removeSpaceshipEffectsFromOriginPlanet(args);
 
         uint256 popMoved = args.popMoved;
         uint256 silverMoved = args.silverMoved;
@@ -149,6 +152,7 @@ contract DFMoveFacet is WithStorage {
             _transferPlanetSpaceJunkToPlayer(args);
         }
 
+        // updates oldLoc speed if photoid.
         LibGameUtils._buffPlanet(args.oldLoc, temporaryUpgrade);
 
         uint256 travelTime = effectiveDistTimesHundred / gs().planets[args.oldLoc].speed;
@@ -197,7 +201,7 @@ contract DFMoveFacet is WithStorage {
             require(args.popMoved == 0, "ship moves must move 0 energy");
             require(args.silverMoved == 0, "ship moves must move 0 silver");
             require(
-                gs().artifacts[args.movedArtifactId].controller == msg.sender,
+                DFArtifactFacet(address(this)).tokenIsOwnedBy(msg.sender, args.movedArtifactId),
                 "you can only move your own ships"
             );
         } else {
@@ -223,13 +227,15 @@ contract DFMoveFacet is WithStorage {
 
         if (args.movedArtifactId != 0) {
             require(
-                gs().planetArtifacts[args.newLoc].length < 5,
-                "too many artifacts on this planet"
+                gs().planets[args.newLoc].artifacts.length +
+                    gs().planets[args.newLoc].spaceships.length <
+                    5,
+                "too many tokens on this planet"
             );
         }
     }
 
-    function applySpaceshipDepart(Artifact memory artifact, Planet memory planet)
+    function applySpaceshipDepart(Spaceship memory spaceship, Planet memory planet)
         public
         view
         returns (Planet memory)
@@ -238,21 +244,21 @@ contract DFMoveFacet is WithStorage {
             return planet;
         }
 
-        if (artifact.artifactType == ArtifactType.ShipMothership) {
+        if (spaceship.spaceshipType == SpaceshipType.ShipMothership) {
             if (planet.energyGroDoublers == 1) {
                 planet.energyGroDoublers--;
                 planet.populationGrowth /= 2;
             } else if (planet.energyGroDoublers > 1) {
                 planet.energyGroDoublers--;
             }
-        } else if (artifact.artifactType == ArtifactType.ShipWhale) {
+        } else if (spaceship.spaceshipType == SpaceshipType.ShipWhale) {
             if (planet.silverGroDoublers == 1) {
                 planet.silverGroDoublers--;
                 planet.silverGrowth /= 2;
             } else if (planet.silverGroDoublers > 1) {
                 planet.silverGroDoublers--;
             }
-        } else if (artifact.artifactType == ArtifactType.ShipTitan) {
+        } else if (spaceship.spaceshipType == SpaceshipType.ShipTitan) {
             // so that updating silver/energy starts from the current time,
             // as opposed to the last time that the planet was updated
             planet.lastUpdated = block.timestamp;
@@ -265,10 +271,10 @@ contract DFMoveFacet is WithStorage {
     /**
         Undo the spaceship effects that were applied when the ship arrived on the planet.
      */
-    function _removeSpaceshipEffectsFromOriginPlanet(DFPMoveArgs memory args) private {
-        Artifact memory movedArtifact = gs().artifacts[args.movedArtifactId];
-        Planet memory planet = applySpaceshipDepart(movedArtifact, gs().planets[args.oldLoc]);
-        gs().planets[args.oldLoc] = planet;
+    function _removeSpaceshipEffectsFromOriginPlanet(uint256 originLoc, uint256 shipId) private {
+        Spaceship memory spaceship = LibSpaceship.decode(shipId);
+        Planet memory planet = applySpaceshipDepart(spaceship, gs().planets[originLoc]);
+        gs().planets[originLoc] = planet;
     }
 
     /**
@@ -281,30 +287,41 @@ contract DFMoveFacet is WithStorage {
         view
         returns (bool wormholePresent, uint256 effectiveDistModifier)
     {
-        Artifact memory relevantWormhole;
-        Artifact memory activeArtifactFrom = LibGameUtils.getActiveArtifact(args.oldLoc);
-        Artifact memory activeArtifactTo = LibGameUtils.getActiveArtifact(args.newLoc);
+        wormholePresent = false;
+        ArtifactRarity wormholeRarity = ArtifactRarity.Unknown;
 
-        // TODO: take the greater rarity of these, or disallow wormholes between planets that
-        // already have a wormhole between them
-        if (
-            activeArtifactFrom.isInitialized &&
-            activeArtifactFrom.artifactType == ArtifactType.Wormhole &&
-            activeArtifactFrom.wormholeTo == args.newLoc
-        ) {
-            relevantWormhole = activeArtifactFrom;
-        } else if (
-            activeArtifactTo.isInitialized &&
-            activeArtifactTo.artifactType == ArtifactType.Wormhole &&
-            activeArtifactTo.wormholeTo == args.oldLoc
-        ) {
-            relevantWormhole = activeArtifactTo;
+        // Check from Loc
+        if (LibArtifact.hasActiveArtifact(args.oldLoc)) {
+            Artifact memory activeArtifactFrom = LibArtifact.getActiveArtifact(args.oldLoc);
+            // If active artifact is a Wormhole and destination is newLoc
+            if (
+                activeArtifactFrom.artifactType == ArtifactType.Wormhole &&
+                gs().planets[args.oldLoc].wormholeTo == args.newLoc
+            ) {
+                wormholeRarity = activeArtifactFrom.rarity;
+                wormholePresent = true;
+            }
+        }
+        // Check to loc
+        if (LibArtifact.hasActiveArtifact(args.newLoc)) {
+            Artifact memory activeArtifactTo = LibArtifact.getActiveArtifact(args.newLoc);
+            // If active artifact is a Wormhole and destination is fromLoc
+            if (
+                activeArtifactTo.artifactType == ArtifactType.Wormhole &&
+                gs().planets[args.newLoc].wormholeTo == args.oldLoc
+            ) {
+                // Ensures higher rarity wormhole will be used.
+                // TODO: Make sure client knows this.
+                if (activeArtifactTo.rarity > wormholeRarity) {
+                    wormholeRarity = activeArtifactTo.rarity;
+                }
+                wormholePresent = true;
+            }
         }
 
-        if (relevantWormhole.isInitialized) {
-            wormholePresent = true;
+        if (wormholePresent) {
             uint256[6] memory speedBoosts = [uint256(1), 2, 4, 8, 16, 32];
-            effectiveDistModifier = speedBoosts[uint256(relevantWormhole.rarity)];
+            effectiveDistModifier = speedBoosts[uint256(wormholeRarity)];
         }
     }
 
@@ -317,16 +334,17 @@ contract DFMoveFacet is WithStorage {
         private
         returns (bool photoidPresent, Upgrade memory temporaryUpgrade)
     {
-        Artifact memory activeArtifactFrom = LibGameUtils.getActiveArtifact(args.oldLoc);
-        if (
-            activeArtifactFrom.isInitialized &&
-            activeArtifactFrom.artifactType == ArtifactType.PhotoidCannon &&
-            block.timestamp - activeArtifactFrom.lastActivated >=
-            gameConstants().PHOTOID_ACTIVATION_DELAY
-        ) {
-            photoidPresent = true;
-            LibArtifactUtils.deactivateArtifact(args.oldLoc);
-            temporaryUpgrade = LibGameUtils.timeDelayUpgrade(activeArtifactFrom);
+        if (LibArtifact.hasActiveArtifact(args.oldLoc)) {
+            Artifact memory activeArtifactFrom = LibArtifact.getActiveArtifact(args.oldLoc);
+            if (
+                activeArtifactFrom.artifactType == ArtifactType.PhotoidCannon &&
+                block.timestamp - gs().planets[args.oldLoc].artifactActivationTime >=
+                gameConstants().PHOTOID_ACTIVATION_DELAY
+            ) {
+                photoidPresent = true;
+                LibArtifactUtils.deactivateArtifact(args.oldLoc);
+                temporaryUpgrade = LibGameUtils.timeDelayUpgrade(activeArtifactFrom);
+            }
         }
     }
 
@@ -402,22 +420,27 @@ contract DFMoveFacet is WithStorage {
         }
     }
 
-    function _isSpaceshipMove(DFPMoveArgs memory args) private view returns (bool) {
-        return LibArtifactUtils.isSpaceship(gs().artifacts[args.movedArtifactId].artifactType);
+    function _isSpaceshipMove(DFPMoveArgs memory args) private pure returns (bool) {
+        return LibSpaceship.isShip(args.movedArtifactId);
+    }
+
+    function _isArtifactMove(DFPMoveArgs memory args) private pure returns (bool) {
+        return LibArtifact.isArtifact(args.movedArtifactId);
     }
 
     function _createArrival(DFPCreateArrivalArgs memory args) private {
         // enter the arrival data for event id
         Planet memory planet = gs().planets[args.oldLoc];
+
         uint256 popArriving = _getDecayedPop(
             args.popMoved,
             args.effectiveDistTimesHundred,
             planet.range,
             planet.populationCap
         );
-        bool isSpaceship = LibArtifactUtils.isSpaceship(
-            gs().artifacts[args.movedArtifactId].artifactType
-        );
+
+        bool isSpaceship = LibSpaceship.isShip(args.movedArtifactId);
+
         // space ship moves are implemented as 0-energy moves
         require(popArriving > 0 || isSpaceship, "Not enough forces to make move");
         require(isSpaceship ? args.popMoved == 0 : true, "spaceship moves must be 0 energy moves");
@@ -434,10 +457,18 @@ contract DFMoveFacet is WithStorage {
             carriedArtifactId: args.movedArtifactId,
             distance: args.actualDist
         });
-
+        // Photoids are burned in _checkPhotoid, so don't remove twice
         if (args.movedArtifactId != 0) {
-            LibGameUtils._takeArtifactOffPlanet(args.movedArtifactId, args.oldLoc);
-            gs().artifactIdToVoyageId[args.movedArtifactId] = gs().planetEventsCount;
+            if (isSpaceship) {
+                LibSpaceship.takeSpaceshipOffPlanet(args.oldLoc, args.movedArtifactId);
+            } else if (LibArtifact.isArtifact(args.movedArtifactId)) {
+                Artifact memory artifact = LibArtifact.decode(args.movedArtifactId);
+                if (artifact.artifactType != ArtifactType.PhotoidCannon) {
+                    LibArtifact.takeArtifactOffPlanet(args.oldLoc, args.movedArtifactId);
+                }
+            } else {
+                require(false, "cannot move token of this type");
+            }
         }
     }
 

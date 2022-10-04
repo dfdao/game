@@ -8,7 +8,7 @@ import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 import {LibStorage, GameStorage} from "./LibStorage.sol";
 
 // Type imports
-import {Planet, PlanetType, PlanetEventMetadata, PlanetEventType, ArrivalData, ArrivalType, Artifact} from "../DFTypes.sol";
+import {Planet, PlanetType, PlanetEventMetadata, PlanetEventType, ArrivalData, ArrivalType} from "../DFTypes.sol";
 
 library LibLazyUpdate {
     function gs() internal pure returns (GameStorage storage) {
