@@ -19,13 +19,6 @@ contract DFSpaceshipFacet is WithStorage {
     /**
      * Modifiers
      */
-    modifier onlyAdminOrCore() {
-        require(
-            msg.sender == gs().diamondAddress || msg.sender == LibPermissions.contractOwner(),
-            "Only the Core or Admin addresses can fiddle with artifacts."
-        );
-        _;
-    }
 
     modifier onlyWhitelisted() {
         require(
