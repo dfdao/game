@@ -5,6 +5,9 @@ pragma solidity ^0.8.0;
  * Library for all things Spaceships
  */
 
+// Contract Imports
+import {DFTokenFacet} from "../facets/DFTokenFacet.sol";
+
 // Library imports
 import {LibUtils} from "./LibUtils.sol";
 
@@ -99,5 +102,32 @@ library LibSpaceship {
 
         require(hadTheShip, "this ship was not present on this planet");
         gs().planets[locationId].spaceships.pop();
+    }
+
+    function createSpaceship(uint256 tokenId, address owner) internal returns (Spaceship memory) {
+        require(tokenId >= 1, "token id must be positive");
+        require(LibSpaceship.isShip(tokenId), "token must be Spaceship");
+
+        // Account, Id, Amount, Data
+        DFTokenFacet(address(this)).mint(owner, tokenId, 1);
+
+        return decode(tokenId);
+    }
+
+    /**
+     * Create a new spaceship and place it on a planet owned by the given player. Returns the id
+     * of the newly created spaceship.
+     */
+    function createAndPlaceSpaceship(
+        uint256 planetId,
+        address owner,
+        SpaceshipType shipType
+    ) internal returns (uint256) {
+        uint256 tokenId = LibSpaceship.create(shipType) + uint128(gs().miscNonce++);
+
+        Spaceship memory spaceship = createSpaceship(tokenId, owner);
+        LibSpaceship.putSpaceshipOnPlanet(planetId, spaceship.id);
+
+        return spaceship.id;
     }
 }

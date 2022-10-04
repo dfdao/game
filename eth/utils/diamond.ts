@@ -41,7 +41,7 @@ export function toSignature(abiElement: unknown): string {
 const signaturesToIgnore = [
   // The SolidState contracts adds a `supportsInterface` function,
   // but we already provide that function through DiamondLoupeFacet
-  ['DFArtifactFacet$', 'supportsInterface(bytes4)'],
+  ['DFTokenFacet$', 'supportsInterface(bytes4)'],
 ] as const;
 
 const eventSignatures = new Set();
