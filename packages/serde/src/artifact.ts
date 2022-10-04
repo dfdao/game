@@ -7,6 +7,7 @@ import {
   ArtifactRarity,
   ArtifactType,
   Biome,
+  TokenType,
 } from '@dfdao/types';
 import bigInt from 'big-integer';
 import { BigNumber as EthersBN, utils } from 'ethers';
@@ -103,13 +104,7 @@ function calculateByteUInt(tokenId: EthersBN, startByte: number, endByte: number
  * @param tokenId Raw `tokenId` representing an `Artifact` struct
  */
 export function decodeArtifact(tokenId: EthersBN): Artifact {
-  // 454093553060631688131761916536684786657829610989267258091508080987871379456
-  // Collection: Artifact
-  // Rarity: Common
-  // Type: Colossus
-  // Biome: Forest
-
-  // These acocunt for unknown at the 0-th index
+  // These account for unknown at the 0-th index
   const tokenIdx = ArtifactInfo.TokenType - 1;
   const rarityIdx = ArtifactInfo.ArtifactRarity - 1;
   const typeIdx = ArtifactInfo.ArtifactType - 1;
@@ -129,11 +124,10 @@ export function decodeArtifact(tokenId: EthersBN): Artifact {
 }
 
 export function isArtifact(tokenId: EthersBN): boolean {
-  // These acocunt for unknown at the 0-th index
+  // These account for unknown at the 0-th index
   const tokenIdx = ArtifactInfo.TokenType - 1;
 
   const tokenType = calculateByteUInt(tokenId, tokenIdx, tokenIdx);
 
-  // TODO: put this into types
-  return tokenType === 1;
+  return tokenType === TokenType.Artifact;
 }

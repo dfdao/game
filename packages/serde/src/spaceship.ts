@@ -1,4 +1,4 @@
-import { Spaceship, SpaceshipId, SpaceshipInfo, SpaceshipType } from '@dfdao/types';
+import { Spaceship, SpaceshipId, SpaceshipInfo, SpaceshipType, TokenType } from '@dfdao/types';
 import bigInt from 'big-integer';
 import { BigNumber as EthersBN, utils } from 'ethers';
 
@@ -74,7 +74,7 @@ function calculateByteUInt(tokenId: EthersBN, startByte: number, endByte: number
  * @param tokenId Raw `tokenId` representing an `Spaceship` struct
  */
 export function decodeSpaceship(tokenId: EthersBN): Spaceship {
-  // These acocunt for unknown at the 0-th index
+  // These account for unknown at the 0-th index
   const tokenIdx = SpaceshipInfo.TokenType - 1;
   const typeIdx = SpaceshipInfo.SpaceshipType - 1;
 
@@ -88,11 +88,10 @@ export function decodeSpaceship(tokenId: EthersBN): Spaceship {
 }
 
 export function isSpaceship(tokenId: EthersBN): boolean {
-  // These acocunt for unknown at the 0-th index
+  // These account for unknown at the 0-th index
   const tokenIdx = SpaceshipInfo.TokenType - 1;
 
   const tokenType = calculateByteUInt(tokenId, tokenIdx, tokenIdx);
 
-  // TODO: put this into types
-  return tokenType === 2;
+  return tokenType === TokenType.Spaceship;
 }
