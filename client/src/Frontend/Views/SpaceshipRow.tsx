@@ -52,7 +52,7 @@ const StyledSpaceshipThumb = styled.div<{ active: boolean; enemy: boolean }>`
   ${({ active }) => active && thumbActive}
 `;
 
-export function SpaceshipThumb({
+function SpaceshipThumb({
   spaceship,
   selectedSpaceship,
   onSpaceshipChange,
