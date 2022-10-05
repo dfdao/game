@@ -8,7 +8,7 @@ import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 import {LibStorage, GameStorage} from "./LibStorage.sol";
 
 // Type imports
-import {Planet, PlanetType, PlanetEventMetadata, PlanetEventType, ArrivalData, ArrivalType, Artifact} from "../DFTypes.sol";
+import {Planet, PlanetType, PlanetEventMetadata, PlanetEventType, ArrivalData, ArrivalType} from "../DFTypes.sol";
 
 library LibLazyUpdate {
     function gs() internal pure returns (GameStorage storage) {
@@ -116,7 +116,11 @@ library LibLazyUpdate {
     function applyArrival(Planet memory planet, ArrivalData memory arrival)
         private
         pure
-        returns (uint256 newArtifactOnPlanet, Planet memory)
+        returns (
+            uint256 newArtifactOnPlanet,
+            uint256 newSpaceshipOnPlanet,
+            Planet memory
+        )
     {
         // checks whether the planet is owned by the player sending ships
         if (arrival.player == planet.owner) {
@@ -139,10 +143,10 @@ library LibLazyUpdate {
                 // player
 
                 /**
-                  This is the zero address so that ships moving to an unowned planet with
-                  no barbarians don't cause the planet to be conquered by the ship's controller.
+                  If the move is a spaceship move, the planet owner does not change.
+                  This prevents spaceship moves capturing planets with zero energy.
                  */
-                planet.owner = arrival.player == address(0) ? planet.owner : arrival.player;
+                planet.owner = arrival.carriedSpaceshipId != 0 ? planet.owner : arrival.player;
                 planet.population =
                     arrival.popArriving -
                     ((planet.population * planet.defense) / 100);
@@ -165,7 +169,7 @@ library LibLazyUpdate {
         uint256 _nextSilver = planet.silver + arrival.silverMoved;
         planet.silver = _maxSilver < _nextSilver ? _maxSilver : _nextSilver;
 
-        return (arrival.carriedArtifactId, planet);
+        return (arrival.carriedArtifactId, arrival.carriedSpaceshipId, planet);
     }
 
     function applyPendingEvents(
@@ -227,13 +231,18 @@ library LibLazyUpdate {
                     eventIdsAndArtifacts[numEventsToRemove++] = events[earliestEventIndex].id;
 
                     uint256 newArtifactId;
-                    (newArtifactId, planet) = applyArrival(
+                    uint256 newSpaceshipId;
+                    (newArtifactId, newSpaceshipId, planet) = applyArrival(
                         planet,
                         gs().planetArrivals[events[earliestEventIndex].id]
                     );
 
+                    // TODO: Cleanup this nastiness
                     if (newArtifactId != 0) {
                         eventIdsAndArtifacts[12 + numNewArtifactsOnPlanet++] = newArtifactId;
+                    }
+                    if (newSpaceshipId != 0) {
+                        eventIdsAndArtifacts[12 + numNewArtifactsOnPlanet++] = newSpaceshipId;
                     }
                 }
             }

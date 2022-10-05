@@ -54,7 +54,12 @@ export function HoverPane({
   return (
     <StyledHoverPane
       ref={paneRef}
-      style={{ display: visible ? undefined : 'none', zIndex: DFZIndex.Tooltip, ...style }}
+      style={{
+        position: 'fixed',
+        display: visible ? undefined : 'none',
+        zIndex: DFZIndex.Tooltip,
+        ...style,
+      }}
     >
       {element}
     </StyledHoverPane>

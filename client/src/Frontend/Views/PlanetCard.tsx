@@ -22,6 +22,8 @@ import {
   SpeedText,
 } from '../Components/Labels/PlanetLabels';
 import { Sub } from '../Components/Text';
+import { ArtifactHoverPane } from '../Panes/ArtifactHoverPane';
+import { SpaceshipHoverPane } from '../Panes/SpaceshipHoverPane';
 import { PlanetIcons } from '../Renderers/PlanetscapeRenderer/PlanetIcons';
 import dfstyles, { snips } from '../Styles/dfstyles';
 import { useActiveArtifact, usePlanetArtifacts, useUIManager } from '../Utils/AppHooks';
@@ -66,9 +68,9 @@ export function PlanetCard({
   standalone?: boolean;
 }) {
   const uiManager = useUIManager();
-  const active = useActiveArtifact(p, uiManager);
+  const active = useActiveArtifact(p);
   const planet = p.value;
-  const artifacts = usePlanetArtifacts(p, uiManager);
+  const artifacts = usePlanetArtifacts(p);
   const spaceJunkEnabled = uiManager.getSpaceJunkEnabled();
   const isAbandoning = useEmitterValue(uiManager.isAbandoning$, uiManager.isAbandoning());
 
@@ -76,6 +78,9 @@ export function PlanetCard({
 
   return (
     <>
+      {/* TODO: This tooltip stuff is FUBAR and doesn't work if you try to use it from elsewhere */}
+      <ArtifactHoverPane planet={planet} />
+      <SpaceshipHoverPane />
       {standalone && (
         <TitleBar>
           <PlanetCardTitle planet={p} />

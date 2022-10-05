@@ -1,5 +1,5 @@
 import { isUnconfirmedFindArtifactTx, isUnconfirmedProspectPlanetTx } from '@dfdao/serde';
-import { ArtifactType, Planet, PlanetType, TooltipName } from '@dfdao/types';
+import { Planet, PlanetType, SpaceshipType, TooltipName } from '@dfdao/types';
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { isFindable } from '../../Backend/GameLogic/ArrivalUtils';
@@ -42,10 +42,10 @@ export function MineArtifactButton({
 
   const hasGear = useMemo(
     () =>
-      planetWrapper.value?.heldArtifactIds
-        .map((id) => uiManager.getArtifactWithId(id))
-        .find((artifact) => artifact?.artifactType === ArtifactType.ShipGear),
-    [planetWrapper, uiManager]
+      planetWrapper.value?.spaceships?.some(
+        (spaceship) => spaceship.spaceshipType === SpaceshipType.ShipGear
+      ),
+    [planetWrapper]
   );
   const gearEnabled = uiManager.contractConstants.SPACESHIPS.GEAR;
 

@@ -25,8 +25,8 @@ export class WormholeRenderer implements WormholeRendererType {
         );
     }
 
-    for (const wormhole of gameUIManager.getWormholes()) {
-      this.drawVoyagePath(wormhole.from, wormhole.to, true);
+    for (const [from, to] of gameUIManager.getWormholes()) {
+      this.drawVoyagePath(from, to, true);
     }
   }
 

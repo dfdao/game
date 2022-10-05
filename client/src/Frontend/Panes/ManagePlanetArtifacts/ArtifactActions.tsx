@@ -1,72 +1,63 @@
-import {
-  canActivateArtifact,
-  canDepositArtifact,
-  canWithdrawArtifact,
-  durationUntilArtifactAvailable,
-  isActivated,
-  isLocatable,
-} from '@dfdao/gamelogic';
+import { isLocatable } from '@dfdao/gamelogic';
 import {
   isUnconfirmedActivateArtifactTx,
   isUnconfirmedDeactivateArtifactTx,
   isUnconfirmedDepositArtifactTx,
   isUnconfirmedWithdrawArtifactTx,
 } from '@dfdao/serde';
-import { Artifact, ArtifactId, ArtifactType, LocationId, TooltipName } from '@dfdao/types';
+import { Artifact, ArtifactType, LocationId, Planet, PlanetType, TooltipName } from '@dfdao/types';
 import React, { useCallback } from 'react';
 import { Btn } from '../../Components/Btn';
 import { Spacer } from '../../Components/CoreUI';
 import { ArtifactRarityLabelAnim } from '../../Components/Labels/ArtifactLabels';
 import { LoadingSpinner } from '../../Components/LoadingSpinner';
-import { Sub } from '../../Components/Text';
-import { formatDuration } from '../../Components/TimeUntil';
-import {
-  useAccount,
-  useArtifact,
-  usePlanet,
-  usePlanetArtifacts,
-  useUIManager,
-} from '../../Utils/AppHooks';
+import { useAccount, useMyArtifactsList, usePlanet, useUIManager } from '../../Utils/AppHooks';
 import { TooltipTrigger, TooltipTriggerProps } from '../Tooltip';
 
+function hasArtifact(planet: Planet, artifact: Artifact) {
+  return planet.artifacts.some(({ id }) => id === artifact.id);
+}
+
 export function ArtifactActions({
-  artifactId,
+  artifact,
+  planet,
   depositOn,
 }: {
-  artifactId: ArtifactId;
+  artifact: Artifact;
+  planet?: Planet;
   depositOn?: LocationId;
 }) {
   const uiManager = useUIManager();
   const account = useAccount(uiManager);
-  const artifactWrapper = useArtifact(uiManager, artifactId);
-  const artifact = artifactWrapper.value;
+
+  const myArtifacts = useMyArtifactsList(uiManager);
 
   const depositPlanetWrapper = usePlanet(uiManager, depositOn);
-  const onPlanetWrapper = usePlanet(uiManager, artifact?.onPlanetId);
   const depositPlanet = depositPlanetWrapper.value;
-  const onPlanet = onPlanetWrapper.value;
 
-  const otherArtifactsOnPlanet = usePlanetArtifacts(onPlanetWrapper, uiManager);
+  const onPlanetWrapper = usePlanet(uiManager, planet?.locationId);
+  const onPlanet = onPlanetWrapper.value;
 
   const withdraw = useCallback(
     (artifact: Artifact) => {
-      onPlanet && uiManager.withdrawArtifact(onPlanet.locationId, artifact?.id);
+      if (onPlanet && hasArtifact(onPlanet, artifact)) {
+        uiManager.withdrawArtifact(onPlanet.locationId, artifact.id);
+      }
     },
     [onPlanet, uiManager]
   );
 
   const deposit = useCallback(
     (artifact: Artifact) => {
-      artifact &&
-        depositPlanetWrapper.value &&
-        uiManager.depositArtifact(depositPlanetWrapper.value.locationId, artifact?.id);
+      depositPlanetWrapper.value &&
+        uiManager.depositArtifact(depositPlanetWrapper.value.locationId, artifact.id);
     },
     [uiManager, depositPlanetWrapper.value]
   );
 
   const activate = useCallback(
     async (artifact: Artifact) => {
-      if (onPlanet && isLocatable(onPlanet)) {
+      if (isLocatable(onPlanet) && hasArtifact(onPlanet, artifact)) {
         let targetPlanetId = undefined;
 
         if (artifact.artifactType === ArtifactType.Wormhole) {
@@ -82,28 +73,49 @@ export function ArtifactActions({
 
   const deactivate = useCallback(
     (artifact: Artifact) => {
-      onPlanet && uiManager.deactivateArtifact(onPlanet.locationId, artifact.id);
+      if (onPlanet && hasArtifact(onPlanet, artifact)) {
+        uiManager.deactivateArtifact(onPlanet.locationId, artifact.id);
+      }
     },
     [onPlanet, uiManager]
   );
 
-  if (!artifact || (!onPlanet && !depositPlanet) || !account) return null;
+  if (!artifact || !onPlanet || !account) return null;
 
   const actions: TooltipTriggerProps[] = [];
 
-  const withdrawing = artifact.transactions?.hasTransaction(isUnconfirmedWithdrawArtifactTx);
-  const depositing = artifact.transactions?.hasTransaction(isUnconfirmedDepositArtifactTx);
-  const activating = artifact.transactions?.hasTransaction(isUnconfirmedActivateArtifactTx);
-  const deactivating = artifact.transactions?.hasTransaction(isUnconfirmedDeactivateArtifactTx);
+  const withdrawing = onPlanet.transactions?.hasTransaction(isUnconfirmedWithdrawArtifactTx);
+  const depositing = onPlanet.transactions?.hasTransaction(isUnconfirmedDepositArtifactTx);
+  const activating = onPlanet.transactions?.hasTransaction(isUnconfirmedActivateArtifactTx);
+  const deactivating = onPlanet.transactions?.hasTransaction(isUnconfirmedDeactivateArtifactTx);
 
   const canHandleDeposit =
     depositPlanetWrapper.value && depositPlanetWrapper.value.planetLevel > artifact.rarity;
-  const canHandleWithdraw =
-    onPlanetWrapper.value && onPlanetWrapper.value.planetLevel > artifact.rarity;
+  const canHandleWithdraw = onPlanet && onPlanet.planetLevel > artifact.rarity;
 
-  const wait = durationUntilArtifactAvailable(artifact);
+  const canDepositArtifact =
+    depositPlanet &&
+    !depositPlanet.destroyed &&
+    depositPlanet.owner === account &&
+    depositPlanet.planetType === PlanetType.TRADING_POST &&
+    myArtifacts.some(({ id }) => id === artifact.id);
 
-  if (canDepositArtifact(account, artifact, depositPlanetWrapper.value)) {
+  const canWithdrawArtifact =
+    onPlanet &&
+    !onPlanet.destroyed &&
+    onPlanet.owner === account &&
+    onPlanet.planetType === PlanetType.TRADING_POST &&
+    hasArtifact(onPlanet, artifact) &&
+    onPlanet.activeArtifact?.id !== artifact.id;
+
+  const canDeactivateArtifact =
+    onPlanet.activeArtifact?.id === artifact.id &&
+    artifact.artifactType !== ArtifactType.BlackDomain;
+
+  const canActivateArtifact =
+    onPlanet.activeArtifact === undefined && hasArtifact(onPlanet, artifact);
+
+  if (canDepositArtifact) {
     actions.unshift({
       name: TooltipName.DepositArtifact,
       extraContent: !canHandleDeposit && (
@@ -125,7 +137,7 @@ export function ArtifactActions({
       ),
     });
   }
-  if (isActivated(artifact) && artifact.artifactType !== ArtifactType.BlackDomain) {
+  if (canDeactivateArtifact) {
     actions.unshift({
       name: TooltipName.DeactivateArtifact,
       children: (
@@ -141,7 +153,7 @@ export function ArtifactActions({
       ),
     });
   }
-  if (canWithdrawArtifact(account, artifact, onPlanet)) {
+  if (canWithdrawArtifact) {
     actions.unshift({
       name: TooltipName.WithdrawArtifact,
       extraContent: !canHandleWithdraw && (
@@ -164,7 +176,7 @@ export function ArtifactActions({
     });
   }
 
-  if (canActivateArtifact(artifact, onPlanet, otherArtifactsOnPlanet)) {
+  if (canActivateArtifact) {
     actions.unshift({
       name: TooltipName.ActivateArtifact,
       children: (
@@ -178,14 +190,6 @@ export function ArtifactActions({
           {activating ? <LoadingSpinner initialText={'Activating...'} /> : 'Activate'}
         </Btn>
       ),
-    });
-  }
-
-  if (wait > 0) {
-    actions.unshift({
-      name: TooltipName.Empty,
-      extraContent: <>You have to wait before activating an artifact again</>,
-      children: <Sub>{formatDuration(wait)}</Sub>,
     });
   }
 

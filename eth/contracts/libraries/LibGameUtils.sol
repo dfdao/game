@@ -6,11 +6,13 @@ import {DFArtifactFacet} from "../facets/DFArtifactFacet.sol";
 
 // Library imports
 import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
+import {LibArtifact} from "./LibArtifact.sol";
+import {LibUtils} from "./LibUtils.sol";
 
 // Storage imports
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
-import {Biome, SpaceType, Planet, PlanetType, PlanetEventType, Artifact, ArtifactType, ArtifactRarity, Upgrade, PlanetDefaultStats} from "../DFTypes.sol";
+import {Biome, SpaceType, Planet, PlanetType, PlanetEventType, Artifact, ArtifactType, TokenType, ArtifactRarity, Upgrade, PlanetDefaultStats} from "../DFTypes.sol";
 
 library LibGameUtils {
     function gs() internal pure returns (GameStorage storage) {
@@ -23,17 +25,6 @@ library LibGameUtils {
 
     function snarkConstants() internal pure returns (SnarkConstants storage) {
         return LibStorage.snarkConstants();
-    }
-
-    // inclusive on both ends
-    function _calculateByteUInt(
-        bytes memory _b,
-        uint256 _startByte,
-        uint256 _endByte
-    ) public pure returns (uint256 _byteUInt) {
-        for (uint256 i = _startByte; i <= _endByte; i++) {
-            _byteUInt += uint256(uint8(_b[i])) * (256**(_endByte - i));
-        }
     }
 
     function _locationIdValid(uint256 _loc) public view returns (bool) {
@@ -87,7 +78,7 @@ library LibGameUtils {
         bytes memory _b = abi.encodePacked(_location);
 
         // get the uint value of byte 4 - 6
-        uint256 _planetLevelUInt = _calculateByteUInt(_b, 4, 6);
+        uint256 _planetLevelUInt = LibUtils.calculateByteUInt(_b, 4, 6);
         uint256 level;
 
         // reverse-iterate thresholds and return planet type accordingly
@@ -156,61 +147,6 @@ library LibGameUtils {
         }
     }
 
-    function _randomArtifactTypeAndLevelBonus(
-        uint256 artifactSeed,
-        Biome biome,
-        SpaceType spaceType
-    ) internal pure returns (ArtifactType, uint256) {
-        uint256 lastByteOfSeed = artifactSeed % 0xFF;
-        uint256 secondLastByteOfSeed = ((artifactSeed - lastByteOfSeed) / 256) % 0xFF;
-
-        ArtifactType artifactType = ArtifactType.Pyramid;
-
-        if (lastByteOfSeed < 39) {
-            artifactType = ArtifactType.Monolith;
-        } else if (lastByteOfSeed < 78) {
-            artifactType = ArtifactType.Colossus;
-        }
-        // else if (lastByteOfSeed < 117) {
-        //     artifactType = ArtifactType.Spaceship;
-        // }
-        else if (lastByteOfSeed < 156) {
-            artifactType = ArtifactType.Pyramid;
-        } else if (lastByteOfSeed < 171) {
-            artifactType = ArtifactType.Wormhole;
-        } else if (lastByteOfSeed < 186) {
-            artifactType = ArtifactType.PlanetaryShield;
-        } else if (lastByteOfSeed < 201) {
-            artifactType = ArtifactType.PhotoidCannon;
-        } else if (lastByteOfSeed < 216) {
-            artifactType = ArtifactType.BloomFilter;
-        } else if (lastByteOfSeed < 231) {
-            artifactType = ArtifactType.BlackDomain;
-        } else {
-            if (biome == Biome.Ice) {
-                artifactType = ArtifactType.PlanetaryShield;
-            } else if (biome == Biome.Lava) {
-                artifactType = ArtifactType.PhotoidCannon;
-            } else if (biome == Biome.Wasteland) {
-                artifactType = ArtifactType.BloomFilter;
-            } else if (biome == Biome.Corrupted) {
-                artifactType = ArtifactType.BlackDomain;
-            } else {
-                artifactType = ArtifactType.Wormhole;
-            }
-            artifactType = ArtifactType.PhotoidCannon;
-        }
-
-        uint256 bonus = 0;
-        if (secondLastByteOfSeed < 4) {
-            bonus = 2;
-        } else if (secondLastByteOfSeed < 16) {
-            bonus = 1;
-        }
-
-        return (artifactType, bonus);
-    }
-
     // TODO v0.6: handle corrupted biomes
     function _getBiome(SpaceType spaceType, uint256 biomebase) public view returns (Biome) {
         if (spaceType == SpaceType.DEAD_SPACE) {
@@ -267,238 +203,11 @@ library LibGameUtils {
             });
     }
 
-    function _getUpgradeForArtifact(Artifact memory artifact) public pure returns (Upgrade memory) {
-        if (artifact.artifactType == ArtifactType.PlanetaryShield) {
-            uint256[6] memory defenseMultipliersPerRarity = [uint256(100), 150, 200, 300, 450, 650];
-
-            return
-                Upgrade({
-                    popCapMultiplier: 100,
-                    popGroMultiplier: 100,
-                    rangeMultiplier: 20,
-                    speedMultiplier: 20,
-                    defMultiplier: defenseMultipliersPerRarity[uint256(artifact.rarity)]
-                });
-        }
-
-        if (artifact.artifactType == ArtifactType.PhotoidCannon) {
-            uint256[6] memory def = [uint256(100), 50, 40, 30, 20, 10];
-            return
-                Upgrade({
-                    popCapMultiplier: 100,
-                    popGroMultiplier: 100,
-                    rangeMultiplier: 100,
-                    speedMultiplier: 100,
-                    defMultiplier: def[uint256(artifact.rarity)]
-                });
-        }
-
-        if (uint256(artifact.artifactType) >= 5) {
-            return
-                Upgrade({
-                    popCapMultiplier: 100,
-                    popGroMultiplier: 100,
-                    rangeMultiplier: 100,
-                    speedMultiplier: 100,
-                    defMultiplier: 100
-                });
-        }
-
-        Upgrade memory ret = Upgrade({
-            popCapMultiplier: 100,
-            popGroMultiplier: 100,
-            rangeMultiplier: 100,
-            speedMultiplier: 100,
-            defMultiplier: 100
-        });
-
-        if (artifact.artifactType == ArtifactType.Monolith) {
-            ret.popCapMultiplier += 5;
-            ret.popGroMultiplier += 5;
-        } else if (artifact.artifactType == ArtifactType.Colossus) {
-            ret.speedMultiplier += 5;
-        } else if (artifact.artifactType == ArtifactType.Spaceship) {
-            ret.rangeMultiplier += 5;
-        } else if (artifact.artifactType == ArtifactType.Pyramid) {
-            ret.defMultiplier += 5;
-        }
-
-        if (artifact.planetBiome == Biome.Ocean) {
-            ret.speedMultiplier += 5;
-            ret.defMultiplier += 5;
-        } else if (artifact.planetBiome == Biome.Forest) {
-            ret.defMultiplier += 5;
-            ret.popCapMultiplier += 5;
-            ret.popGroMultiplier += 5;
-        } else if (artifact.planetBiome == Biome.Grassland) {
-            ret.popCapMultiplier += 5;
-            ret.popGroMultiplier += 5;
-            ret.rangeMultiplier += 5;
-        } else if (artifact.planetBiome == Biome.Tundra) {
-            ret.defMultiplier += 5;
-            ret.rangeMultiplier += 5;
-        } else if (artifact.planetBiome == Biome.Swamp) {
-            ret.speedMultiplier += 5;
-            ret.rangeMultiplier += 5;
-        } else if (artifact.planetBiome == Biome.Desert) {
-            ret.speedMultiplier += 10;
-        } else if (artifact.planetBiome == Biome.Ice) {
-            ret.rangeMultiplier += 10;
-        } else if (artifact.planetBiome == Biome.Wasteland) {
-            ret.defMultiplier += 10;
-        } else if (artifact.planetBiome == Biome.Lava) {
-            ret.popCapMultiplier += 10;
-            ret.popGroMultiplier += 10;
-        } else if (artifact.planetBiome == Biome.Corrupted) {
-            ret.rangeMultiplier += 5;
-            ret.speedMultiplier += 5;
-            ret.popCapMultiplier += 5;
-            ret.popGroMultiplier += 5;
-        }
-
-        uint256 scale = 1 + (uint256(artifact.rarity) / 2);
-
-        ret.popCapMultiplier = scale * ret.popCapMultiplier - (scale - 1) * 100;
-        ret.popGroMultiplier = scale * ret.popGroMultiplier - (scale - 1) * 100;
-        ret.speedMultiplier = scale * ret.speedMultiplier - (scale - 1) * 100;
-        ret.rangeMultiplier = scale * ret.rangeMultiplier - (scale - 1) * 100;
-        ret.defMultiplier = scale * ret.defMultiplier - (scale - 1) * 100;
-
-        return ret;
-    }
-
-    function artifactRarityFromPlanetLevel(uint256 planetLevel)
-        public
-        pure
-        returns (ArtifactRarity)
-    {
-        if (planetLevel <= 1) return ArtifactRarity.Common;
-        else if (planetLevel <= 3) return ArtifactRarity.Rare;
-        else if (planetLevel <= 5) return ArtifactRarity.Epic;
-        else if (planetLevel <= 7) return ArtifactRarity.Legendary;
-        else return ArtifactRarity.Mythic;
-    }
-
-    // planets can have multiple artifacts on them. this function updates all the
-    // internal contract book-keeping to reflect that the given artifact was
-    // put on. note that this function does not transfer the artifact.
-    function _putArtifactOnPlanet(uint256 artifactId, uint256 locationId) public {
-        gs().artifactIdToPlanetId[artifactId] = locationId;
-        gs().planetArtifacts[locationId].push(artifactId);
-    }
-
-    // planets can have multiple artifacts on them. this function updates all the
-    // internal contract book-keeping to reflect that the given artifact was
-    // taken off the given planet. note that this function does not transfer the
-    // artifact.
-    //
-    // if the given artifact is not on the given planet, reverts
-    // if the given artifact is currently activated, reverts
-    function _takeArtifactOffPlanet(uint256 artifactId, uint256 locationId) public {
-        uint256 artifactsOnThisPlanet = gs().planetArtifacts[locationId].length;
-        bool hadTheArtifact = false;
-
-        for (uint256 i = 0; i < artifactsOnThisPlanet; i++) {
-            if (gs().planetArtifacts[locationId][i] == artifactId) {
-                Artifact memory artifact = DFArtifactFacet(address(this)).getArtifact(
-                    gs().planetArtifacts[locationId][i]
-                );
-
-                require(
-                    !isActivated(artifact),
-                    "you cannot take an activated artifact off a planet"
-                );
-
-                gs().planetArtifacts[locationId][i] = gs().planetArtifacts[locationId][
-                    artifactsOnThisPlanet - 1
-                ];
-
-                hadTheArtifact = true;
-                break;
-            }
-        }
-
-        require(hadTheArtifact, "this artifact was not present on this planet");
-        gs().artifactIdToPlanetId[artifactId] = 0;
-        gs().planetArtifacts[locationId].pop();
-    }
-
-    // an artifact is only considered 'activated' if this method returns true.
-    // we do not have an `isActive` field on artifact; the times that the
-    // artifact was last activated and deactivated are sufficent to determine
-    // whether or not the artifact is activated.
-    function isActivated(Artifact memory artifact) public pure returns (bool) {
-        return artifact.lastDeactivated < artifact.lastActivated;
-    }
-
-    function isArtifactOnPlanet(uint256 locationId, uint256 artifactId) public returns (bool) {
-        for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
-            if (gs().planetArtifacts[locationId][i] == artifactId) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    // if the given artifact is on the given planet, then return the artifact
-    // otherwise, return a 'null' artifact
-    function getPlanetArtifact(uint256 locationId, uint256 artifactId)
-        public
-        view
-        returns (Artifact memory)
-    {
-        for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
-            if (gs().planetArtifacts[locationId][i] == artifactId) {
-                return DFArtifactFacet(address(this)).getArtifact(artifactId);
-            }
-        }
-
-        return _nullArtifact();
-    }
-
-    // if the given planet has an activated artifact on it, then return the artifact
-    // otherwise, return a 'null artifact'
-    function getActiveArtifact(uint256 locationId) public view returns (Artifact memory) {
-        for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
-            Artifact memory artifact = DFArtifactFacet(address(this)).getArtifact(
-                gs().planetArtifacts[locationId][i]
-            );
-
-            if (isActivated(artifact)) {
-                return artifact;
-            }
-        }
-
-        return _nullArtifact();
-    }
-
     // the space junk that a planet starts with
     function getPlanetDefaultSpaceJunk(Planet memory planet) public view returns (uint256) {
         if (planet.isHomePlanet) return 0;
 
         return gameConstants().PLANET_LEVEL_JUNK[planet.planetLevel];
-    }
-
-    // constructs a new artifact whose `isInititalized` field is set to `false`
-    // used to represent the concept of 'no artifact'
-    function _nullArtifact() private pure returns (Artifact memory) {
-        return
-            Artifact(
-                false,
-                0,
-                0,
-                ArtifactRarity(0),
-                Biome(0),
-                0,
-                address(0),
-                ArtifactType(0),
-                0,
-                0,
-                0,
-                0,
-                address(0)
-            );
     }
 
     function _buffPlanet(uint256 location, Upgrade memory upgrade) public {

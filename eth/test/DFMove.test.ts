@@ -1,11 +1,12 @@
-import { ArtifactType } from '@dfdao/types';
+import { ArtifactType, SpaceshipType } from '@dfdao/types';
 import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
 import {
   conquerUnownedPlanet,
-  createArtifactOnPlanet,
+  createArtifact,
+  getArtifactsOnPlanet,
   increaseBlockchainTime,
   makeInitArgs,
   makeMoveArgs,
@@ -51,7 +52,7 @@ describe('DarkForestMove', function () {
     });
 
     it('allows controller to move ships to places they do not own with infinite distance', async function () {
-      const ship = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id))[0].artifact;
+      const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id))[0];
       const shipId = ship.id;
 
       await world.user1Core.move(
@@ -60,15 +61,17 @@ describe('DarkForestMove', function () {
       await increaseBlockchainTime();
 
       await world.user1Core.refreshPlanet(LVL2_PLANET_SPACE.id);
-      expect((await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).length).to.be.eq(4);
-      expect((await world.user1Core.getArtifactsOnPlanet(LVL2_PLANET_SPACE.id)).length).to.be.eq(1);
+      expect((await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id)).length).to.be.eq(4);
+      expect((await world.user1Core.getSpaceshipsOnPlanet(LVL2_PLANET_SPACE.id)).length).to.be.eq(
+        1
+      );
     });
 
     it('allows controller to move ships between their own planets', async function () {
       await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_NEBULA);
       await increaseBlockchainTime();
 
-      const ship = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id))[0].artifact;
+      const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id))[0];
       const shipId = ship.id;
       await world.user1Core.move(
         ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_NEBULA, 1000, 0, 0, shipId)
@@ -77,29 +80,29 @@ describe('DarkForestMove', function () {
       await increaseBlockchainTime();
       await world.user1Core.refreshPlanet(LVL1_ASTEROID_NEBULA.id);
 
-      expect((await world.user1Core.getArtifactsOnPlanet(LVL1_ASTEROID_NEBULA.id)).length).to.be.eq(
-        1
-      );
+      expect(
+        (await world.user1Core.getSpaceshipsOnPlanet(LVL1_ASTEROID_NEBULA.id)).length
+      ).to.be.eq(1);
     });
 
     it('should not allow you to move enemy ships on your own planet', async function () {
-      const ship = (await world.user2Core.getArtifactsOnPlanet(SPAWN_PLANET_2.id))[0].artifact;
-      const shipId = ship.id;
+      const user2shipId = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_2.id))[0].id;
 
       await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL2_PLANET_SPACE);
 
       await world.user2Core.move(
-        ...makeMoveArgs(SPAWN_PLANET_2, LVL2_PLANET_SPACE, 1000, 0, 0, shipId)
+        ...makeMoveArgs(SPAWN_PLANET_2, LVL2_PLANET_SPACE, 1000, 0, 0, user2shipId)
       );
       await increaseBlockchainTime();
-
       await expect(
-        world.user1Core.move(...makeMoveArgs(LVL2_PLANET_SPACE, SPAWN_PLANET_2, 1000, 0, 0, shipId))
+        world.user1Core.move(
+          ...makeMoveArgs(LVL2_PLANET_SPACE, SPAWN_PLANET_2, 1000, 0, 0, user2shipId)
+        )
       ).to.be.revertedWith('you can only move your own ships');
     });
 
     it('should not consume a photoid if moving a ship off a planet with one activated', async function () {
-      const artifactId = await createArtifactOnPlanet(
+      const artifactId = await createArtifact(
         world.contract,
         world.user1.address,
         SPAWN_PLANET_1,
@@ -107,19 +110,22 @@ describe('DarkForestMove', function () {
       );
 
       await world.user1Core.activateArtifact(SPAWN_PLANET_1.id, artifactId, 0);
+      expect((await world.contract.getActiveArtifactOnPlanet(SPAWN_PLANET_1.id)).id).to.equal(
+        artifactId
+      );
+
       await increaseBlockchainTime();
 
-      const ship = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id))[0].artifact;
-      const shipId = ship.id;
+      const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id)).filter(
+        (s) => s.spaceshipType === SpaceshipType.ShipGear
+      )[0];
 
       await world.user1Core.move(
-        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 100, 0, 0, shipId)
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 100, 0, 0, ship?.id)
       );
 
       await world.contract.refreshPlanet(SPAWN_PLANET_1.id);
-      const activePhotoid = (await world.contract.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).filter(
-        (a) => a.artifact.artifactType === ArtifactType.PhotoidCannon
-      )[0];
+      const activePhotoid = await getArtifactsOnPlanet(world, SPAWN_PLANET_1.id);
       // If the photoid is not there, it was used during ship move
       expect(activePhotoid).to.not.eq(undefined);
     });
@@ -918,10 +924,10 @@ describe('move rate limits', function () {
       await world.contract.adminGiveSpaceShip(
         SPAWN_PLANET_1.id,
         world.user1.address,
-        ArtifactType.ShipMothership
+        SpaceshipType.ShipMothership
       );
 
-      const ship = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id))[0].artifact;
+      const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id))[0];
 
       await world.user1Core.move(
         ...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 10, 0, 0, ship.id)
@@ -931,10 +937,10 @@ describe('move rate limits', function () {
     await world.contract.adminGiveSpaceShip(
       SPAWN_PLANET_1.id,
       world.user1.address,
-      ArtifactType.ShipMothership
+      SpaceshipType.ShipMothership
     );
 
-    const ship = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id))[0].artifact;
+    const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id))[0];
 
     await expect(
       world.user1Core.move(...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 1000, 0, 0, ship.id))
@@ -943,13 +949,13 @@ describe('move rate limits', function () {
     await increaseBlockchainTime();
     await world.user1Core.refreshPlanet(LVL2_PLANET_SPACE.id);
 
-    const numShipsOnPlanet = (await world.user1Core.getArtifactsOnPlanet(LVL2_PLANET_SPACE.id))
+    const numShipsOnPlanet = (await world.user1Core.getSpaceshipsOnPlanet(LVL2_PLANET_SPACE.id))
       .length;
 
     expect(numShipsOnPlanet).to.be.eq(6);
   });
 
-  it('when moving 6 ships to planet, should not allow an enemy attack', async function () {
+  it('when moving 6 own ships to planet, SHOULD allow an enemy attack', async function () {
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL2_PLANET_SPACE);
     await increaseBlockchainTime();
 
@@ -957,10 +963,38 @@ describe('move rate limits', function () {
       await world.contract.adminGiveSpaceShip(
         SPAWN_PLANET_1.id,
         world.user1.address,
-        ArtifactType.ShipMothership
+        SpaceshipType.ShipMothership
       );
 
-      const ship = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id))[0].artifact;
+      const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id))[0];
+
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 10, 0, 0, ship.id)
+      );
+    }
+
+    await world.user2Core.move(...makeMoveArgs(SPAWN_PLANET_2, LVL2_PLANET_SPACE, 1, 10000, 0));
+
+    await increaseBlockchainTime();
+    await world.user1Core.refreshPlanet(LVL2_PLANET_SPACE.id);
+
+    const numShipsOnPlanet = (await world.user1Core.getSpaceshipsOnPlanet(LVL2_PLANET_SPACE.id))
+      .length;
+
+    expect(numShipsOnPlanet).to.be.eq(6);
+  });
+  it('when moving 6 enemy ships to planet, should not allow an enemy attack', async function () {
+    await conquerUnownedPlanet(world, world.user2Core, SPAWN_PLANET_2, LVL2_PLANET_SPACE);
+    await increaseBlockchainTime();
+
+    for (let i = 0; i < 6; i++) {
+      await world.contract.adminGiveSpaceShip(
+        SPAWN_PLANET_1.id,
+        world.user1.address,
+        SpaceshipType.ShipMothership
+      );
+
+      const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id))[0];
 
       await world.user1Core.move(
         ...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 10, 0, 0, ship.id)
@@ -968,13 +1002,13 @@ describe('move rate limits', function () {
     }
 
     await expect(
-      world.user2Core.move(...makeMoveArgs(SPAWN_PLANET_2, LVL2_PLANET_SPACE, 1, 10000, 0))
+      world.user1Core.move(...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 1, 10000, 0))
     ).to.be.revertedWith('Planet is rate-limited');
 
     await increaseBlockchainTime();
     await world.user1Core.refreshPlanet(LVL2_PLANET_SPACE.id);
 
-    const numShipsOnPlanet = (await world.user1Core.getArtifactsOnPlanet(LVL2_PLANET_SPACE.id))
+    const numShipsOnPlanet = (await world.user1Core.getSpaceshipsOnPlanet(LVL2_PLANET_SPACE.id))
       .length;
 
     expect(numShipsOnPlanet).to.be.eq(6);

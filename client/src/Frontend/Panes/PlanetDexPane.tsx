@@ -6,8 +6,10 @@ import { ModalName, Planet, PlanetType, RGBVec } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { getPlanetRank } from '../../Backend/Utils/Utils';
+import { ArtifactImage } from '../Components/ArtifactImage';
 import { CenterBackgroundSubtext, Spacer } from '../Components/CoreUI';
 import { Icon, IconType } from '../Components/Icons';
+import { SpaceshipImage } from '../Components/SpaceshipImage';
 import { Sub } from '../Components/Text';
 import { useUIManager } from '../Utils/AppHooks';
 import { ModalPane } from '../Views/ModalPane';
@@ -165,8 +167,8 @@ export function PlanetDexPane({ visible, onClose }: { visible: boolean; onClose:
     };
   }, [visible, uiManager]);
 
-  const headers = ['', 'Planet Name', 'Level', 'Energy', 'Silver', 'Inventory'];
-  const alignments: Array<'r' | 'c' | 'l'> = ['r', 'l', 'r', 'r', 'r', 'r'];
+  const headers = ['', 'Planet Name', 'Level', 'Energy', 'Silver', 'Artifacts', 'Spaceships'];
+  const alignments: Array<'r' | 'c' | 'l'> = ['r', 'l', 'r', 'r', 'r', 'c', 'c'];
 
   const columns = [
     (planet: Planet) => <PlanetThumb planet={planet} />,
@@ -178,7 +180,14 @@ export function PlanetDexPane({ visible, onClose }: { visible: boolean; onClose:
     (planet: Planet) => <Sub>{planet.planetLevel}</Sub>,
     (planet: Planet) => <Sub>{formatNumber(planet.energy)}</Sub>,
     (planet: Planet) => <Sub>{formatNumber(planet.silver)}</Sub>,
-    (planet: Planet) => <Sub>{formatNumber(planet.heldArtifactIds.length)}</Sub>,
+    (planet: Planet) =>
+      planet.artifacts.map((artifact) => (
+        <ArtifactImage key={artifact.id} artifact={artifact} thumb size={20} />
+      )),
+    (planet: Planet) =>
+      planet.spaceships.map((spaceship) => (
+        <SpaceshipImage key={spaceship.id} spaceship={spaceship} size={20} />
+      )),
   ];
 
   const sortingFunctions = [
@@ -197,8 +206,13 @@ export function PlanetDexPane({ visible, onClose }: { visible: boolean; onClose:
     (a: Planet, b: Planet): number => b.silver - a.silver,
     // artifacts
     (a: Planet, b: Planet): number => {
-      const [numArtifacts, scoreB] = [a.heldArtifactIds.length, b.heldArtifactIds.length];
+      const [numArtifacts, scoreB] = [a.artifacts.length, b.artifacts.length];
       return scoreB - numArtifacts;
+    },
+    // spaceships
+    (a: Planet, b: Planet): number => {
+      const [numSpaceships, scoreB] = [a.spaceships.length, b.spaceships.length];
+      return scoreB - numSpaceships;
     },
   ];
 

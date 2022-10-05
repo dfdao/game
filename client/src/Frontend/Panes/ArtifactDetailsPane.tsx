@@ -1,35 +1,30 @@
-import { EMPTY_ADDRESS } from '@dfdao/constants';
-import { dateMintedAt, hasStatBoost, isActivated, isSpaceShip } from '@dfdao/gamelogic';
-import { artifactName, getPlanetName, getPlanetNameHash } from '@dfdao/procedural';
+import { hasStatBoost } from '@dfdao/gamelogic';
+import { artifactName } from '@dfdao/procedural';
 import {
   Artifact,
-  ArtifactId,
   ArtifactRarityNames,
   ArtifactType,
-  EthAddress,
   LocationId,
+  Planet,
   TooltipName,
   Upgrade,
 } from '@dfdao/types';
 import _ from 'lodash';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { getUpgradeStat } from '../../Backend/Utils/Utils';
-import { ContractConstants } from '../../_types/darkforest/api/ContractsAPITypes';
 import { StatIdx } from '../../_types/global/GlobalTypes';
 import { ArtifactImage } from '../Components/ArtifactImage';
 import { Spacer } from '../Components/CoreUI';
 import { StatIcon } from '../Components/Icons';
 import { ArtifactRarityLabelAnim, ArtifactTypeText } from '../Components/Labels/ArtifactLabels';
 import { ArtifactBiomeLabelAnim } from '../Components/Labels/BiomeLabels';
-import { AccountLabel } from '../Components/Labels/Labels';
 import { ReadMore } from '../Components/ReadMore';
 import { Green, Red, Sub, Text, White } from '../Components/Text';
 import { TextPreview } from '../Components/TextPreview';
 import { TimeUntil } from '../Components/TimeUntil';
 import dfstyles from '../Styles/dfstyles';
-import { useArtifact, useUIManager } from '../Utils/AppHooks';
-import { ModalHandle } from '../Views/ModalPane';
+import { useUIManager } from '../Utils/AppHooks';
 import { ArtifactActions } from './ManagePlanetArtifacts/ArtifactActions';
 import { TooltipTrigger } from './Tooltip';
 
@@ -141,71 +136,42 @@ const ArtifactNameSubtitle = styled.div`
 export function ArtifactDetailsHelpContent() {
   return (
     <div>
-      <p>
-        In this pane, you can see specific information about a particular artifact. You can also
-        initiate a conversation with the artifact! Try talking to your artifacts. Make some new
-        friends (^:
-      </p>
+      <p>In this pane, you can see specific information about a particular artifact.</p>
     </div>
   );
 }
 
 export function ArtifactDetailsBody({
-  artifactId,
-  contractConstants,
+  planet,
+  artifact,
   depositOn,
   noActions,
 }: {
-  artifactId: ArtifactId;
-  contractConstants: ContractConstants;
-  modal?: ModalHandle;
+  planet?: Planet;
+  artifact: Artifact;
   depositOn?: LocationId;
   noActions?: boolean;
 }) {
   const uiManager = useUIManager();
-  const artifactWrapper = useArtifact(uiManager, artifactId);
-  const artifact = artifactWrapper.value;
 
-  if (!artifact) {
-    return null;
-  }
-
-  const account = (addr: EthAddress) => {
-    const twitter = uiManager?.getTwitter(addr);
-    if (twitter) {
-      return '@' + twitter;
-    }
-    return <TextPreview text={addr} />;
-  };
-
-  const owner = () => {
-    if (!artifact) return '';
-    return account(artifact.currentOwner);
-  };
-
-  const discoverer = () => {
-    if (!artifact) return '';
-    return account(artifact.discoverer);
-  };
-
-  // TODO make this common with playerartifactspane
-  const planetArtifactName = (a: Artifact): string | undefined => {
-    const onPlanet = uiManager?.getArtifactPlanet(a);
-    if (!onPlanet) return undefined;
-    return getPlanetName(onPlanet);
-  };
-
-  const planetClicked = (): void => {
-    if (artifact.onPlanetId) uiManager?.setSelectedId(artifact.onPlanetId);
-  };
+  // TODO: I don't like the async nature of this...we should have the logic on the client somehow
+  const [upgrade, setUpgrade] = useState<Upgrade | undefined>(undefined);
+  useEffect(() => {
+    uiManager.getUpgradeForArtifact(artifact.id).then(setUpgrade);
+  }, [uiManager, artifact, setUpgrade]);
 
   let readyInStr = undefined;
 
-  if (artifact.artifactType === ArtifactType.PhotoidCannon && isActivated(artifact)) {
+  if (
+    planet &&
+    artifact.artifactType === ArtifactType.PhotoidCannon &&
+    planet.activeArtifact?.id === artifact.id
+  ) {
     readyInStr = (
       <TimeUntil
         timestamp={
-          artifact.lastActivated * 1000 + contractConstants.PHOTOID_ACTIVATION_DELAY * 1000
+          planet.artifactActivationTime * 1000 +
+          uiManager.contractConstants.PHOTOID_ACTIVATION_DELAY * 1000
         }
         ifPassed={'now!'}
       />
@@ -219,23 +185,12 @@ export function ArtifactDetailsBody({
       </div>
       <Spacer width={8} />
       <div style={{ display: 'inline-block' }}>
-        {isSpaceShip(artifact.artifactType) ? (
-          <>
-            <ArtifactName>
-              <ArtifactTypeText artifact={artifact} />
-            </ArtifactName>
-            <ArtifactNameSubtitle>{artifactName(artifact)}</ArtifactNameSubtitle>
-          </>
-        ) : (
-          <>
-            <ArtifactName>{artifactName(artifact)}</ArtifactName>
-            <ArtifactNameSubtitle>
-              <ArtifactRarityLabelAnim rarity={artifact.rarity} />{' '}
-              <ArtifactBiomeLabelAnim artifact={artifact} />{' '}
-              <ArtifactTypeText artifact={artifact} />
-            </ArtifactNameSubtitle>
-          </>
-        )}
+        <ArtifactName>{artifactName(artifact)}</ArtifactName>
+        <ArtifactNameSubtitle>
+          <ArtifactRarityLabelAnim rarity={artifact.rarity} />{' '}
+          <ArtifactBiomeLabelAnim artifact={artifact} />
+          <ArtifactTypeText artifact={artifact} />
+        </ArtifactNameSubtitle>
       </div>
 
       {hasStatBoost(artifact.artifactType) && (
@@ -243,7 +198,7 @@ export function ArtifactDetailsBody({
           <StatsContainer>
             {_.range(0, 5).map((val) => (
               <UpgradeStatInfo
-                upgrades={[artifact.upgrade, artifact.timeDelayedUpgrade]}
+                upgrades={[upgrade, planet?.localPhotoidUpgrade]}
                 stat={val}
                 key={val}
               />
@@ -252,61 +207,15 @@ export function ArtifactDetailsBody({
         </ArtifactDetailsHeader>
       )}
 
-      {isSpaceShip(artifact.artifactType) && (
-        <ArtifactDescription collapsable={false} artifact={artifact} />
-      )}
-
       <StyledArtifactDetailsBody>
-        {!isSpaceShip(artifact.artifactType) && <ArtifactDescription artifact={artifact} />}
+        <ArtifactDescription artifact={artifact} />
         <Spacer height={8} />
 
-        <div className='row'>
-          <span>Located On</span>
-          {planetArtifactName(artifact) ? (
-            <span className='link' onClick={planetClicked}>
-              {planetArtifactName(artifact)}
-            </span>
-          ) : (
-            <span>n / a</span>
-          )}
-        </div>
-
-        {!isSpaceShip(artifact.artifactType) && (
-          <>
-            <div className='row'>
-              <span>Minted At</span>
-              <span>{dateMintedAt(artifact)}</span>
-            </div>
-            <div className='row'>
-              <span>Discovered On</span>
-              <span>{getPlanetNameHash(artifact.planetDiscoveredOn)}</span>
-            </div>
-            <div className='row'>
-              <span>Discovered By</span>
-              <span>{discoverer()}</span>
-            </div>
-          </>
-        )}
-
-        {artifact.controller === EMPTY_ADDRESS && (
-          <div className='row'>
-            <span>Owner</span>
-            <span>{owner()}</span>
-          </div>
-        )}
         <div className='row'>
           <span>ID</span>
           <TextPreview text={artifact.id} />
         </div>
 
-        {artifact.controller !== EMPTY_ADDRESS && (
-          <div className='row'>
-            <span>Controller</span>
-            <span>
-              <AccountLabel ethAddress={artifact.controller} />
-            </span>
-          </div>
-        )}
         {readyInStr && (
           <div className='row'>
             <span>Ready In</span>
@@ -315,32 +224,10 @@ export function ArtifactDetailsBody({
         )}
 
         {!noActions && (
-          <ArtifactActions artifactId={artifactWrapper.value?.id} depositOn={depositOn} />
+          <ArtifactActions artifact={artifact} planet={planet} depositOn={depositOn} />
         )}
       </StyledArtifactDetailsBody>
     </>
-  );
-}
-
-export function ArtifactDetailsPane({
-  modal,
-  artifactId,
-  depositOn,
-}: {
-  modal: ModalHandle;
-  artifactId: ArtifactId;
-  depositOn?: LocationId;
-}) {
-  const uiManager = useUIManager();
-  const contractConstants = uiManager.contractConstants;
-
-  return (
-    <ArtifactDetailsBody
-      modal={modal}
-      artifactId={artifactId}
-      contractConstants={contractConstants}
-      depositOn={depositOn}
-    />
   );
 }
 
@@ -363,8 +250,6 @@ function ArtifactDescription({
   const rarityName = ArtifactRarityNames[artifact.rarity];
   const photoidRanges = [0, 2, 2, 2, 2, 2];
   const photoidSpeeds = [0, 5, 10, 15, 20, 25];
-
-  const genericSpaceshipDescription = <>Can move between planets without sending energy.</>;
 
   switch (artifact.artifactType) {
     case ArtifactType.BlackDomain:
@@ -418,45 +303,6 @@ function ArtifactDescription({
           Activate the planetary shield to gain a defense bonus on your planet, at the expense of
           range and speed. When this artifact is deactivated, it is destroyed and your planet's
           stats are reverted--so use it wisely!
-        </Text>
-      );
-      break;
-    case ArtifactType.ShipMothership:
-      content = (
-        <Text>
-          Doubles energy regeneration of the planet that it is currently on.{' '}
-          {genericSpaceshipDescription}
-        </Text>
-      );
-      break;
-    case ArtifactType.ShipCrescent:
-      content = (
-        <Text>
-          Activate to convert an un-owned planet whose level is more than 0 into an Asteroid Field.{' '}
-          <Red>Can only be used once.</Red> {genericSpaceshipDescription}
-        </Text>
-      );
-      break;
-    case ArtifactType.ShipGear:
-      content = (
-        <Text>
-          Allows you to prospect planets, and subsequently find artifacts on them.{' '}
-          {genericSpaceshipDescription}
-        </Text>
-      );
-      break;
-    case ArtifactType.ShipTitan:
-      content = (
-        <Text>
-          Pauses energy and silver regeneration on the planet it's on. {genericSpaceshipDescription}
-        </Text>
-      );
-      break;
-    case ArtifactType.ShipWhale:
-      content = (
-        <Text>
-          Doubles the silver regeneration of the planet that it is currently on.{' '}
-          {genericSpaceshipDescription}
         </Text>
       );
       break;

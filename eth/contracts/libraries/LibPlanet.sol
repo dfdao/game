@@ -3,16 +3,20 @@ pragma solidity ^0.8.0;
 
 // Contract imports
 import {DFVerifierFacet} from "../facets/DFVerifierFacet.sol";
+import {DFTokenFacet} from "../facets/DFTokenFacet.sol";
 
 // Library imports
+import {LibArtifact} from "./LibArtifact.sol";
+import {LibArtifactUtils} from "./LibArtifactUtils.sol";
 import {LibGameUtils} from "./LibGameUtils.sol";
 import {LibLazyUpdate} from "./LibLazyUpdate.sol";
+import {LibSpaceship} from "./LibSpaceship.sol";
 
 // Storage imports
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
 // Type imports
-import {Artifact, ArtifactType, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetType, RevealedCoords, SpaceType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
+import {ArtifactType, Artifact, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetType, RevealedCoords, SpaceType, Spaceship, SpaceshipType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
 
 library LibPlanet {
     function gs() internal pure returns (GameStorage storage) {
@@ -28,8 +32,6 @@ library LibPlanet {
     }
 
     // also need to copy some of DFCore's event signatures
-    event ArtifactActivated(address player, uint256 artifactId, uint256 loc);
-    event ArtifactDeactivated(address player, uint256 artifactId, uint256 loc);
     event PlanetUpgraded(address player, uint256 loc, uint256 branch, uint256 toBranchLevel);
 
     function revealLocation(
@@ -159,6 +161,12 @@ library LibPlanet {
         _planet.planetLevel = defaultPlanet.planetLevel;
         _planet.planetType = defaultPlanet.planetType;
 
+        _planet.artifacts = defaultPlanet.artifacts;
+        _planet.spaceships = defaultPlanet.spaceships;
+        _planet.activeArtifact = defaultPlanet.activeArtifact;
+        _planet.wormholeTo = defaultPlanet.wormholeTo;
+        _planet.artifactActivationTime = defaultPlanet.artifactActivationTime;
+
         _planet.isInitialized = true;
         _planet.perlin = args.perlin;
         _planet.spaceType = args.spaceType;
@@ -285,9 +293,11 @@ library LibPlanet {
         }
 
         for (uint256 i = 0; i < artifactsToAdd.length; i++) {
-            Artifact memory artifact = gs().artifacts[artifactsToAdd[i]];
-
-            planet = applySpaceshipArrive(artifact, planet);
+            // Only apply Spaceship arrival if ship is a spaceship.
+            if (LibSpaceship.isShip(artifactsToAdd[i])) {
+                Spaceship memory spaceship = LibSpaceship.decode(artifactsToAdd[i]);
+                planet = applySpaceshipArrive(spaceship, planet);
+            }
         }
 
         planet = LibLazyUpdate.updatePlanet(timestamp, planet);
@@ -295,7 +305,7 @@ library LibPlanet {
         return (planet, eventsToRemove, artifactsToAdd);
     }
 
-    function applySpaceshipArrive(Artifact memory artifact, Planet memory planet)
+    function applySpaceshipArrive(Spaceship memory spaceship, Planet memory planet)
         public
         pure
         returns (Planet memory)
@@ -304,17 +314,17 @@ library LibPlanet {
             return planet;
         }
 
-        if (artifact.artifactType == ArtifactType.ShipMothership) {
+        if (spaceship.spaceshipType == SpaceshipType.ShipMothership) {
             if (planet.energyGroDoublers == 0) {
                 planet.populationGrowth *= 2;
             }
             planet.energyGroDoublers++;
-        } else if (artifact.artifactType == ArtifactType.ShipWhale) {
+        } else if (spaceship.spaceshipType == SpaceshipType.ShipWhale) {
             if (planet.silverGroDoublers == 0) {
                 planet.silverGrowth *= 2;
             }
             planet.silverGroDoublers++;
-        } else if (artifact.artifactType == ArtifactType.ShipTitan) {
+        } else if (spaceship.spaceshipType == SpaceshipType.ShipTitan) {
             planet.pausers++;
         }
 
@@ -327,7 +337,7 @@ library LibPlanet {
         (
             Planet memory planet,
             uint256[12] memory eventsToRemove,
-            uint256[12] memory artifactIdsToAddToPlanet
+            uint256[12] memory tokenIdsToAddToPlanet
         ) = getRefreshedPlanet(location, block.timestamp);
 
         gs().planets[location] = planet;
@@ -344,9 +354,12 @@ library LibPlanet {
         }
 
         for (uint256 i = 0; i < 12; i++) {
-            if (artifactIdsToAddToPlanet[i] != 0) {
-                gs().artifactIdToVoyageId[artifactIdsToAddToPlanet[i]] = 0;
-                LibGameUtils._putArtifactOnPlanet(artifactIdsToAddToPlanet[i], location);
+            if (tokenIdsToAddToPlanet[i] != 0) {
+                if (LibSpaceship.isShip(tokenIdsToAddToPlanet[i])) {
+                    LibSpaceship.putSpaceshipOnPlanet(location, tokenIdsToAddToPlanet[i]);
+                } else if (LibArtifact.isArtifact(tokenIdsToAddToPlanet[i])) {
+                    LibArtifact.putArtifactOnPlanet(location, tokenIdsToAddToPlanet[i]);
+                }
             }
         }
     }

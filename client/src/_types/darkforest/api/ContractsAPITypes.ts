@@ -52,6 +52,7 @@ export const enum ContractEvent {
   PlanetCaptured = 'PlanetCaptured',
   LocationRevealed = 'LocationRevealed',
   ArtifactFound = 'ArtifactFound',
+  SpaceshipFound = 'SpaceshipFound',
   ArtifactDeposited = 'ArtifactDeposited',
   ArtifactWithdrawn = 'ArtifactWithdrawn',
   ArtifactActivated = 'ArtifactActivated',
@@ -66,9 +67,11 @@ export const enum ContractEvent {
 export const enum ContractsAPIEvent {
   PlayerUpdate = 'PlayerUpdate',
   PlanetUpdate = 'PlanetUpdate',
+  ArtifactWithdrawn = 'ArtifactWithdrawn',
+  ArtifactDeposited = 'ArtifactDeposited',
+  SpaceshipFound = 'SpaceshipFound',
   PauseStateChanged = 'PauseStateChanged',
   ArrivalQueued = 'ArrivalQueued',
-  ArtifactUpdate = 'ArtifactUpdate',
   RadiusUpdated = 'RadiusUpdated',
   LocationRevealed = 'LocationRevealed',
   /**
