@@ -16,7 +16,7 @@ import {LibSilver} from "../libraries/LibSilver.sol";
 import {WithStorage, SnarkConstants, GameConstants} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {RevealedCoords, Artifact, ArrivalData, Planet, PlanetEventType, PlanetEventMetadata, PlanetDefaultStats, PlanetData, Player, Upgrade} from "../DFTypes.sol";
+import {RevealedCoords, Artifact, ArrivalData, Planet, PlanetEventType, PlanetEventMetadata, PlanetDefaultStats, PlanetData, Player, Upgrade, ArtifactType, ArtifactRarity, Biome} from "../DFTypes.sol";
 
 contract DFGetterFacet2 is WithStorage {
 
@@ -95,6 +95,10 @@ contract DFGetterFacet2 is WithStorage {
 
     function getSilverTokenId() public pure returns (uint256 ret) {
         ret = LibSilver.create();
+    }
+
+    function getArtifactTokenId(ArtifactType artifactType, ArtifactRarity rarity, Biome biome) public pure returns (uint256 ret) {
+        ret = LibArtifact.create(rarity, artifactType, biome);
     }
 }
 

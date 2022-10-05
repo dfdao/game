@@ -29,12 +29,11 @@ contract DFShopFacet is WithStorage {
 
     function purchaseArtifact(ArtifactType artifactType, ArtifactRarity rarity) public {
 
-        Player storage p = gs().players[msg.sender];
         uint256 artifactPrice = getArtifactPrice(artifactType, rarity);
 
-        require(p.score >=  DFTokenFacet(address(this)).getSilverBalance(msg.sender), 'not enough silver to purchase this artifact');
+        require(artifactPrice <=  DFTokenFacet(address(this)).getSilverBalance(msg.sender), 'not enough silver to purchase this artifact');
 
-        uint256 tokenId = LibArtifact.create(rarity, artifactType, Biome.Unknown);
+        uint256 tokenId = LibArtifact.create(rarity, artifactType, Biome.Ocean);
 
         DFTokenFacet(address(this)).mint(msg.sender, tokenId, 1);
         DFTokenFacet(address(this)).burn(msg.sender, LibSilver.create(), artifactPrice);
@@ -43,7 +42,7 @@ contract DFShopFacet is WithStorage {
     }
 
 
-    function getArtifactPrice(ArtifactType artifactType, ArtifactRarity rarity) internal view returns (uint256){
+    function getArtifactPrice(ArtifactType artifactType, ArtifactRarity rarity) public view returns (uint256){
 
         uint256 typePrice = 0;
         if(artifactType == ArtifactType.Monolith){

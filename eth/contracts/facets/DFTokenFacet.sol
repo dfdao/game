@@ -103,6 +103,10 @@ contract DFTokenFacet is WithStorage, SolidStateERC1155 {
         return balanceOf(owner, tokenId) > 0;
     }
 
+    function getTokenBalance(address owner, uint256 tokenId) public view returns (uint256) {
+        return balanceOf(owner, tokenId);
+    }
+
     // TODO: Move this into SilverFacet
     function getSilverBalance(address player) public view returns (uint256) {
         uint256 silverId = LibSilver.create();
