@@ -250,7 +250,8 @@ enum Biome {
 enum TokenType {
     Unknown,
     Artifact,
-    Spaceship
+    Spaceship,
+    Silver
 }
 
 enum ArtifactInfo {
@@ -280,4 +281,9 @@ struct Spaceship {
     uint256 id;
     TokenType tokenType;
     SpaceshipType spaceshipType;
+}
+
+enum SilverInfo {
+    Unknown,
+    TokenType
 }
