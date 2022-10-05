@@ -5,9 +5,6 @@ pragma solidity ^0.8.0;
  * Library for all things Silver
  */
 
-// Contract imports
-import "hardhat/console.sol";
-
 // Library imports
 import {LibUtils} from "./LibUtils.sol";
 
