@@ -150,6 +150,9 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
             CAPTURE_ZONES_PER_5000_WORLD_RADIUS: config.CAPTURE_ZONES_PER_5000_WORLD_RADIUS,
             SPACESHIPS: config.SPACESHIPS,
             ROUND_END_REWARDS_BY_RANK: config.ROUND_END_REWARDS_BY_RANK,
+            ARTIFACT_TYPE_PRICES: config.ARTIFACT_TYPE_PRICES,
+            ARTIFACT_RARITY_PRICES: config.ARTIFACT_RARITY_PRICES,
+            SPACESHIP_PRICES: config.SPACESHIP_PRICES,
           });
         })
         .catch((e) => {

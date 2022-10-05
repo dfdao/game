@@ -206,7 +206,6 @@ enum ArtifactType {
     Unknown,
     Monolith,
     Colossus,
-    Spaceship,
     Pyramid,
     Wormhole,
     PlanetaryShield,
@@ -270,6 +269,25 @@ struct Artifact {
     Biome planetBiome;
 }
 
+struct ArtifactTypePrices {
+    uint256 Monolith;
+    uint256 Colossus;
+    uint256 Pyramid;
+    uint256 Wormhole;
+    uint256 PlanetaryShield;
+    uint256 PhotoidCannon;
+    uint256 BloomFilter;
+    uint256 BlackDomain;
+}
+
+struct ArtifactRarityPrices {
+    uint256 Common;
+    uint256 Rare;
+    uint256 Epic;
+    uint256 Legendary;
+    uint256 Mythic;
+}
+
 // Used for accessing properties of spaceship tokenId
 enum SpaceshipInfo {
     Unknown,
@@ -281,6 +299,14 @@ struct Spaceship {
     uint256 id;
     TokenType tokenType;
     SpaceshipType spaceshipType;
+}
+
+struct SpaceshipPrices {
+    uint256 ShipMothership;
+    uint256 ShipCrescent;
+    uint256 ShipWhale;
+    uint256 ShipGear;
+    uint256 ShipTitan;
 }
 
 enum SilverInfo {

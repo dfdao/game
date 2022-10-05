@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Type imports
-import {Planet, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData} from "../DFTypes.sol";
+import {Planet, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData, ArtifactTypePrices, ArtifactRarityPrices, SpaceshipPrices} from "../DFTypes.sol";
 
 struct WhitelistStorage {
     bool enabled;
@@ -104,6 +104,9 @@ struct GameConstants {
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
     SpaceshipConstants SPACESHIPS;
     uint256[64] ROUND_END_REWARDS_BY_RANK;
+    ArtifactTypePrices ARTIFACT_TYPE_PRICES;
+    ArtifactRarityPrices ARTIFACT_RARITY_PRICES;
+    SpaceshipPrices SPACESHIP_PRICES;
 }
 
 struct SpaceshipConstants {

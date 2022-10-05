@@ -1,3 +1,4 @@
+import { ArtifactRarity, ArtifactType } from '@dfdao/types';
 import * as bigInt from 'big-integer';
 
 // To developer, increase this number to 256. This, in combination with setting `DISABLE_ZK_CHECKS`
@@ -27,3 +28,40 @@ export const enum DFZIndex {
   Tooltip = 16000000,
   Notification = 1000,
 }
+
+export const artifactTypePrices: Map<ArtifactType, number> = new Map([
+  [ArtifactType.BlackDomain, 1e5],
+  [ArtifactType.BloomFilter, 1e5],
+  [ArtifactType.Colossus, 1e5],
+  [ArtifactType.Monolith, 1e5],
+  [ArtifactType.PhotoidCannon, 1e5],
+  [ArtifactType.PlanetaryShield, 1e5],
+  [ArtifactType.Pyramid, 1e5],
+  [ArtifactType.Wormhole, 1e5],
+  [ArtifactType.Unknown, 1e5],
+]);
+
+export const artifactRarityPrices: Map<ArtifactRarity, number> = new Map([
+  [ArtifactRarity.Common, 1],
+  [ArtifactRarity.Rare, 1.2],
+  [ArtifactRarity.Epic, 1.5],
+  [ArtifactRarity.Legendary, 2],
+  [ArtifactRarity.Mythic, 5],
+  [ArtifactRarity.Unknown, 1],
+]);
+
+export interface ShopArtifact {
+  artifactType: ArtifactType;
+  rarity: ArtifactRarity;
+}
+
+export const possibleShopArtifacts: ShopArtifact[] = Object.values(ArtifactType)
+  .map((type) =>
+    Object.values(ArtifactRarity).map((rarity) => {
+      return {
+        artifactType: type,
+        rarity,
+      };
+    })
+  )
+  .flat();

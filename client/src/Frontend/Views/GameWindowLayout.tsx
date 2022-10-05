@@ -22,7 +22,7 @@ import { PlanetDexPane } from '../Panes/PlanetDexPane';
 import { PluginLibraryPane } from '../Panes/PluginLibraryPane';
 import { PrivatePane } from '../Panes/PrivatePane';
 import { SettingsPane } from '../Panes/SettingsPane';
-import { TransactionLogPane } from '../Panes/TransactionLogPane';
+import { ShopPane } from '../Panes/ShopPane';
 import { TutorialPane } from '../Panes/TutorialPane';
 import { TwitterVerifyPane } from '../Panes/TwitterVerifyPane';
 import { ZoomPane } from '../Panes/ZoomPane';
@@ -63,9 +63,7 @@ export function GameWindowLayout({
   );
 
   const [helpVisible, setHelpVisible] = useState<boolean>(isModalOpen(ModalName.Help));
-  const [transactionLogVisible, setTransactionLogVisible] = useState<boolean>(
-    isModalOpen(ModalName.TransactionLog)
-  );
+  const [shopVisible, setShopVisible] = useState<boolean>(isModalOpen(ModalName.Shop));
   const [planetdexVisible, setPlanetdexVisible] = useState<boolean>(
     isModalOpen(ModalName.PlanetDex)
   );
@@ -133,10 +131,7 @@ export function GameWindowLayout({
       {/* all modals rendered into here */}
       <div ref={modalsContainerCB}>
         <HelpPane visible={helpVisible} onClose={() => setHelpVisible(false)} />
-        <TransactionLogPane
-          visible={transactionLogVisible}
-          onClose={() => setTransactionLogVisible(false)}
-        />
+        <ShopPane visible={shopVisible} onClose={() => setShopVisible(false)} />
         <PlanetDexPane visible={planetdexVisible} onClose={() => setPlanetdexVisible(false)} />
         <TwitterVerifyPane
           visible={twitterVerifyVisible}
@@ -179,7 +174,7 @@ export function GameWindowLayout({
             <ZoomPane />
           </UpperLeft>
           <SidebarPane
-            transactionLogHook={[transactionLogVisible, setTransactionLogVisible]}
+            shopHook={[shopVisible, setShopVisible]}
             settingsHook={[settingsVisible, setSettingsVisible]}
             helpHook={[helpVisible, setHelpVisible]}
             pluginsHook={[pluginsVisible, setPluginsVisible]}

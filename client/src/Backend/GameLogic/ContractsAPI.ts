@@ -455,6 +455,9 @@ export class ContractsAPI extends EventEmitter {
       CAPTURE_ZONES_PER_5000_WORLD_RADIUS,
       SPACESHIPS,
       ROUND_END_REWARDS_BY_RANK,
+      ARTIFACT_TYPE_PRICES,
+      ARTIFACT_RARITY_PRICES,
+      SPACESHIP_PRICES,
     } = await this.makeCall(this.contract.getGameConstants);
 
     const TOKEN_MINT_END_SECONDS = (
@@ -638,6 +641,31 @@ export class ContractsAPI extends EventEmitter {
         ROUND_END_REWARDS_BY_RANK[62].toNumber(),
         ROUND_END_REWARDS_BY_RANK[63].toNumber(),
       ],
+      ARTIFACT_TYPE_PRICES: {
+        Monolith: ARTIFACT_TYPE_PRICES.Monolith.toNumber(),
+        Colossus: ARTIFACT_TYPE_PRICES.Colossus.toNumber(),
+        Pyramid: ARTIFACT_TYPE_PRICES.Pyramid.toNumber(),
+        Wormhole: ARTIFACT_TYPE_PRICES.Wormhole.toNumber(),
+        PlanetaryShield: ARTIFACT_TYPE_PRICES.PlanetaryShield.toNumber(),
+        PhotoidCannon: ARTIFACT_TYPE_PRICES.PhotoidCannon.toNumber(),
+        BloomFilter: ARTIFACT_TYPE_PRICES.BloomFilter.toNumber(),
+        BlackDomain: ARTIFACT_TYPE_PRICES.BlackDomain.toNumber(),
+      },
+      ARTIFACT_RARITY_PRICES: {
+        Common: ARTIFACT_RARITY_PRICES.Common.toNumber(),
+        Rare: ARTIFACT_RARITY_PRICES.Rare.toNumber(),
+        Epic: ARTIFACT_RARITY_PRICES.Epic.toNumber(),
+        Legendary: ARTIFACT_RARITY_PRICES.Legendary.toNumber(),
+        Mythic: ARTIFACT_RARITY_PRICES.Mythic.toNumber(),
+      },
+
+      SPACESHIP_PRICES: {
+        ShipMothership: SPACESHIP_PRICES.ShipMothership.toNumber(),
+        ShipCrescent: SPACESHIP_PRICES.ShipCrescent.toNumber(),
+        ShipWhale: SPACESHIP_PRICES.ShipWhale.toNumber(),
+        ShipGear: SPACESHIP_PRICES.ShipGear.toNumber(),
+        ShipTitan: SPACESHIP_PRICES.ShipTitan.toNumber(),
+      },
     };
 
     return constants;

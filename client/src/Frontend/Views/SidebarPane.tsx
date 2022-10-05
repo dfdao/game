@@ -8,8 +8,7 @@ import {
   TOGGLE_HELP_PANE,
   TOGGLE_PLUGINS_PANE,
   TOGGLE_SETTINGS_PANE,
-  TOGGLE_TRANSACTIONS_PANE,
-  TOGGLE_YOUR_INVENTORY_PANE,
+  TOGGLE_SHOP_PANE,
   TOGGLE_YOUR_PLANETS_DEX_PANE,
 } from '../Utils/ShortcutConstants';
 import { ModalToggleButton } from './ModalIcon';
@@ -20,14 +19,14 @@ export function SidebarPane({
   pluginsHook,
   yourInventoryHook,
   planetdexHook,
-  transactionLogHook,
+  shopHook,
 }: {
   settingsHook: Hook<boolean>;
   helpHook: Hook<boolean>;
   pluginsHook: Hook<boolean>;
   yourInventoryHook: Hook<boolean>;
   planetdexHook: Hook<boolean>;
-  transactionLogHook: Hook<boolean>;
+  shopHook: Hook<boolean>;
 }) {
   const [sidebarHovered, setSidebarHovered] = useState<boolean>(false);
 
@@ -65,15 +64,6 @@ export function SidebarPane({
         />
         <EmSpacer height={0.5} />
         <ModalToggleButton
-          modal={ModalName.YourInventory}
-          hook={yourInventoryHook}
-          text={sidebarHovered ? 'Your Inventory' : undefined}
-          size='stretch'
-          shortcutKey={TOGGLE_YOUR_INVENTORY_PANE}
-          shortcutText={sidebarHovered ? TOGGLE_YOUR_INVENTORY_PANE : undefined}
-        />
-        <EmSpacer height={0.5} />
-        <ModalToggleButton
           modal={ModalName.PlanetDex}
           hook={planetdexHook}
           text={sidebarHovered ? 'Your Planets' : undefined}
@@ -83,12 +73,12 @@ export function SidebarPane({
         />
         <EmSpacer height={0.5} />
         <ModalToggleButton
-          modal={ModalName.TransactionLog}
-          hook={transactionLogHook}
-          text={sidebarHovered ? 'Transaction Log' : undefined}
+          modal={ModalName.Shop}
+          hook={shopHook}
+          text={sidebarHovered ? 'Galactic Shop' : undefined}
           size='stretch'
-          shortcutKey={TOGGLE_TRANSACTIONS_PANE}
-          shortcutText={sidebarHovered ? TOGGLE_TRANSACTIONS_PANE : undefined}
+          shortcutKey={TOGGLE_SHOP_PANE}
+          shortcutText={sidebarHovered ? TOGGLE_SHOP_PANE : undefined}
         />
       </BorderlessPane>
     </WindowTogglesPaneContainer>

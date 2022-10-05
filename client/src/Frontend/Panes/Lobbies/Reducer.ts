@@ -33,6 +33,9 @@ export function toInitializers(obj: LobbyConfigState) {
 // Actions aren't 1-to-1 with Initializers because we sometimes need to update into arrays
 export type LobbyConfigAction =
   | { type: 'SPACESHIPS'; value: Initializers['SPACESHIPS'] | undefined }
+  | { type: 'ARTIFACT_TYPE_PRICES'; value: Initializers['ARTIFACT_TYPE_PRICES'] | undefined }
+  | { type: 'ARTIFACT_RARITY_PRICES'; value: Initializers['ARTIFACT_RARITY_PRICES'] | undefined }
+  | { type: 'SPACESHIP_PRICES'; value: Initializers['SPACESHIP_PRICES'] | undefined }
   | { type: 'START_PAUSED'; value: Initializers['START_PAUSED'] | undefined }
   | { type: 'ADMIN_CAN_ADD_PLANETS'; value: Initializers['ADMIN_CAN_ADD_PLANETS'] | undefined }
   | {
@@ -305,6 +308,18 @@ export function lobbyConfigReducer(state: LobbyConfigState, action: LobbyAction)
     }
     case 'SPACESHIPS': {
       update = ofSpaceships(action, state);
+      break;
+    }
+    case 'ARTIFACT_TYPE_PRICES': {
+      update = ofArtifactTypePrices(action, state);
+      break;
+    }
+    case 'ARTIFACT_RARITY_PRICES': {
+      update = ofArtifactRarityPrices(action, state);
+      break;
+    }
+    case 'SPACESHIP_PRICES': {
+      update = ofSpaceshipPrices(action, state);
       break;
     }
     case 'RESET': {
@@ -754,6 +769,36 @@ export function lobbyConfigInit(startingConfig: LobbyInitializers) {
         break;
       }
       case 'SPACESHIPS': {
+        const defaultValue = startingConfig[key];
+        state[key] = {
+          currentValue: defaultValue,
+          displayValue: defaultValue,
+          defaultValue,
+          warning: undefined,
+        };
+        break;
+      }
+      case 'ARTIFACT_TYPE_PRICES': {
+        const defaultValue = startingConfig[key];
+        state[key] = {
+          currentValue: defaultValue,
+          displayValue: defaultValue,
+          defaultValue,
+          warning: undefined,
+        };
+        break;
+      }
+      case 'ARTIFACT_RARITY_PRICES': {
+        const defaultValue = startingConfig[key];
+        state[key] = {
+          currentValue: defaultValue,
+          displayValue: defaultValue,
+          defaultValue,
+          warning: undefined,
+        };
+        break;
+      }
+      case 'SPACESHIP_PRICES': {
         const defaultValue = startingConfig[key];
         state[key] = {
           currentValue: defaultValue,
@@ -1514,6 +1559,66 @@ export function ofCaptureZoneRadius(
 
 export function ofSpaceships(
   { type, value }: Extract<LobbyConfigAction, { type: 'SPACESHIPS' }>,
+  state: LobbyConfigState
+) {
+  if (value === undefined) {
+    return {
+      ...state[type],
+      displayValue: value,
+      warning: undefined,
+    };
+  }
+
+  return {
+    ...state[type],
+    currentValue: value,
+    displayValue: value,
+    warning: undefined,
+  };
+}
+
+export function ofArtifactTypePrices(
+  { type, value }: Extract<LobbyConfigAction, { type: 'ARTIFACT_TYPE_PRICES' }>,
+  state: LobbyConfigState
+) {
+  if (value === undefined) {
+    return {
+      ...state[type],
+      displayValue: value,
+      warning: undefined,
+    };
+  }
+
+  return {
+    ...state[type],
+    currentValue: value,
+    displayValue: value,
+    warning: undefined,
+  };
+}
+
+export function ofArtifactRarityPrices(
+  { type, value }: Extract<LobbyConfigAction, { type: 'ARTIFACT_RARITY_PRICES' }>,
+  state: LobbyConfigState
+) {
+  if (value === undefined) {
+    return {
+      ...state[type],
+      displayValue: value,
+      warning: undefined,
+    };
+  }
+
+  return {
+    ...state[type],
+    currentValue: value,
+    displayValue: value,
+    warning: undefined,
+  };
+}
+
+export function ofSpaceshipPrices(
+  { type, value }: Extract<LobbyConfigAction, { type: 'SPACESHIP_PRICES' }>,
   state: LobbyConfigState
 ) {
   if (value === undefined) {

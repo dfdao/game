@@ -105,6 +105,32 @@ const defaultInitializerValues = {
     5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   ],
+  ARTIFACT_TYPE_PRICES: {
+    Monolith: 10,
+    Colossus: 10,
+    Spaceship: 10,
+    Pyramid: 10,
+    Wormhole: 10,
+    PlanetaryShield: 10,
+    PhotoidCannon: 10,
+    BloomFilter: 10,
+    BlackDomain: 10,
+  },
+
+  ARTIFACT_RARITY_PRICES: {
+    Common: 10,
+    Rare: 10,
+    Epic: 10,
+    Legendary: 10,
+    Mythic: 10,
+  },
+  SPACESHIP_PRICES: {
+    ShipMothership: 10,
+    ShipCrescent: 10,
+    ShipWhale: 10,
+    ShipGear: 10,
+    ShipTitan: 10,
+  },
 };
 
 // This builds a fake HRE-like object used to initialize the test contracts

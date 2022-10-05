@@ -253,12 +253,14 @@ export async function deployAndCut(
     hre
   );
   const getterFacet = await deployGetterFacet({}, libraries, hre);
+  const getterFacet2 = await deployGetterFacet2({}, libraries, hre);
   const spaceshipFacet = await deploySpaceshipFacet({}, libraries, hre);
   const whitelistFacet = await deployWhitelistFacet({}, libraries, hre);
   const verifierFacet = await deployVerifierFacet({}, libraries, hre);
   const adminFacet = await deployAdminFacet({}, libraries, hre);
   const lobbyFacet = await deployLobbyFacet({}, {}, hre);
   const rewardFacet = await deployRewardFacet({}, {}, hre);
+  const shopFacet = await deployShopFacet({}, {}, hre);
 
   // The `cuts` to perform for Dark Forest facets
   const darkForestFacetCuts = [
@@ -267,6 +269,7 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFCaptureFacet', captureFacet),
     ...changes.getFacetCuts('DFArtifactFacet', artifactFacet),
     ...changes.getFacetCuts('DFGetterFacet', getterFacet),
+    ...changes.getFacetCuts('DFGetterFacet2', getterFacet2),
     ...changes.getFacetCuts('DFWhitelistFacet', whitelistFacet),
     ...changes.getFacetCuts('DFVerifierFacet', verifierFacet),
     ...changes.getFacetCuts('DFAdminFacet', adminFacet),
@@ -274,6 +277,7 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFRewardFacet', rewardFacet),
     ...changes.getFacetCuts('DFSpaceshipFacet', spaceshipFacet),
     ...changes.getFacetCuts('DFTokenFacet', tokenFacet),
+    ...changes.getFacetCuts('DFShopFacet', shopFacet),
   ];
 
   if (isDev) {
@@ -332,6 +336,16 @@ export async function deployGetterFacet({}, {}: Libraries, hre: HardhatRuntimeEn
   return contract;
 }
 
+export async function deployGetterFacet2({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
+  const factory = await hre.ethers.getContractFactory('DFGetterFacet2', {
+    libraries: {},
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log('DFGetterFacet2 deployed to:', contract.address);
+  return contract;
+}
+
 export async function deployAdminFacet(
   {},
   { LibGameUtils, LibPlanet }: Libraries,
@@ -370,6 +384,14 @@ export async function deployRewardFacet({}, {}: Libraries, hre: HardhatRuntimeEn
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log(`DFRewardFacet deployed to: ${contract.address}`);
+  return contract;
+}
+
+export async function deployShopFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
+  const factory = await hre.ethers.getContractFactory('DFShopFacet');
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFShopFacet deployed to: ${contract.address}`);
   return contract;
 }
 
