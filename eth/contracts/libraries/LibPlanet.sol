@@ -10,6 +10,7 @@ import {LibArtifact} from "./LibArtifact.sol";
 import {LibArtifactUtils} from "./LibArtifactUtils.sol";
 import {LibGameUtils} from "./LibGameUtils.sol";
 import {LibLazyUpdate} from "./LibLazyUpdate.sol";
+import {LibSilver} from "./LibSilver.sol";
 import {LibSpaceship} from "./LibSpaceship.sol";
 
 // Storage imports
@@ -383,6 +384,10 @@ library LibPlanet {
         // so any of those values coming from the contracts need to be divided by
         // `CONTRACT_PRECISION` to get their true integer value.
         uint256 scoreGained = silverToWithdraw / 1000;
+        // increase silver token count;
+        uint256 silverId = LibSilver.create();
+        DFTokenFacet(address(this)).mint(msg.sender, silverId, scoreGained);
+
         scoreGained = (scoreGained * gameConstants().SILVER_SCORE_VALUE) / 100;
         gs().players[msg.sender].score += scoreGained;
     }

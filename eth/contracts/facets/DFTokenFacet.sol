@@ -6,6 +6,7 @@ import {SolidStateERC1155} from "@solidstate/contracts/token/ERC1155/SolidStateE
 
 // Library Imports
 import {LibPermissions} from "../libraries/LibPermissions.sol";
+import {LibSilver} from "../libraries/LibSilver.sol";
 import {LibSpaceship} from "../libraries/LibSpaceship.sol";
 
 // Storage imports
@@ -100,5 +101,11 @@ contract DFTokenFacet is WithStorage, SolidStateERC1155 {
 
     function tokenIsOwnedBy(address owner, uint256 tokenId) public view returns (bool) {
         return balanceOf(owner, tokenId) > 0;
+    }
+
+    // TODO: Move this into SilverFacet
+    function getSilverBalance(address player) public view returns (uint256) {
+        uint256 silverId = LibSilver.create();
+        return balanceOf(player, silverId);
     }
 }

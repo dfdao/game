@@ -235,5 +235,6 @@ doesn't change.
 
 ## Silver
 
-We can give silver a `tokenId` as well. This would be useful it silver was a fungible resource that
-could be used to buy multiple things in game. Easy enough to make it non-transferrable as well.
+Silver is a fungible token with TokenType = 3. Although silver on planets is multiplied by 1000 for
+precision, Silver the token is exact. As such, any function that converts from silver on planets to
+Silver must divide by 1000.
