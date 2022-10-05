@@ -309,5 +309,4 @@ contract DFGetterFacet is WithStorage {
 
         return ret;
     }
-
 }
