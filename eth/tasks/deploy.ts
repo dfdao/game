@@ -259,6 +259,7 @@ export async function deployAndCut(
   const adminFacet = await deployAdminFacet({}, libraries, hre);
   const lobbyFacet = await deployLobbyFacet({}, {}, hre);
   const rewardFacet = await deployRewardFacet({}, {}, hre);
+  const shopFacet = await deployShopFacet({}, {}, hre);
 
   // The `cuts` to perform for Dark Forest facets
   const darkForestFacetCuts = [
@@ -274,6 +275,7 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFRewardFacet', rewardFacet),
     ...changes.getFacetCuts('DFSpaceshipFacet', spaceshipFacet),
     ...changes.getFacetCuts('DFTokenFacet', tokenFacet),
+    ...changes.getFacetCuts('DFShopFacet', shopFacet),
   ];
 
   if (isDev) {
@@ -370,6 +372,14 @@ export async function deployRewardFacet({}, {}: Libraries, hre: HardhatRuntimeEn
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log(`DFRewardFacet deployed to: ${contract.address}`);
+  return contract;
+}
+
+export async function deployShopFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
+  const factory = await hre.ethers.getContractFactory('DFShopFacet');
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFShopFacet deployed to: ${contract.address}`);
   return contract;
 }
 
