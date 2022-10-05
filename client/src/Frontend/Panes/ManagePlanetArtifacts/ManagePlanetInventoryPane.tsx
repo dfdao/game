@@ -84,6 +84,7 @@ function ManageInventoryPane({
 
               return (
                 <ArtifactsList
+                  planet={planet}
                   maxRarity={viewingDepositList ? planet.planetLevel - 1 : undefined}
                   depositOn={viewingDepositList ? planet.locationId : undefined}
                   artifacts={artifacts}

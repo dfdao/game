@@ -1,30 +1,38 @@
+import { hasStatBoost } from '@dfdao/gamelogic';
+import { artifactName } from '@dfdao/procedural';
 import {
   Artifact,
-  ArtifactId,
   ArtifactRarityNames,
   ArtifactType,
   LocationId,
+  Planet,
   TooltipName,
   Upgrade,
 } from '@dfdao/types';
+import _ from 'lodash';
 import React from 'react';
 import styled from 'styled-components';
 import { getUpgradeStat } from '../../Backend/Utils/Utils';
-import { ContractConstants } from '../../_types/darkforest/api/ContractsAPITypes';
 import { StatIdx } from '../../_types/global/GlobalTypes';
+import { ArtifactImage } from '../Components/ArtifactImage';
+import { Spacer } from '../Components/CoreUI';
 import { StatIcon } from '../Components/Icons';
+import { ArtifactRarityLabelAnim, ArtifactTypeText } from '../Components/Labels/ArtifactLabels';
+import { ArtifactBiomeLabelAnim } from '../Components/Labels/BiomeLabels';
 import { ReadMore } from '../Components/ReadMore';
 import { Green, Red, Sub, Text, White } from '../Components/Text';
+import { TextPreview } from '../Components/TextPreview';
+import { TimeUntil } from '../Components/TimeUntil';
 import dfstyles from '../Styles/dfstyles';
-import { useArtifact, useUIManager } from '../Utils/AppHooks';
-import { ModalHandle } from '../Views/ModalPane';
+import { useUIManager } from '../Utils/AppHooks';
+import { ArtifactActions } from './ManagePlanetArtifacts/ArtifactActions';
 import { TooltipTrigger } from './Tooltip';
 
-const _StatsContainer = styled.div`
+const StatsContainer = styled.div`
   flex-grow: 1;
 `;
 
-const _ArtifactDetailsHeader = styled.div`
+const ArtifactDetailsHeader = styled.div`
   min-height: 128px;
   display: flex;
   flex-direction: row;
@@ -88,7 +96,7 @@ export function UpgradeStatInfo({
   );
 }
 
-const _StyledArtifactDetailsBody = styled.div`
+const StyledArtifactDetailsBody = styled.div`
   & > div:first-child p {
     text-decoration: underline;
   }
@@ -115,12 +123,12 @@ const _StyledArtifactDetailsBody = styled.div`
   }
 `;
 
-const _ArtifactName = styled.div`
+const ArtifactName = styled.div`
   color: ${dfstyles.colors.text};
   font-weight: bold;
 `;
 
-const _ArtifactNameSubtitle = styled.div`
+const ArtifactNameSubtitle = styled.div`
   color: ${dfstyles.colors.subtext};
   margin-bottom: 8px;
 `;
@@ -138,173 +146,89 @@ export function ArtifactDetailsHelpContent() {
 }
 
 export function ArtifactDetailsBody({
-  artifactId,
-}: // contractConstants,
-// depositOn,
-// noActions,
-{
-  artifactId: ArtifactId;
-  contractConstants: ContractConstants;
-  modal?: ModalHandle;
+  planet,
+  artifact,
+  depositOn,
+  noActions,
+}: {
+  planet?: Planet;
+  artifact: Artifact;
   depositOn?: LocationId;
   noActions?: boolean;
 }) {
   const uiManager = useUIManager();
-  const artifactWrapper = useArtifact(uiManager, artifactId);
-  const artifact = artifactWrapper.value;
 
-  if (!artifact) {
-    return null;
+  let readyInStr = undefined;
+
+  if (
+    planet &&
+    artifact.artifactType === ArtifactType.PhotoidCannon &&
+    planet.activeArtifact?.id === artifact.id
+  ) {
+    readyInStr = (
+      <TimeUntil
+        timestamp={
+          planet.artifactActivationTime * 1000 +
+          uiManager.contractConstants.PHOTOID_ACTIVATION_DELAY * 1000
+        }
+        ifPassed={'now!'}
+      />
+    );
   }
 
-  return null;
-
-  // let readyInStr = undefined;
-
-  // if (artifact.artifactType === ArtifactType.PhotoidCannon /* && isActivated(artifact) */) {
-  //   readyInStr = (
-  //     <TimeUntil
-  //       timestamp={
-  //         artifact.lastActivated * 1000 + contractConstants.PHOTOID_ACTIVATION_DELAY * 1000
-  //       }
-  //       ifPassed={'now!'}
-  //     />
-  //   );
-  // }
-
-  // return (
-  //   <>
-  //     <div style={{ display: 'inline-block' }}>
-  //       <ArtifactImage artifact={artifact} size={32} />
-  //     </div>
-  //     <Spacer width={8} />
-  //     <div style={{ display: 'inline-block' }}>
-  //       {isSpaceShip(artifact.artifactType) ? (
-  //         <>
-  //           <ArtifactName>
-  //             <ArtifactTypeText artifact={artifact} />
-  //           </ArtifactName>
-  //           <ArtifactNameSubtitle>{artifactName(artifact)}</ArtifactNameSubtitle>
-  //         </>
-  //       ) : (
-  //         <>
-  //           <ArtifactName>{artifactName(artifact)}</ArtifactName>
-  //           <ArtifactNameSubtitle>
-  //             <ArtifactRarityLabelAnim rarity={artifact.rarity} />{' '}
-  //             <ArtifactBiomeLabelAnim artifact={artifact} />{' '}
-  //             <ArtifactTypeText artifact={artifact} />
-  //           </ArtifactNameSubtitle>
-  //         </>
-  //       )}
-  //     </div>
-
-  //     {hasStatBoost(artifact.artifactType) && (
-  //       <ArtifactDetailsHeader>
-  //         <StatsContainer>
-  //           {_.range(0, 5).map((val) => (
-  //             <UpgradeStatInfo
-  //               upgrades={[artifact.upgrade, artifact.timeDelayedUpgrade]}
-  //               stat={val}
-  //               key={val}
-  //             />
-  //           ))}
-  //         </StatsContainer>
-  //       </ArtifactDetailsHeader>
-  //     )}
-
-  //     {isSpaceShip(artifact.artifactType) && (
-  //       <ArtifactDescription collapsable={false} artifact={artifact} />
-  //     )}
-
-  //     <StyledArtifactDetailsBody>
-  //       {!isSpaceShip(artifact.artifactType) && <ArtifactDescription artifact={artifact} />}
-  //       <Spacer height={8} />
-
-  //       <div className='row'>
-  //         <span>Located On</span>
-  //         {planetArtifactName(artifact) ? (
-  //           <span className='link' onClick={planetClicked}>
-  //             {planetArtifactName(artifact)}
-  //           </span>
-  //         ) : (
-  //           <span>n / a</span>
-  //         )}
-  //       </div>
-
-  //       {!isSpaceShip(artifact.artifactType) && (
-  //         <>
-  //           <div className='row'>
-  //             <span>Minted At</span>
-  //             <span>{dateMintedAt(artifact)}</span>
-  //           </div>
-  //           <div className='row'>
-  //             <span>Discovered On</span>
-  //             <span>{getPlanetNameHash(artifact.planetDiscoveredOn)}</span>
-  //           </div>
-  //           <div className='row'>
-  //             <span>Discovered By</span>
-  //             <span>{discoverer()}</span>
-  //           </div>
-  //         </>
-  //       )}
-
-  //       {artifact.controller === EMPTY_ADDRESS && (
-  //         <div className='row'>
-  //           <span>Owner</span>
-  //           <span>{owner()}</span>
-  //         </div>
-  //       )}
-  //       <div className='row'>
-  //         <span>ID</span>
-  //         <TextPreview text={artifact.id} />
-  //       </div>
-
-  //       {artifact.controller !== EMPTY_ADDRESS && (
-  //         <div className='row'>
-  //           <span>Controller</span>
-  //           <span>
-  //             <AccountLabel ethAddress={artifact.controller} />
-  //           </span>
-  //         </div>
-  //       )}
-  //       {readyInStr && (
-  //         <div className='row'>
-  //           <span>Ready In</span>
-  //           <span>{readyInStr}</span>
-  //         </div>
-  //       )}
-
-  //       {!noActions && (
-  //         <ArtifactActions artifactId={artifactWrapper.value?.id} depositOn={depositOn} />
-  //       )}
-  //     </StyledArtifactDetailsBody>
-  //   </>
-  // );
-}
-
-export function ArtifactDetailsPane({
-  modal,
-  artifactId,
-  depositOn,
-}: {
-  modal: ModalHandle;
-  artifactId: ArtifactId;
-  depositOn?: LocationId;
-}) {
-  const uiManager = useUIManager();
-  const contractConstants = uiManager.contractConstants;
-
   return (
-    <ArtifactDetailsBody
-      modal={modal}
-      artifactId={artifactId}
-      contractConstants={contractConstants}
-      depositOn={depositOn}
-    />
+    <>
+      <div style={{ display: 'inline-block' }}>
+        <ArtifactImage artifact={artifact} size={32} />
+      </div>
+      <Spacer width={8} />
+      <div style={{ display: 'inline-block' }}>
+        <ArtifactName>{artifactName(artifact)}</ArtifactName>
+        <ArtifactNameSubtitle>
+          <ArtifactRarityLabelAnim rarity={artifact.rarity} />{' '}
+          <ArtifactBiomeLabelAnim artifact={artifact} />
+          <ArtifactTypeText artifact={artifact} />
+        </ArtifactNameSubtitle>
+      </div>
+
+      {hasStatBoost(artifact.artifactType) && (
+        <ArtifactDetailsHeader>
+          <StatsContainer>
+            {_.range(0, 5).map((val) => (
+              <UpgradeStatInfo
+                // upgrades={[artifact.upgrade, artifact.timeDelayedUpgrade]}
+                upgrades={[]}
+                stat={val}
+                key={val}
+              />
+            ))}
+          </StatsContainer>
+        </ArtifactDetailsHeader>
+      )}
+
+      <StyledArtifactDetailsBody>
+        <ArtifactDescription artifact={artifact} />
+        <Spacer height={8} />
+
+        <div className='row'>
+          <span>ID</span>
+          <TextPreview text={artifact.id} />
+        </div>
+
+        {readyInStr && (
+          <div className='row'>
+            <span>Ready In</span>
+            <span>{readyInStr}</span>
+          </div>
+        )}
+
+        {!noActions && <ArtifactActions artifactId={artifact.id} depositOn={depositOn} />}
+      </StyledArtifactDetailsBody>
+    </>
   );
 }
 
-function _ArtifactDescription({
+function ArtifactDescription({
   artifact,
   collapsable,
 }: {

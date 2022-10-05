@@ -22,6 +22,7 @@ import {
   SpeedText,
 } from '../Components/Labels/PlanetLabels';
 import { Sub } from '../Components/Text';
+import { ArtifactHoverPane } from '../Panes/ArtifactHoverPane';
 import { PlanetIcons } from '../Renderers/PlanetscapeRenderer/PlanetIcons';
 import dfstyles, { snips } from '../Styles/dfstyles';
 import { useActiveArtifact, usePlanetArtifacts, useUIManager } from '../Utils/AppHooks';
@@ -76,6 +77,7 @@ export function PlanetCard({
 
   return (
     <>
+      <ArtifactHoverPane planet={planet} />
       {standalone && (
         <TitleBar>
           <PlanetCardTitle planet={p} />

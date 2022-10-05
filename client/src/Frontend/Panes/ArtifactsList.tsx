@@ -1,10 +1,10 @@
 import { artifactName } from '@dfdao/procedural';
-import { Artifact, ArtifactTypeNames, LocationId } from '@dfdao/types';
+import { Artifact, ArtifactTypeNames, LocationId, Planet } from '@dfdao/types';
 import React, { useCallback, useEffect } from 'react';
 import { Link } from '../Components/CoreUI';
 import { ArtifactRarityLabelAnim } from '../Components/Labels/ArtifactLabels';
 import { Sub } from '../Components/Text';
-import { ArtifactDetailsPane } from '../Panes/ArtifactDetailsPane';
+import { ArtifactDetailsBody } from '../Panes/ArtifactDetailsPane';
 import dfstyles from '../Styles/dfstyles';
 import { useUIManager } from '../Utils/AppHooks';
 import { ModalHandle } from '../Views/ModalPane';
@@ -13,10 +13,12 @@ import { SortableTable } from '../Views/SortableTable';
 function ArtifactLink({
   modal,
   children,
+  planet,
   artifact,
   depositOn,
 }: {
   modal?: ModalHandle;
+  planet?: Planet;
   artifact: Artifact;
   children: React.ReactNode | React.ReactNode[];
   depositOn?: LocationId;
@@ -33,13 +35,11 @@ function ArtifactLink({
     modal &&
       modal.push({
         element() {
-          return (
-            <ArtifactDetailsPane depositOn={depositOn} artifactId={artifact?.id} modal={modal} />
-          );
+          return <ArtifactDetailsBody planet={planet} depositOn={depositOn} artifact={artifact} />;
         },
         title: artifactName(artifact),
       });
-  }, [artifact, modal, depositOn, uiManager]);
+  }, [artifact, planet, modal, depositOn, uiManager]);
 
   return (
     <Link
@@ -62,11 +62,13 @@ function ArtifactLink({
 
 export function ArtifactsList({
   modal,
+  planet,
   artifacts,
   depositOn,
   maxRarity,
 }: {
   modal: ModalHandle;
+  planet?: Planet;
   artifacts: Artifact[];
   depositOn?: LocationId;
   maxRarity?: number;
@@ -79,7 +81,7 @@ export function ArtifactsList({
 
   const columns = [
     (artifact: Artifact) => (
-      <ArtifactLink depositOn={depositOn} modal={modal} artifact={artifact}>
+      <ArtifactLink planet={planet} depositOn={depositOn} modal={modal} artifact={artifact}>
         {artifactName(artifact)}
       </ArtifactLink>
     ),

@@ -10,7 +10,6 @@ import {
   WindowWrapper,
 } from '../Components/GameWindowComponents';
 import ControllableCanvas from '../Game/ControllableCanvas';
-import { ArtifactHoverPane } from '../Panes/ArtifactHoverPane';
 import { CoordsPane } from '../Panes/CoordsPane';
 import { DiagnosticsPane } from '../Panes/DiagnosticsPane';
 import { ExplorePane } from '../Panes/ExplorePane';
@@ -196,7 +195,6 @@ export function GameWindowLayout({
           <ExplorePane />
 
           <HoverPlanetPane />
-          <ArtifactHoverPane />
 
           <TutorialPane tutorialHook={tutorialHook} />
         </CanvasContainer>

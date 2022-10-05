@@ -27,7 +27,7 @@ function SpaceshipLink({
   }, [uiManager]);
 
   const onClick = useCallback(() => {
-    uiManager?.setHoveringOverArtifact(undefined);
+    uiManager?.setHoveringOverSpaceship(undefined);
     modal &&
       modal.push({
         element() {
