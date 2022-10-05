@@ -44,7 +44,6 @@ type ErrorState =
 
 export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>) {
   const [connection, setConnection] = useState<EthConnection | undefined>();
-  const [ownerAddress, setOwnerAddress] = useState<EthAddress | undefined>();
   const [contract, setContract] = useState<ContractsAPI | undefined>();
   const [startingConfig, setStartingConfig] = useState<LobbyInitializers | undefined>();
   const [lobbyAddress, setLobbyAddress] = useState<EthAddress | undefined>();
@@ -74,7 +73,6 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
   const onReady = useCallback(
     (connection: EthConnection) => {
       setConnection(connection);
-      setOwnerAddress(connection.getAddress());
     },
     [setConnection]
   );
