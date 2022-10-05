@@ -19,7 +19,7 @@ import {
 const CONTRACT_PRECISION = 1_000;
 const SILVER_TOKEN_ID = '0x0300000000000000000000000000000000000000000000000000000000000000';
 
-describe('DFSilver', async function () {
+describe.only('DFSilver', async function () {
   // Bump the time out so that the test doesn't timeout during
   // initial fixture creation
   this.timeout(1000 * 60);

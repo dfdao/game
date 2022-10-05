@@ -392,7 +392,7 @@ library LibPlanet {
         gs().players[msg.sender].score += scoreGained;
     }
 
-    // Withdraw Max Silver
+    // Withdraws All Silver on Asteroid
     function withdrawSilverAsteroid(uint256 locationId) public returns (uint256) {
         Planet storage planet = gs().planets[locationId];
         require(planet.owner == msg.sender, "you must own this planet");
