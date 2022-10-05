@@ -194,22 +194,6 @@ describe('DarkForestSpaceShips', function () {
   });
 
   describe('spawning on non-home planet', async function () {
-    let world: World;
-
-    async function worldFixture() {
-      const world = await loadFixture(defaultWorldFixture);
-      const initArgs = makeInitArgs(SPAWN_PLANET_2);
-      await world.user2Core.initializePlayer(...initArgs);
-
-      await conquerUnownedPlanet(world, world.user2Core, SPAWN_PLANET_2, LVL2_PLANET_SPACE);
-
-      return world;
-    }
-
-    beforeEach(async function () {
-      world = await loadFixture(worldFixture);
-    });
-
     it('reverts', async function () {
       await expect(world.user2Core.giveSpaceShips(LVL2_PLANET_SPACE.id)).to.be.revertedWith(
         'you can only spawn ships on your home planet'

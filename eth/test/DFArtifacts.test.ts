@@ -8,6 +8,7 @@ import {
   createArtifact,
   getArtifactsOnPlanet,
   getCurrentTime,
+  getSpaceshipOnPlanetByType,
   getStatSum,
   increaseBlockchainTime,
   makeFindArtifactArgs,
@@ -53,13 +54,14 @@ describe('DarkForestArtifacts', function () {
     await increaseBlockchainTime();
 
     // Move the Gear ship into position
-    const gearShip = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id)).find(
-      (ship) => ship.spaceshipType === SpaceshipType.ShipGear
+    const gearShip = await getSpaceshipOnPlanetByType(
+      world.user1Core,
+      SPAWN_PLANET_1.id,
+      SpaceshipType.ShipGear
     );
 
-    const gearId = gearShip?.id;
     await world.user1Core.move(
-      ...makeMoveArgs(SPAWN_PLANET_1, ARTIFACT_PLANET_1, 100, 0, 0, gearId)
+      ...makeMoveArgs(SPAWN_PLANET_1, ARTIFACT_PLANET_1, 100, 0, 0, gearShip.id)
     );
     await increaseBlockchainTime();
     const tx = await world.user1Core.refreshPlanet(ARTIFACT_PLANET_1.id);
@@ -117,6 +119,7 @@ describe('DarkForestArtifacts', function () {
 
       // artifact and gear should be on planet. Gear is 0 and Artifact is 1.
       const artifactsOnPlanet = await getArtifactsOnPlanet(world, ARTIFACT_PLANET_1.id);
+      console.log(`AAS`, artifactsOnPlanet);
       expect(artifactsOnPlanet.length).to.be.equal(1);
 
       // artifact should be owned by contract
