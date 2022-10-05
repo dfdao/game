@@ -7,6 +7,7 @@ import dfstyles from '../Styles/dfstyles';
 import { useUIManager } from '../Utils/AppHooks';
 import { ModalHandle } from '../Views/ModalPane';
 import { SortableTable } from '../Views/SortableTable';
+import { SpaceshipDetailsBody } from './SpaceshipDetailsPane';
 
 function SpaceshipLink({
   modal,
@@ -31,10 +32,7 @@ function SpaceshipLink({
     modal &&
       modal.push({
         element() {
-          //   return (
-          //     <ArtifactDetailsPane depositOn={depositOn} artifactId={artifact?.id} modal={modal} />
-          //   );
-          return <span></span>;
+          return <SpaceshipDetailsBody spaceship={spaceship} />;
         },
         title: spaceshipName(spaceship),
       });

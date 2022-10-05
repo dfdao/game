@@ -23,6 +23,7 @@ import {
 } from '../Components/Labels/PlanetLabels';
 import { Sub } from '../Components/Text';
 import { ArtifactHoverPane } from '../Panes/ArtifactHoverPane';
+import { SpaceshipHoverPane } from '../Panes/SpaceshipHoverPane';
 import { PlanetIcons } from '../Renderers/PlanetscapeRenderer/PlanetIcons';
 import dfstyles, { snips } from '../Styles/dfstyles';
 import { useActiveArtifact, usePlanetArtifacts, useUIManager } from '../Utils/AppHooks';
@@ -78,6 +79,7 @@ export function PlanetCard({
   return (
     <>
       <ArtifactHoverPane planet={planet} />
+      <SpaceshipHoverPane />
       {standalone && (
         <TitleBar>
           <PlanetCardTitle planet={p} />

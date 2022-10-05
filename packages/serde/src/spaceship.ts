@@ -59,6 +59,10 @@ export function spaceshipIdToDecStr(spaceshipId: SpaceshipId): string {
   return bigInt(spaceshipId, 16).toString(10);
 }
 
+export function spaceshipIdToEthersBN(spaceshipId: SpaceshipId): EthersBN {
+  return EthersBN.from(spaceshipIdToDecStr(spaceshipId));
+}
+
 function calculateByteUInt(tokenId: EthersBN, startByte: number, endByte: number) {
   const token = utils.arrayify(tokenId);
   let byteUInt = 0;

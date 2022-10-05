@@ -6,6 +6,7 @@ import {
   LocationId,
   Planet,
   Player,
+  SpaceshipId,
   Transaction,
   TransactionId,
 } from '@dfdao/types';
@@ -109,6 +110,9 @@ export function useHoverPlanet(uiManager: GameUIManager): Wrapper<Planet | undef
 
 export function useHoverArtifactId(uiManager: GameUIManager): Wrapper<ArtifactId | undefined> {
   return useWrappedEmitter<ArtifactId>(uiManager.hoverArtifactId$, undefined);
+}
+export function useHoverSpaceshipId(uiManager: GameUIManager): Wrapper<SpaceshipId | undefined> {
+  return useWrappedEmitter<SpaceshipId>(uiManager.hoverSpaceshipId$, undefined);
 }
 
 export function useMyArtifactsList(uiManager: GameUIManager) {
