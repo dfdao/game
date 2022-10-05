@@ -136,11 +136,7 @@ const ArtifactNameSubtitle = styled.div`
 export function ArtifactDetailsHelpContent() {
   return (
     <div>
-      <p>
-        In this pane, you can see specific information about a particular artifact. You can also
-        initiate a conversation with the artifact! Try talking to your artifacts. Make some new
-        friends (^:
-      </p>
+      <p>In this pane, you can see specific information about a particular artifact.</p>
     </div>
   );
 }
