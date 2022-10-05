@@ -2032,6 +2032,12 @@ class GameManager extends EventEmitter {
         }
       }
 
+      // In Development mode start search at 0,0 so map is pre-mined.
+      if (!import.meta.env.PROD) {
+        x = 0;
+        y = 0;
+      }
+
       const pattern: MiningPattern = new SpiralPattern({ x, y }, MIN_CHUNK_SIZE);
       const chunkStore = new HomePlanetMinerChunkStore(
         initPerlinMin,
