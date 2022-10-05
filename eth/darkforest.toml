@@ -76,12 +76,12 @@ CAPTURE_ZONES_PER_5000_WORLD_RADIUS = 3
 # Game configuration #
 ######################
 MAX_NATURAL_PLANET_LEVEL = 9
-TIME_FACTOR_HUNDREDTHS = 100 # speedup/slowdown game
+TIME_FACTOR_HUNDREDTHS = 2000 # speedup/slowdown game
 PERLIN_THRESHOLD_1 = 14
 PERLIN_THRESHOLD_2 = 15
 PERLIN_THRESHOLD_3 = 19
-INIT_PERLIN_MIN = 13
-INIT_PERLIN_MAX = 14
+INIT_PERLIN_MIN = 1
+INIT_PERLIN_MAX = 31
 SPAWN_RIM_AREA = 0
 BIOME_THRESHOLD_1 = 15
 BIOME_THRESHOLD_2 = 17
@@ -102,7 +102,7 @@ PLANET_LEVEL_THRESHOLDS = [
   240,
   48
 ]
-PLANET_RARITY = 16384
+PLANET_RARITY = 4096
 # How much score silver gives when withdrawing.
 # Expressed as a percentage integer.
 # (100 is 100%)

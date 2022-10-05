@@ -1,14 +1,15 @@
 import { INIT_ADDRESS } from '@dfdao/contracts';
 import initContractAbiUrl from '@dfdao/contracts/abis/DFInitialize.json?url';
+import { DarkForest } from '@dfdao/contracts/typechain';
 import { EthConnection } from '@dfdao/network';
 import { address } from '@dfdao/serde';
 import { ArtifactRarity, EthAddress, UnconfirmedCreateLobby } from '@dfdao/types';
-import { Contract } from 'ethers';
+import { Contract, providers } from 'ethers';
+import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { ContractsAPI, makeContractsAPI } from '../../Backend/GameLogic/ContractsAPI';
-import { ContractsAPIEvent } from '../../_types/darkforest/api/ContractsAPITypes';
 import { InitRenderState, Wrapper } from '../Components/GameLandingPageComponents';
 import { ConfigurationPane } from '../Panes/Lobbies/ConfigurationPane';
 import { Minimap } from '../Panes/Lobbies/MinimapPane';
@@ -18,6 +19,23 @@ import { listenForKeyboardEvents, unlinkKeyboardEvents } from '../Utils/KeyEmitt
 import { CadetWormhole } from '../Views/CadetWormhole';
 import { LobbyLandingPage } from './LobbyLandingPage';
 
+// TODO: Infer this from Dark Forest interface
+function getLobbyCreatedEvent(
+  lobbyReceipt: providers.TransactionReceipt,
+  contract: DarkForest
+): { owner: EthAddress; lobby: EthAddress } {
+  const lobbyCreatedHash = keccak256(toUtf8Bytes('LobbyCreated(address,address)'));
+  const log = lobbyReceipt.logs.find((log: any) => log.topics[0] === lobbyCreatedHash);
+  if (log) {
+    return {
+      owner: address(contract.interface.parseLog(log).args.ownerAddress),
+      lobby: address(contract.interface.parseLog(log).args.lobbyAddress),
+    };
+  } else {
+    throw new Error('Lobby Created event not found');
+  }
+}
+
 type ErrorState =
   | { type: 'invalidAddress' }
   | { type: 'contractLoad' }
@@ -26,7 +44,6 @@ type ErrorState =
 
 export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>) {
   const [connection, setConnection] = useState<EthConnection | undefined>();
-  const [ownerAddress, setOwnerAddress] = useState<EthAddress | undefined>();
   const [contract, setContract] = useState<ContractsAPI | undefined>();
   const [startingConfig, setStartingConfig] = useState<LobbyInitializers | undefined>();
   const [lobbyAddress, setLobbyAddress] = useState<EthAddress | undefined>();
@@ -56,7 +73,6 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
   const onReady = useCallback(
     (connection: EthConnection) => {
       setConnection(connection);
-      setOwnerAddress(connection.getAddress());
     },
     [setConnection]
   );
@@ -170,17 +186,19 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
       args: Promise.resolve([initAddress, initFunctionCall]),
     };
 
-    contract.once(ContractsAPIEvent.LobbyCreated, (owner: EthAddress, lobby: EthAddress) => {
-      if (owner === ownerAddress) {
-        setLobbyAddress(lobby);
-      }
-    });
+    // contract.once(ContractsAPIEvent.LobbyCreated, (owner: EthAddress, lobby: EthAddress) => {
+    //   if (owner === ownerAddress) {
+    //     setLobbyAddress(lobby);
+    //   }
+    // });
 
     const tx = await contract.submitTransaction(txIntent, {
       // The createLobby function costs somewhere around 12mil gas
-      gasLimit: '16777215',
+      gasLimit: '15000000',
     });
-    await tx.confirmedPromise;
+    const rct = await tx.confirmedPromise;
+    const { lobby } = getLobbyCreatedEvent(rct, contract.contract);
+    setLobbyAddress(lobby);
   }
 
   if (errorState) {
