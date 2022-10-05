@@ -6,12 +6,12 @@ export const CLOSE_MODAL = 't';
 export const TOGGLE_SETTINGS_PANE = 'h';
 export const TOGGLE_HELP_PANE = 'j';
 export const TOGGLE_PLUGINS_PANE = 'k';
-export const TOGGLE_YOUR_ARTIFACTS_PANE = 'l';
+export const TOGGLE_YOUR_INVENTORY_PANE = 'l';
 export const TOGGLE_YOUR_PLANETS_DEX_PANE = ';';
 export const TOGGLE_TRANSACTIONS_PANE = "'";
 
 // planet context pane shortcuts
-export const TOGGLE_PLANET_ARTIFACTS_PANE = 's';
+export const TOGGLE_PLANET_INVENTORY_PANE = 's';
 export const TOGGLE_HAT_PANE = 'x';
 export const TOGGLE_ABANDON = 'r';
 export const TOGGLE_WITHDRAW = ']';

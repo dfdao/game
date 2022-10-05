@@ -31,6 +31,7 @@ import {
   GasPrices,
   LocationId,
   PlanetLevel,
+  SpaceshipType,
 } from '@dfdao/types';
 import bigInt, { BigInteger } from 'big-integer';
 
@@ -82,16 +83,16 @@ export const MIN_ARTIFACT_TYPE = ArtifactType.Monolith;
 /**
  * The value of the maximum, valid artifact type
  */
-export const MAX_ARTIFACT_TYPE = ArtifactType.ShipTitan;
+export const MAX_ARTIFACT_TYPE = ArtifactType.BlackDomain;
 
 /**
  * The value of the minimum, valid spaceship type
  */
-export const MIN_SPACESHIP_TYPE = ArtifactType.ShipMothership;
+export const MIN_SPACESHIP_TYPE = SpaceshipType.ShipMothership;
 /**
  * The value of the maximum, valid spaceship type
  */
-export const MAX_SPACESHIP_TYPE = ArtifactType.ShipTitan;
+export const MAX_SPACESHIP_TYPE = SpaceshipType.ShipTitan;
 
 /**
  * The value of the minimum, valid artifact rarity

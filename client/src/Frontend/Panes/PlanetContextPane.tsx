@@ -5,11 +5,7 @@ import { Wrapper } from '../../Backend/Utils/Wrapper';
 import { CapturePlanetButton } from '../Components/CapturePlanetButton';
 import { VerticalSplit } from '../Components/CoreUI';
 import { MineArtifactButton } from '../Components/MineArtifactButton';
-import {
-  OpenManagePlanetArtifactsButton,
-  OpenPlanetInfoButton,
-  OpenUpgradeDetailsPaneButton,
-} from '../Components/OpenPaneButtons';
+import { OpenPlanetInfoButton, OpenUpgradeDetailsPaneButton } from '../Components/OpenPaneButtons';
 import { snips } from '../Styles/dfstyles';
 import { useAccount, useSelectedPlanet, useUIManager } from '../Utils/AppHooks';
 import { useEmitterSubscribe } from '../Utils/EmitterHooks';
@@ -72,7 +68,6 @@ function PlanetContextPaneContent({
         planetWrapper={planet}
         onToggleSendForces={onToggleSendForces}
         onToggleAbandon={onToggleAbandon}
-        onToggleExtract={() => {}}
       />
       <MineArtifactButton planetWrapper={planet} />
       {captureRow}
@@ -83,7 +78,7 @@ function PlanetContextPaneContent({
           <OpenPlanetInfoButton modal={modal} planetId={p?.locationId} />
         </>
         <>
-          <OpenManagePlanetArtifactsButton modal={modal} planetId={p?.locationId} />
+          <OpenManagePlanetInventoryButton modal={modal} planetId={p?.locationId} />
         </>
       </VerticalSplit>
       {withdrawRow}

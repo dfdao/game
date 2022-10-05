@@ -2,7 +2,7 @@ import type { DarkForest } from '@dfdao/contracts/typechain';
 import type { Upgrade, UpgradeBranches } from '@dfdao/types';
 
 // Sort of duplicate of RawArtifactWithMetadata to avoid circular dependency
-export type RawUpgrade = Awaited<ReturnType<DarkForest['getArtifactById']>>['upgrade'];
+export type RawUpgrade = Awaited<ReturnType<DarkForest['getUpgradeForArtifact']>>;
 export type RawUpgradesBranches = Awaited<ReturnType<DarkForest['getUpgrades']>>;
 
 /**

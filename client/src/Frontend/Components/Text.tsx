@@ -1,7 +1,13 @@
 import { BLOCK_EXPLORER_URL } from '@dfdao/constants';
 import { isLocatable } from '@dfdao/gamelogic';
-import { artifactName, getPlanetName } from '@dfdao/procedural';
-import { Artifact, ArtifactId, Chunk, Planet, Transaction, WorldCoords } from '@dfdao/types';
+import { artifactName, getPlanetName, spaceshipName } from '@dfdao/procedural';
+import {
+  artifactIdToEthersBN,
+  decodeArtifact,
+  decodeSpaceship,
+  spaceshipIdToEthersBN,
+} from '@dfdao/serde';
+import { ArtifactId, Chunk, Planet, SpaceshipId, Transaction, WorldCoords } from '@dfdao/types';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Viewport from '../Game/Viewport';
@@ -108,14 +114,23 @@ export function CenterPlanetLink({
 }
 
 export function ArtifactNameLink({ id }: { id: ArtifactId }) {
-  const uiManager = useUIManager();
-  const artifact: Artifact | undefined = uiManager && uiManager.getArtifactWithId(id);
+  const artifact = decodeArtifact(artifactIdToEthersBN(id));
 
   const click = () => {
     UIEmitter.getInstance().emit(UIEmitterEvent.ShowArtifact, artifact);
   };
 
   return <Link onClick={click}>{artifactName(artifact)}</Link>;
+}
+
+export function SpaceshipNameLink({ id }: { id: SpaceshipId }) {
+  const spaceship = decodeSpaceship(spaceshipIdToEthersBN(id));
+
+  const click = () => {
+    UIEmitter.getInstance().emit(UIEmitterEvent.ShowSpaceship, spaceship);
+  };
+
+  return <Link onClick={click}>{spaceshipName(spaceship)}</Link>;
 }
 
 export function PlanetNameLink({ planet }: { planet: Planet }) {

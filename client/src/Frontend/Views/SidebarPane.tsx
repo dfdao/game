@@ -9,7 +9,7 @@ import {
   TOGGLE_PLUGINS_PANE,
   TOGGLE_SETTINGS_PANE,
   TOGGLE_TRANSACTIONS_PANE,
-  TOGGLE_YOUR_ARTIFACTS_PANE,
+  TOGGLE_YOUR_INVENTORY_PANE,
   TOGGLE_YOUR_PLANETS_DEX_PANE,
 } from '../Utils/ShortcutConstants';
 import { ModalToggleButton } from './ModalIcon';
@@ -18,14 +18,14 @@ export function SidebarPane({
   settingsHook,
   helpHook,
   pluginsHook,
-  yourArtifactsHook,
+  yourInventoryHook,
   planetdexHook,
   transactionLogHook,
 }: {
   settingsHook: Hook<boolean>;
   helpHook: Hook<boolean>;
   pluginsHook: Hook<boolean>;
-  yourArtifactsHook: Hook<boolean>;
+  yourInventoryHook: Hook<boolean>;
   planetdexHook: Hook<boolean>;
   transactionLogHook: Hook<boolean>;
 }) {
@@ -65,12 +65,12 @@ export function SidebarPane({
         />
         <EmSpacer height={0.5} />
         <ModalToggleButton
-          modal={ModalName.YourArtifacts}
-          hook={yourArtifactsHook}
+          modal={ModalName.YourInventory}
+          hook={yourInventoryHook}
           text={sidebarHovered ? 'Your Inventory' : undefined}
           size='stretch'
-          shortcutKey={TOGGLE_YOUR_ARTIFACTS_PANE}
-          shortcutText={sidebarHovered ? TOGGLE_YOUR_ARTIFACTS_PANE : undefined}
+          shortcutKey={TOGGLE_YOUR_INVENTORY_PANE}
+          shortcutText={sidebarHovered ? TOGGLE_YOUR_INVENTORY_PANE : undefined}
         />
         <EmSpacer height={0.5} />
         <ModalToggleButton

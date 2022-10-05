@@ -10,16 +10,15 @@ import {
   WindowWrapper,
 } from '../Components/GameWindowComponents';
 import ControllableCanvas from '../Game/ControllableCanvas';
-import { ArtifactHoverPane } from '../Panes/ArtifactHoverPane';
 import { CoordsPane } from '../Panes/CoordsPane';
 import { DiagnosticsPane } from '../Panes/DiagnosticsPane';
 import { ExplorePane } from '../Panes/ExplorePane';
 import { HelpPane } from '../Panes/HelpPane';
 import { HoverPlanetPane } from '../Panes/HoverPlanetPane';
+import { InvetoryPane } from '../Panes/InventoryPane';
 import OnboardingPane from '../Panes/OnboardingPane';
 import { PlanetContextPane } from '../Panes/PlanetContextPane';
 import { PlanetDexPane } from '../Panes/PlanetDexPane';
-import { PlayerArtifactsPane } from '../Panes/PlayerArtifactsPane';
 import { PluginLibraryPane } from '../Panes/PluginLibraryPane';
 import { PrivatePane } from '../Panes/PrivatePane';
 import { SettingsPane } from '../Panes/SettingsPane';
@@ -70,8 +69,8 @@ export function GameWindowLayout({
   const [planetdexVisible, setPlanetdexVisible] = useState<boolean>(
     isModalOpen(ModalName.PlanetDex)
   );
-  const [playerArtifactsVisible, setPlayerArtifactsVisible] = useState<boolean>(
-    isModalOpen(ModalName.YourArtifacts)
+  const [playerInventoryVisible, setPlayerInventoryVisible] = useState<boolean>(
+    isModalOpen(ModalName.YourInventory)
   );
   const [twitterVerifyVisible, setTwitterVerifyVisible] = useState<boolean>(
     isModalOpen(ModalName.TwitterVerify)
@@ -150,9 +149,9 @@ export function GameWindowLayout({
           onOpenPrivate={() => setPrivateVisible(true)}
         />
         <PrivatePane visible={privateVisible} onClose={() => setPrivateVisible(false)} />
-        <PlayerArtifactsPane
-          visible={playerArtifactsVisible}
-          onClose={() => setPlayerArtifactsVisible(false)}
+        <InvetoryPane
+          visible={playerInventoryVisible}
+          onClose={() => setPlayerInventoryVisible(false)}
         />
         <PlanetContextPane
           visible={selectedPlanetVisible}
@@ -184,7 +183,7 @@ export function GameWindowLayout({
             settingsHook={[settingsVisible, setSettingsVisible]}
             helpHook={[helpVisible, setHelpVisible]}
             pluginsHook={[pluginsVisible, setPluginsVisible]}
-            yourArtifactsHook={[playerArtifactsVisible, setPlayerArtifactsVisible]}
+            yourInventoryHook={[playerInventoryVisible, setPlayerInventoryVisible]}
             planetdexHook={[planetdexVisible, setPlanetdexVisible]}
           />
           <CanvasWrapper>
@@ -196,7 +195,6 @@ export function GameWindowLayout({
           <ExplorePane />
 
           <HoverPlanetPane />
-          <ArtifactHoverPane />
 
           <TutorialPane tutorialHook={tutorialHook} />
         </CanvasContainer>
