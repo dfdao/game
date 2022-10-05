@@ -64,15 +64,6 @@ export function SidebarPane({
         />
         <EmSpacer height={0.5} />
         <ModalToggleButton
-          modal={ModalName.YourInventory}
-          hook={yourInventoryHook}
-          text={sidebarHovered ? 'Your Inventory' : undefined}
-          size='stretch'
-          shortcutKey={TOGGLE_YOUR_INVENTORY_PANE}
-          shortcutText={sidebarHovered ? TOGGLE_YOUR_INVENTORY_PANE : undefined}
-        />
-        <EmSpacer height={0.5} />
-        <ModalToggleButton
           modal={ModalName.PlanetDex}
           hook={planetdexHook}
           text={sidebarHovered ? 'Your Planets' : undefined}

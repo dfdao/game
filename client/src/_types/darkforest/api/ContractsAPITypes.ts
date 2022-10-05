@@ -298,6 +298,33 @@ export interface ContractConstants {
     WHALE: boolean;
   };
 
+  ARTIFACT_TYPE_PRICES: {
+    Monolith: number;
+    Colossus: number;
+    Spaceship: number;
+    Pyramid: number;
+    Wormhole: number;
+    PlanetaryShield: number;
+    PhotoidCannon: number;
+    BloomFilter: number;
+    BlackDomain: number;
+  };
+  ARTIFACT_RARITY_PRICES: {
+    Common: number;
+    Rare: number;
+    Epic: number;
+    Legendary: number;
+    Mythic: number;
+  };
+
+  SPACESHIP_PRICES: {
+    ShipMothership: number;
+    ShipCrescent: number;
+    ShipWhale: number;
+    ShipGear: number;
+    ShipTitan: number;
+  };
+
   ROUND_END_REWARDS_BY_RANK: [
     number,
     number,
