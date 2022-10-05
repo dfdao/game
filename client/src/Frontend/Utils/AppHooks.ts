@@ -1,4 +1,3 @@
-import { getActivatedArtifact, isActivated } from '@dfdao/gamelogic';
 import {
   Artifact,
   ArtifactId,
@@ -7,6 +6,7 @@ import {
   LocationId,
   Planet,
   Player,
+  SpaceshipId,
   Transaction,
   TransactionId,
 } from '@dfdao/types';
@@ -108,85 +108,80 @@ export function useHoverPlanet(uiManager: GameUIManager): Wrapper<Planet | undef
   return useWrappedEmitter<Planet>(uiManager.hoverPlanet$, undefined);
 }
 
-export function useHoverArtifact(uiManager: GameUIManager): Wrapper<Artifact | undefined> {
-  return useWrappedEmitter<Artifact>(uiManager.hoverArtifact$, undefined);
-}
-
 export function useHoverArtifactId(uiManager: GameUIManager): Wrapper<ArtifactId | undefined> {
   return useWrappedEmitter<ArtifactId>(uiManager.hoverArtifactId$, undefined);
 }
+export function useHoverSpaceshipId(uiManager: GameUIManager): Wrapper<SpaceshipId | undefined> {
+  return useWrappedEmitter<SpaceshipId>(uiManager.hoverSpaceshipId$, undefined);
+}
 
 export function useMyArtifactsList(uiManager: GameUIManager) {
-  const [myArtifacts, setMyArtifacts] = useState(uiManager.getMyArtifacts());
+  const [myArtifacts, setMyArtifacts] = useState(new Wrapper(uiManager.getMyArtifacts()));
   useEmitterSubscribe(
-    uiManager.getArtifactUpdated$(),
+    uiManager.getMyArtifactsUpdated$(),
     () => {
-      setMyArtifacts(uiManager.getMyArtifacts());
+      setMyArtifacts(new Wrapper(uiManager.getMyArtifacts()));
     },
     [uiManager, setMyArtifacts]
   );
-  return myArtifacts;
+  return myArtifacts.value;
+}
+export function useMySpaceshipsList(uiManager: GameUIManager) {
+  const [mySpaceships, setMySpaceships] = useState(new Wrapper(uiManager.getMySpaceships()));
+  useEmitterSubscribe(
+    uiManager.getMySpaceshipsUpdated$(),
+    () => {
+      setMySpaceships(new Wrapper(uiManager.getMySpaceships()));
+    },
+    [uiManager, setMySpaceships]
+  );
+  return mySpaceships.value;
 }
 
 // note that this is going to throw an error if the pointer to `artifacts` changes but not to `planet`
-export function usePlanetArtifacts(
-  planet: Wrapper<Planet | undefined>,
-  uiManager: GameUIManager
-): Artifact[] {
-  const artifacts = useMemo(
-    () => (planet.value ? uiManager.getArtifactsWithIds(planet.value.heldArtifactIds) : []),
-    [planet, uiManager]
-  );
+export function usePlanetArtifacts(planet: Wrapper<Planet | undefined>): Artifact[] {
+  const artifacts = useMemo(() => (planet.value ? planet.value.artifacts : []), [planet]);
 
   return artifacts.filter((a) => !!a) as Artifact[];
 }
 
-export function usePlanetInactiveArtifacts(
-  planet: Wrapper<Planet | undefined>,
-  uiManager: GameUIManager
-): Artifact[] {
-  const artifacts = usePlanetArtifacts(planet, uiManager);
-  const filtered = useMemo(() => artifacts.filter((a) => !isActivated(a)), [artifacts]);
+export function usePlanetInactiveArtifacts(planet: Wrapper<Planet | undefined>): Artifact[] {
+  const artifacts = usePlanetArtifacts(planet);
+
+  const filtered = useMemo(
+    () => artifacts.filter(({ id }) => id !== planet.value?.activeArtifact?.id),
+    [artifacts, planet]
+  );
 
   return filtered;
 }
 
-export function useActiveArtifact(
-  planet: Wrapper<Planet | undefined>,
-  uiManager: GameUIManager
-): Artifact | undefined {
-  const artifacts = usePlanetArtifacts(planet, uiManager);
-  return getActivatedArtifact(artifacts);
+export function useActiveArtifact(planet: Wrapper<Planet | undefined>): Artifact | undefined {
+  return useMemo(() => (planet.value ? planet.value.activeArtifact : undefined), [planet]);
 }
 
-/**
- * Create a subscription to the currently selected artifact.
- * @param uiManager instance of GameUIManager
- */
-export function useSelectedArtifact(uiManager: GameUIManager): Wrapper<Artifact | undefined> {
-  return useWrappedEmitter<Artifact>(uiManager.hoverArtifact$, undefined);
-}
+export function useArtifact(_uiManager: GameUIManager, _artifactId: ArtifactId) {
+  // const [artifact, setArtifact] = useState<Wrapper<Artifact | undefined>>(
+  //   new Wrapper(uiManager.getArtifactWithId(artifactId))
+  // );
 
-export function useArtifact(uiManager: GameUIManager, artifactId: ArtifactId) {
-  const [artifact, setArtifact] = useState<Wrapper<Artifact | undefined>>(
-    new Wrapper(uiManager.getArtifactWithId(artifactId))
-  );
+  // useEmitterSubscribe(
+  //   uiManager.getGameManager().getGameObjects().planetUpdated$,
+  //   (planetId: LocationId) => {
+  //     const planet = uiManager.getPlanetWithId(planetId);
+  //     if (id === artifactId) {
+  //       setArtifact(new Wrapper(uiManager.getArtifactWithId(artifactId)));
+  //     }
+  //   },
+  //   [uiManager, setArtifact, artifactId]
+  // );
 
-  useEmitterSubscribe(
-    uiManager.getGameManager().getGameObjects().artifactUpdated$,
-    (id: ArtifactId) => {
-      if (id === artifactId) {
-        setArtifact(new Wrapper(uiManager.getArtifactWithId(artifactId)));
-      }
-    },
-    [uiManager, setArtifact, artifactId]
-  );
+  // useEffect(() => {
+  //   setArtifact(new Wrapper(uiManager.getArtifactWithId(artifactId)));
+  // }, [uiManager, artifactId]);
 
-  useEffect(() => {
-    setArtifact(new Wrapper(uiManager.getArtifactWithId(artifactId)));
-  }, [uiManager, artifactId]);
-
-  return artifact;
+  // return artifact;
+  return new Wrapper(undefined) as unknown as Wrapper<Artifact>;
 }
 
 // TODO cache this globally

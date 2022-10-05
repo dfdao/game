@@ -31,6 +31,7 @@ export const enum UIEmitterEvent {
 
   SelectArtifact = 'SelectArtifact',
   ShowArtifact = 'ShowArtifact',
+  ShowSpaceship = 'ShowSpaceship',
 }
 
 class UIEmitter extends EventEmitter {

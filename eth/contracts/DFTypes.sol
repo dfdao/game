@@ -71,6 +71,12 @@ struct Planet {
     uint256 invadeStartBlock;
     address capturer;
     uint256 locationId;
+    // Token stuff
+    uint256[] artifacts;
+    uint256[] spaceships;
+    uint256 activeArtifact;
+    uint256 wormholeTo;
+    uint256 artifactActivationTime;
 }
 
 struct RevealedCoords {
@@ -171,6 +177,7 @@ struct ArrivalData {
     uint256 arrivalTime;
     ArrivalType arrivalType;
     uint256 carriedArtifactId;
+    uint256 carriedSpaceshipId;
     uint256 distance;
 }
 
@@ -205,7 +212,11 @@ enum ArtifactType {
     PlanetaryShield,
     PhotoidCannon,
     BloomFilter,
-    BlackDomain,
+    BlackDomain
+}
+
+enum SpaceshipType {
+    Unknown,
     ShipMothership,
     ShipCrescent,
     ShipWhale,
@@ -222,34 +233,6 @@ enum ArtifactRarity {
     Mythic
 }
 
-// for NFTs
-struct Artifact {
-    bool isInitialized;
-    uint256 id;
-    uint256 planetDiscoveredOn;
-    ArtifactRarity rarity;
-    Biome planetBiome;
-    uint256 mintedAtTimestamp;
-    address discoverer;
-    ArtifactType artifactType;
-    // an artifact is 'activated' iff lastActivated > lastDeactivated
-    uint256 activations;
-    uint256 lastActivated;
-    uint256 lastDeactivated;
-    uint256 wormholeTo; // location id
-    address controller; // space ships can be controlled regardless of which planet they're on
-}
-
-// for artifact getters
-struct ArtifactWithMetadata {
-    Artifact artifact;
-    Upgrade upgrade;
-    Upgrade timeDelayedUpgrade; // for photoid canons specifically.
-    address owner;
-    uint256 locationId; // 0 if planet is not deposited into contract or is on a voyage
-    uint256 voyageId; // 0 is planet is not deposited into contract or is on a planet
-}
-
 enum Biome {
     Unknown,
     Ocean,
@@ -262,4 +245,39 @@ enum Biome {
     Wasteland,
     Lava,
     Corrupted
+}
+
+enum TokenType {
+    Unknown,
+    Artifact,
+    Spaceship
+}
+
+enum ArtifactInfo {
+    Unknown,
+    TokenType,
+    ArtifactRarity,
+    ArtifactType,
+    Biome
+}
+
+struct Artifact {
+    uint256 id;
+    TokenType tokenType;
+    ArtifactRarity rarity;
+    ArtifactType artifactType;
+    Biome planetBiome;
+}
+
+// Used for accessing properties of spaceship tokenId
+enum SpaceshipInfo {
+    Unknown,
+    TokenType,
+    SpaceshipType
+}
+
+struct Spaceship {
+    uint256 id;
+    TokenType tokenType;
+    SpaceshipType spaceshipType;
 }

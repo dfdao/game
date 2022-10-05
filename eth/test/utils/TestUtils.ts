@@ -1,4 +1,5 @@
 import type { DarkForest } from '@dfdao/contracts/typechain';
+import { ArtifactStructOutput } from '@dfdao/contracts/typechain/hardhat-diamond-abi/HardhatDiamondABI.sol/DarkForest';
 import { modPBigInt } from '@dfdao/hashing';
 import {
   buildContractCallArgs,
@@ -7,17 +8,27 @@ import {
   WhitelistSnarkInput,
 } from '@dfdao/snarks';
 import { whitelistSnarkWasmPath, whitelistSnarkZkeyPath } from '@dfdao/snarks/node';
-import { ArtifactRarity, ArtifactType, Biome } from '@dfdao/types';
+import {
+  ArtifactRarity,
+  ArtifactRarityNames,
+  ArtifactType,
+  ArtifactTypeNames,
+  Biome,
+  BiomeNames,
+  SpaceshipType,
+  TokenTypeNames,
+} from '@dfdao/types';
 import { bigIntFromKey } from '@dfdao/whitelist';
 import { mine, time } from '@nomicfoundation/hardhat-network-helpers';
 import bigInt from 'big-integer';
+import { expect } from 'chai';
 import { BigNumber, BigNumberish, constants } from 'ethers';
+import hre from 'hardhat';
 // @ts-ignore
 import * as snarkjs from 'snarkjs';
 import { TestLocation } from './TestLocation';
 import { World } from './TestWorld';
 import { ARTIFACT_PLANET_1, initializers, LARGE_INTERVAL } from './WorldConstants';
-
 const {
   PLANETHASH_KEY,
   SPACETYPE_KEY,
@@ -32,6 +43,14 @@ export const BN_ZERO = constants.Zero;
 
 export function hexToBigNumber(hex: string): BigNumber {
   return BigNumber.from(`0x${hex}`);
+}
+
+export function prettyPrintToken(token: ArtifactStructOutput) {
+  console.log(
+    `~Token~\nID: ${token.id}\nCollection: ${TokenTypeNames[token.tokenType]}\nRarity: ${
+      ArtifactRarityNames[token.rarity]
+    }\nType: ${ArtifactTypeNames[token.artifactType]}\nBiome: ${BiomeNames[token.planetBiome]}`
+  );
 }
 
 export function makeRevealArgs(
@@ -290,30 +309,43 @@ export async function user1MintArtifactPlanet(user1Core: DarkForest) {
   await increaseBlockchainTime();
   const findArtifactTx = await user1Core.findArtifact(...makeFindArtifactArgs(ARTIFACT_PLANET_1));
   const findArtifactReceipt = await findArtifactTx.wait();
-  // 0th event is erc721 transfer (i think); 1st event is UpdateArtifact, 2nd argument of this event is artifactId
-  const artifactId = findArtifactReceipt.events?.[1].args?.[1];
-  return artifactId;
+  // 0th event is erc721 transfer (i think); 1st event is UpdateArtifact, 2nd argument of this event
+  // is artifactId
+  const artifactId = findArtifactReceipt.events?.[1].args?.artifactId;
+  return artifactId as BigNumber;
 }
 
 export async function getArtifactsOwnedBy(contract: DarkForest, addr: string) {
-  const artifactsIds = await contract.getPlayerArtifactIds(addr);
-  return (await contract.bulkGetArtifactsByIds(artifactsIds)).map(
-    (artifactWithMetadata) => artifactWithMetadata[0]
+  return await contract.getPlayerArtifacts(addr);
+}
+
+// Gets Artifacts but not Spaceships
+export async function getArtifactsOnPlanet(world: World, locationId: BigNumberish) {
+  return await world.contract.getArtifactsOnPlanet(locationId);
+}
+
+export async function getArtifactTypeOnPlanet(
+  world: World,
+  locationId: BigNumberish,
+  artifactType: ArtifactType
+) {
+  return (await world.contract.getArtifactsOnPlanet(locationId)).filter(
+    (artifact) => artifact.artifactType === artifactType
   );
 }
 
-export async function createArtifactOnPlanet(
+export async function createArtifact(
   contract: DarkForest,
   owner: string,
   planet: TestLocation,
-  type: ArtifactType,
-  { rarity, biome }: { rarity?: ArtifactRarity; biome?: Biome } = {}
+  artifactType: ArtifactType,
+  rarity?: ArtifactRarity,
+  biome?: Biome
 ) {
   rarity ||= ArtifactRarity.Common;
   biome ||= Biome.FOREST;
 
-  const tokenId = hexToBigNumber(Math.floor(Math.random() * 10000000000).toString(16));
-
+  const tokenId = await contract.createArtifactId(rarity, artifactType, biome);
   await contract.adminGiveArtifact({
     tokenId,
     discoverer: owner,
@@ -321,9 +353,48 @@ export async function createArtifactOnPlanet(
     planetId: planet.id,
     rarity: rarity.toString(),
     biome: biome.toString(),
-    artifactType: type.toString(),
+    artifactType: artifactType.toString(),
     controller: ZERO_ADDRESS,
   });
 
   return tokenId;
+}
+
+export async function testDeactivate(world: World, locationId: BigNumberish) {
+  expect((await getArtifactsOnPlanet(world, locationId)).length).to.equal(0);
+  expect(await world.contract.hasActiveArtifact(locationId)).to.equal(false);
+  expect(await world.contract.getArtifactActivationTimeOnPlanet(locationId)).to.equal(0);
+}
+
+export async function activateAndConfirm(
+  contract: DarkForest,
+  locationId: BigNumber,
+  tokenId: BigNumberish,
+  wormHoleTo?: BigNumberish
+) {
+  const activateTx = await contract.activateArtifact(locationId, tokenId, wormHoleTo || 0);
+  const activateRct = await activateTx.wait();
+  const block = await hre.ethers.provider.getBlock(activateRct.blockNumber);
+  expect(await contract.getArtifactActivationTimeOnPlanet(locationId)).to.equal(block.timestamp);
+  expect((await contract.getActiveArtifactOnPlanet(locationId)).id).to.equal(tokenId);
+}
+
+export async function getArtifactOnPlanetByType(
+  contract: DarkForest,
+  locationId: BigNumber,
+  artifactType: ArtifactType
+) {
+  return (await contract.getArtifactsOnPlanet(locationId)).filter(
+    (artifact) => (artifact.artifactType as ArtifactType) === artifactType
+  )[0];
+}
+
+export async function getSpaceshipOnPlanetByType(
+  contract: DarkForest,
+  locationId: BigNumber,
+  shipType: SpaceshipType
+) {
+  return (await contract.getSpaceshipsOnPlanet(locationId)).filter(
+    (s) => (s.spaceshipType as SpaceshipType) === shipType
+  )[0];
 }

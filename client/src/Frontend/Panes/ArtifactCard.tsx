@@ -1,21 +1,12 @@
-import { ArtifactId } from '@dfdao/types';
+import { Artifact, Planet } from '@dfdao/types';
 import React from 'react';
 import { Padded } from '../Components/CoreUI';
-import { useUIManager } from '../Utils/AppHooks';
 import { ArtifactDetailsBody } from './ArtifactDetailsPane';
 
-export function ArtifactCard({ artifactId }: { artifactId?: ArtifactId }) {
-  const uiManager = useUIManager();
-
-  if (!artifactId) return null;
-
+export function ArtifactCard({ planet, artifact }: { planet: Planet; artifact: Artifact }) {
   return (
     <Padded>
-      <ArtifactDetailsBody
-        noActions={true}
-        artifactId={artifactId}
-        contractConstants={uiManager.contractConstants}
-      />
+      <ArtifactDetailsBody planet={planet} noActions={true} artifact={artifact} />
     </Padded>
   );
 }

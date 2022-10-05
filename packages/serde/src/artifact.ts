@@ -1,11 +1,16 @@
 import type { DarkForest } from '@dfdao/contracts/typechain';
-import type { Artifact, ArtifactId, ArtifactPointValues, VoyageId } from '@dfdao/types';
-import { ArtifactRarity, ArtifactType, Biome } from '@dfdao/types';
+import {
+  Artifact,
+  ArtifactId,
+  ArtifactInfo,
+  ArtifactPointValues,
+  ArtifactRarity,
+  ArtifactType,
+  Biome,
+  TokenType,
+} from '@dfdao/types';
 import bigInt from 'big-integer';
-import type { BigNumber as EthersBN } from 'ethers';
-import { address } from './address';
-import { locationIdFromDecStr, locationIdFromEthersBN } from './location';
-import { decodeUpgrade } from './upgrade';
+import { BigNumber as EthersBN, utils } from 'ethers';
 
 /**
  * Converts a possibly 0x-prefixed string of hex digits to an `ArtifactId`: a
@@ -64,6 +69,10 @@ export function artifactIdToDecStr(artifactId: ArtifactId): string {
   return bigInt(artifactId, 16).toString(10);
 }
 
+export function artifactIdToEthersBN(artifactId: ArtifactId): EthersBN {
+  return EthersBN.from(artifactIdToDecStr(artifactId));
+}
+
 export type RawArtifactPointValues = Awaited<ReturnType<DarkForest['getArtifactPointValues']>>;
 
 /**
@@ -84,37 +93,45 @@ export function decodeArtifactPointValues(
   };
 }
 
-export type RawArtifactWithMetadata = Awaited<ReturnType<DarkForest['getArtifactById']>>;
+function calculateByteUInt(tokenId: EthersBN, startByte: number, endByte: number) {
+  const token = utils.arrayify(tokenId);
+  let byteUInt = 0;
+  for (let i = startByte; i <= endByte; i++) {
+    byteUInt += token[i] * 256 ** (endByte - i);
+  }
+  return byteUInt;
+}
 
 /**
- * Converts the raw typechain result of `ArtifactTypes.ArtifactWithMetadata`
- * struct to an `Artifact` typescript typed object (see @dfdao/types).
+ * Converts the raw Token ID to an `Artifact` typescript typed object (see @dfdao/types).
  *
- * @param rawArtifactWithMetadata Raw data of an `ArtifactWithMetadata` struct,
- * returned from a blockchain call (assumed to be typed with typechain).
+ * @param tokenId Raw `tokenId` representing an `Artifact` struct
  */
-export function decodeArtifact(rawArtifactWithMetadata: RawArtifactWithMetadata): Artifact {
-  const { artifact, owner, upgrade, timeDelayedUpgrade, locationId, voyageId } =
-    rawArtifactWithMetadata;
+export function decodeArtifact(tokenId: EthersBN): Artifact {
+  // These account for unknown at the 0-th index
+  const tokenIdx = ArtifactInfo.TokenType - 1;
+  const rarityIdx = ArtifactInfo.ArtifactRarity - 1;
+  const typeIdx = ArtifactInfo.ArtifactType - 1;
+  const biomeIdx = ArtifactInfo.Biome - 1;
+
+  const _tokenType = calculateByteUInt(tokenId, tokenIdx, tokenIdx);
+  const rarity = calculateByteUInt(tokenId, rarityIdx, rarityIdx);
+  const artifactType = calculateByteUInt(tokenId, typeIdx, typeIdx);
+  const biome = calculateByteUInt(tokenId, biomeIdx, biomeIdx);
 
   return {
-    isInititalized: artifact.isInitialized,
-    id: artifactIdFromEthersBN(artifact.id),
-    planetDiscoveredOn: locationIdFromDecStr(artifact.planetDiscoveredOn.toString()),
-    rarity: artifact.rarity as ArtifactRarity,
-    planetBiome: artifact.planetBiome as Biome,
-    mintedAtTimestamp: artifact.mintedAtTimestamp.toNumber(),
-    discoverer: address(artifact.discoverer),
-    artifactType: artifact.artifactType as ArtifactType,
-    activations: artifact.activations.toNumber(),
-    lastActivated: artifact.lastActivated.toNumber(),
-    lastDeactivated: artifact.lastDeactivated.toNumber(),
-    controller: address(artifact.controller),
-    wormholeTo: artifact.wormholeTo.eq(0) ? undefined : locationIdFromEthersBN(artifact.wormholeTo),
-    currentOwner: address(owner),
-    upgrade: decodeUpgrade(upgrade),
-    timeDelayedUpgrade: decodeUpgrade(timeDelayedUpgrade),
-    onPlanetId: locationId.eq(0) ? undefined : locationIdFromEthersBN(locationId),
-    onVoyageId: voyageId.eq(0) ? undefined : (voyageId.toString() as VoyageId),
+    id: artifactIdFromEthersBN(tokenId),
+    rarity: rarity as ArtifactRarity,
+    planetBiome: biome as Biome,
+    artifactType: artifactType as ArtifactType,
   };
+}
+
+export function isArtifact(tokenId: EthersBN): boolean {
+  // These account for unknown at the 0-th index
+  const tokenIdx = ArtifactInfo.TokenType - 1;
+
+  const tokenType = calculateByteUInt(tokenId, tokenIdx, tokenIdx);
+
+  return tokenType === TokenType.Artifact;
 }

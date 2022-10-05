@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Type imports
-import {Planet, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData, Artifact} from "../DFTypes.sol";
+import {Planet, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData} from "../DFTypes.sol";
 
 struct WhitelistStorage {
     bool enabled;
@@ -38,16 +38,11 @@ struct GameStorage {
     uint256 miscNonce;
     mapping(uint256 => Planet) planets;
     mapping(uint256 => RevealedCoords) revealedCoords;
-    mapping(uint256 => uint256) artifactIdToPlanetId;
-    mapping(uint256 => uint256) artifactIdToVoyageId;
     mapping(address => Player) players;
     // maps location id to planet events array
     mapping(uint256 => PlanetEventMetadata[]) planetEvents;
     // maps event id to arrival data
     mapping(uint256 => ArrivalData) planetArrivals;
-    mapping(uint256 => uint256[]) planetArtifacts;
-    // Artifact stuff
-    mapping(uint256 => Artifact) artifacts;
     // Capture Zones
     uint256 nextChangeBlock;
 }

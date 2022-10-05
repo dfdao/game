@@ -28,7 +28,7 @@ const icon = (modal: ModalName): React.ReactNode => {
   else if (modal === ModalName.Hats) return <Icon type={IconType.Hat} />;
   else if (modal === ModalName.Settings) return <Icon type={IconType.Settings} />;
   else if (modal === ModalName.Plugins) return <Icon type={IconType.Plugin} />;
-  else if (modal === ModalName.YourArtifacts) return <Icon type={IconType.Artifact} />;
+  else if (modal === ModalName.YourInventory) return <Icon type={IconType.Artifact} />;
   else if (modal === ModalName.WithdrawSilver) return <Icon type={IconType.Withdraw} />;
   else if (modal === ModalName.TransactionLog) return <Icon type={IconType.DoubleArrows} />;
   return <span>T</span>;

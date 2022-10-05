@@ -1,12 +1,12 @@
 import {
   Artifact,
-  ArtifactId,
   ClaimedCoords,
   LocationId,
   Planet,
   Player,
   QueuedArrival,
   RevealedCoords,
+  Spaceship,
   VoyageId,
 } from '@dfdao/types';
 import _ from 'lodash';
@@ -31,9 +31,8 @@ export interface InitialGameState {
   allClaimedCoords?: ClaimedCoords[];
   pendingMoves: QueuedArrival[];
   touchedAndLocatedPlanets: Map<LocationId, Planet>;
-  artifactsOnVoyages: Artifact[];
   myArtifacts: Artifact[];
-  heldArtifacts: Artifact[][];
+  mySpaceships: Spaceship[];
   loadedPlanets: LocationId[];
   revealedCoordsMap: Map<LocationId, RevealedCoords>;
   claimedCoordsMap?: Map<LocationId, ClaimedCoords>;
@@ -88,9 +87,8 @@ export class InitialGameStateDownloader {
 
     const pendingMovesLoadingBar = this.makeProgressListener('Pending Moves');
     const planetsLoadingBar = this.makeProgressListener('Planets');
-    const artifactsOnPlanetsLoadingBar = this.makeProgressListener('Artifacts On Planets');
-    const artifactsInFlightLoadingBar = this.makeProgressListener('Artifacts On Moves');
     const yourArtifactsLoadingBar = this.makeProgressListener('Your Artifacts');
+    const yourSpaceshipsLoadingBar = this.makeProgressListener('Your Spaceships');
 
     const contractConstants = contractsAPI.getConstants();
     const worldRadius = contractsAPI.getWorldRadius();
@@ -159,25 +157,13 @@ export class InitialGameStateDownloader {
       arrivals.set(arrival.eventId, arrival);
     }
 
-    const artifactIdsOnVoyages: ArtifactId[] = [];
-    for (const arrival of pendingMoves) {
-      if (arrival.artifactId) {
-        artifactIdsOnVoyages.push(arrival.artifactId);
-      }
-    }
-
-    const artifactsOnVoyages = await contractsAPI.bulkGetArtifacts(
-      artifactIdsOnVoyages,
-      artifactsInFlightLoadingBar
-    );
-
-    const heldArtifacts = contractsAPI.bulkGetArtifactsOnPlanets(
-      planetsToLoad,
-      artifactsOnPlanetsLoadingBar
-    );
     const myArtifacts = contractsAPI.getPlayerArtifacts(
       contractsAPI.getAddress(),
       yourArtifactsLoadingBar
+    );
+    const mySpaceships = contractsAPI.getPlayerSpaceships(
+      contractsAPI.getAddress(),
+      yourSpaceshipsLoadingBar
     );
 
     const twitters = await tryGetAllTwitters();
@@ -191,9 +177,8 @@ export class InitialGameStateDownloader {
       allRevealedCoords,
       pendingMoves,
       touchedAndLocatedPlanets,
-      artifactsOnVoyages,
       myArtifacts: await myArtifacts,
-      heldArtifacts: await heldArtifacts,
+      mySpaceships: await mySpaceships,
       loadedPlanets: planetsToLoad,
       revealedCoordsMap,
       claimedCoordsMap,
