@@ -117,18 +117,6 @@ describe('DarkForestMove', function () {
 
       await increaseBlockchainTime();
 
-<<<<<<< HEAD
-      const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id)).filter(
-        (s) => s.spaceshipType === SpaceshipType.ShipGear
-      )[0];
-
-      await world.user1Core.move(
-        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 100, 0, 0, ship?.id)
-      );
-
-      await world.contract.refreshPlanet(SPAWN_PLANET_1.id);
-      const activePhotoid = await getArtifactsOnPlanet(world, SPAWN_PLANET_1.id);
-=======
       const gearShip = await getSpaceshipOnPlanetByType(
         world.user1Core,
         SPAWN_PLANET_1.id,
@@ -144,7 +132,6 @@ describe('DarkForestMove', function () {
         SPAWN_PLANET_1.id,
         ArtifactType.PhotoidCannon
       );
->>>>>>> origin/devcon
       // If the photoid is not there, it was used during ship move
       expect(activePhotoid).to.not.eq(undefined);
     });
