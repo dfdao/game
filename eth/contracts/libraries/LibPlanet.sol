@@ -384,13 +384,10 @@ library LibPlanet {
         // so any of those values coming from the contracts need to be divided by
         // `CONTRACT_PRECISION` to get their true integer value.
         uint256 scoreGained = silverToWithdraw / 1000;
-<<<<<<< HEAD
-=======
         // increase silver token count;
         uint256 silverId = LibSilver.create();
         DFTokenFacet(address(this)).mint(msg.sender, silverId, scoreGained);
 
->>>>>>> 9413f19 (chore: rename withdraw silver tests check silver balance)
         scoreGained = (scoreGained * gameConstants().SILVER_SCORE_VALUE) / 100;
         gs().players[msg.sender].score += scoreGained;
     }
