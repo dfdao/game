@@ -3,17 +3,17 @@ import React, { useCallback } from 'react';
 import { BroadcastPane, BroadcastPaneHelpContent } from '../Panes/BroadcastPane';
 import { HatPane } from '../Panes/HatPane';
 import {
-  ManagePlanetArtifactsHelpContent,
-  ManagePlanetArtifactsPane,
+  ManagePlanetInventoryHelpContent,
+  ManagePlanetInventoryPane,
   PlanetInfoHelpContent,
-} from '../Panes/ManagePlanetArtifacts/ManagePlanetArtifactsPane';
+} from '../Panes/ManagePlanetArtifacts/ManagePlanetInventoryPane';
 import { PlanetInfoPane } from '../Panes/PlanetInfoPane';
 import { UpgradeDetailsPane, UpgradeDetailsPaneHelpContent } from '../Panes/UpgradeDetailsPane';
 import {
   TOGGLE_BROADCAST_PANE,
   TOGGLE_HAT_PANE,
-  TOGGLE_PLANET_ARTIFACTS_PANE,
   TOGGLE_PLANET_INFO_PANE,
+  TOGGLE_PLANET_INVENTORY_PANE,
   TOGGLE_UPGRADES_PANE,
 } from '../Utils/ShortcutConstants';
 import { ModalHandle } from '../Views/ModalPane';
@@ -105,7 +105,7 @@ export function OpenUpgradeDetailsPaneButton({
     />
   );
 }
-export function OpenManagePlanetArtifactsButton({
+export function OpenManagePlanetInventoryButton({
   modal,
   planetId,
 }: {
@@ -116,9 +116,9 @@ export function OpenManagePlanetArtifactsButton({
     <OpenPaneButton
       modal={modal}
       title='Inventory'
-      shortcut={TOGGLE_PLANET_ARTIFACTS_PANE}
-      element={() => <ManagePlanetArtifactsPane modal={modal} initialPlanetId={planetId} />}
-      helpContent={ManagePlanetArtifactsHelpContent()}
+      shortcut={TOGGLE_PLANET_INVENTORY_PANE}
+      element={() => <ManagePlanetInventoryPane modal={modal} initialPlanetId={planetId} />}
+      helpContent={ManagePlanetInventoryHelpContent()}
     />
   );
 }

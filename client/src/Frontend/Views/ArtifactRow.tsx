@@ -1,6 +1,5 @@
-import { isSpaceShip } from '@dfdao/gamelogic';
 import { Artifact } from '@dfdao/types';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import { ArtifactImage } from '../Components/ArtifactImage';
 import { Spacer } from '../Components/CoreUI';
@@ -21,13 +20,13 @@ const thumbActive = css`
   background-color: ${dfstyles.colors.border};
 `;
 
-const StyledArtifactThumb = styled.div<{ active: boolean; enemy: boolean }>`
+const StyledArtifactThumb = styled.div<{ active: boolean }>`
   min-width: 2.5em;
   min-height: 2.5em;
   width: 2.5em;
   height: 2.5em;
 
-  border: 1px solid ${({ enemy }) => (enemy ? dfstyles.colors.dfred : dfstyles.colors.borderDark)};
+  border: 1px solid ${dfstyles.colors.borderDark};
   border-radius: 4px;
 
   &:last-child {
@@ -53,7 +52,7 @@ const StyledArtifactThumb = styled.div<{ active: boolean; enemy: boolean }>`
   ${({ active }) => active && thumbActive}
 `;
 
-export function ArtifactThumb({
+function ArtifactThumb({
   artifact,
   selectedArtifact,
   onArtifactChange,
@@ -63,20 +62,16 @@ export function ArtifactThumb({
   artifact: Artifact;
 }) {
   const uiManager = useUIManager();
-  const enemy = useMemo(() => {
-    const account = uiManager.getAccount();
-    if (isSpaceShip(artifact.artifactType)) {
-      return artifact?.controller !== account;
-    }
 
-    return false;
-  }, [artifact, uiManager]);
   const click = useCallback(() => {
-    if (!onArtifactChange || enemy) return;
+    if (!onArtifactChange) return;
 
-    if (artifact.id === selectedArtifact?.id) onArtifactChange(undefined);
-    else onArtifactChange(artifact);
-  }, [onArtifactChange, artifact, selectedArtifact, enemy]);
+    if (artifact.id === selectedArtifact?.id) {
+      onArtifactChange(undefined);
+    } else {
+      onArtifactChange(artifact);
+    }
+  }, [onArtifactChange, artifact, selectedArtifact]);
 
   useEffect(() => {
     // this is called when the component is unrendered
@@ -86,7 +81,6 @@ export function ArtifactThumb({
   return (
     <StyledArtifactThumb
       active={selectedArtifact?.id === artifact.id}
-      enemy={enemy}
       onClick={click}
       onMouseEnter={() => {
         uiManager?.setHoveringOverArtifact(artifact.id);

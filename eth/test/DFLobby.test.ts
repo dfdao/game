@@ -5,9 +5,9 @@ import hre, { ethers } from 'hardhat';
 import { createArena, defaultWorldFixture, World } from './utils/TestWorld';
 
 const _INTERFACE_ID_IERC165 = '0x01ffc9a7';
-const _INTERFACE_ID_IERC721 = '0x80ac58cd';
-const _INTERFACE_ID_IERC721METADATA = '0x5b5e139f';
-const _INTERFACE_ID_IERC721ENUMERABLE = '0x780e9d63';
+const _INTERFACE_ID_IERC1155 = '0xd9b67a26';
+const _INTERFACE_ID_IERC1155METADATA = '0x0e89341c';
+const _INTERFACE_ID_IERC1155ENUMERABLE = '0x464FCF40';
 const _INTERFACE_ID_IDIAMOND_READABLE = '0x48e2b093';
 const _INTERFACE_ID_IDIAMOND_WRITABLE = '0x1f931c1c';
 const _INTERFACE_ID_IERC173 = '0x7f5828d0';
@@ -52,11 +52,12 @@ describe('DarkForestLobby', function () {
     expect(await lobby.supportsInterface(_INTERFACE_ID_IDIAMOND_WRITABLE)).to.equal(true);
     expect(await lobby.supportsInterface(_INTERFACE_ID_IERC173)).to.equal(true);
   });
-  it('new Lobby has correct ERC721 interfaces', async function () {
-    expect(await lobby.supportsInterface(_INTERFACE_ID_IERC721)).to.equal(true);
-    expect(await lobby.supportsInterface(_INTERFACE_ID_IERC721METADATA)).to.equal(true);
-    expect(await lobby.supportsInterface(_INTERFACE_ID_IERC721ENUMERABLE)).to.equal(true);
+  it('new Lobby has correct ERC1155 interfaces', async function () {
+    expect(await lobby.supportsInterface(_INTERFACE_ID_IERC1155)).to.equal(true);
+    expect(await lobby.supportsInterface(_INTERFACE_ID_IERC1155METADATA)).to.equal(true);
+    expect(await lobby.supportsInterface(_INTERFACE_ID_IERC1155ENUMERABLE)).to.equal(true);
   });
+
   it('test fallback', async function () {
     expect(await lobby.getFallbackAddress()).to.equal(ethers.constants.AddressZero);
   });

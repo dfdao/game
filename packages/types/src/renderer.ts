@@ -3,6 +3,7 @@ import type { RenderedArtifact } from './artifact';
 import type { HatType } from './hat';
 import type { LocationId } from './identifier';
 import type { LocatablePlanet, Planet } from './planet';
+import type { RenderedSpaceship } from './spaceship';
 import type { Abstract } from './utility';
 import type { Chunk, WorldCoords } from './world';
 
@@ -368,6 +369,15 @@ export interface SpriteRendererType {
     theta?: number | undefined,
     viewport?: GameViewport
   ): void;
+  queueSpaceshipWorld(
+    artifact: RenderedSpaceship,
+    posW: CanvasCoords,
+    widthW: number,
+    alpha?: number,
+    color?: RGBVec | undefined,
+    theta?: number | undefined,
+    viewport?: GameViewport
+  ): void;
 
   /**
    * The game calls the queue function when the entities should be put into a back buffer queue.
@@ -388,6 +398,14 @@ export interface SpriteRendererType {
     width?: number,
     alpha?: number,
     atFrame?: number | undefined,
+    color?: RGBVec | undefined,
+    theta?: number | undefined
+  ): void;
+  queueSpaceship(
+    artifact: RenderedSpaceship,
+    pos: CanvasCoords,
+    width?: number,
+    alpha?: number,
     color?: RGBVec | undefined,
     theta?: number | undefined
   ): void;

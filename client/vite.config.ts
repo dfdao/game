@@ -46,6 +46,7 @@ export default defineConfig(async ({ mode }) => {
     envPrefix: 'DF_',
     clearScreen: false,
     optimizeDeps: {
+      force: true,
       include: Array.from(all().keys()).filter((name) => !privateWorkspaces.includes(name)),
     },
   };

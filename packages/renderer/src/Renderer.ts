@@ -1,6 +1,4 @@
 import {
-  Artifact,
-  ArtifactId,
   AsteroidRendererType,
   BackgroundRendererType,
   BaseRenderer,
@@ -37,6 +35,7 @@ import {
   RuinsRendererType,
   Setting,
   SpaceRendererType,
+  Spaceship,
   SpacetimeRipRendererType,
   SpaceType,
   SpriteRendererType,
@@ -49,7 +48,6 @@ import {
   VoyageRendererType,
   WorldCoords,
   WorldLocation,
-  Wormhole,
   WormholeRendererType,
 } from '@dfdao/types';
 import autoBind from 'auto-bind';
@@ -125,11 +123,9 @@ export interface RendererGameContext extends DiagnosticUpdater {
   getUnconfirmedMoves(): Transaction<UnconfirmedMove>[];
   spaceTypeFromPerlin(perlin: number): SpaceType;
   getPerlinConfig(isBiome: boolean): PerlinConfig;
-  getArtifactWithId(artifactId: ArtifactId | undefined): Artifact | undefined;
   getSpaceTypePerlin(coords: WorldCoords, floor: boolean): number;
   getPerlinThresholds(): [number, number, number];
   isOwnedByMe(planet: Planet): boolean;
-  getArtifactsWithIds(artifactIds: ArtifactId[]): Array<Artifact | undefined>;
   getSelectedPlanet(): LocatablePlanet | undefined;
   getHoveringOverPlanet(): Planet | undefined;
   getHoveringOverCoords(): WorldCoords | undefined;
@@ -142,7 +138,7 @@ export interface RendererGameContext extends DiagnosticUpdater {
     energy: number
   ): number;
   getIsChoosingTargetPlanet(): boolean;
-  getWormholes(): Iterable<Wormhole>;
+  getWormholes(): Iterable<[LocationId, LocationId]>;
   getRadiusOfPlanetLevel(planetRarity: PlanetLevel): number;
   getDistCoords(from: WorldCoords, to: WorldCoords): number;
   isOverOwnPlanet(coords: WorldCoords): Planet | undefined;
@@ -152,7 +148,7 @@ export interface RendererGameContext extends DiagnosticUpdater {
   drawAllRunningPlugins(ctx: CanvasRenderingContext2D): void;
   isSendingShip(planetId: LocationId): boolean;
   isAbandoning(): boolean;
-  getArtifactSending(planetId: LocationId): Artifact | undefined;
+  getSpaceshipSending(planetId: LocationId): Spaceship | undefined;
   getAbandonRangeChangePercent(): number;
   getCaptureZones(): Iterable<CaptureZone>;
 }

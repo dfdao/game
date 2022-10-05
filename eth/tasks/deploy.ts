@@ -246,12 +246,14 @@ export async function deployAndCut(
   const coreFacet = await deployCoreFacet({}, libraries, hre);
   const moveFacet = await deployMoveFacet({}, libraries, hre);
   const captureFacet = await deployCaptureFacet({}, libraries, hre);
+  const tokenFacet = await deployTokenFacet({}, libraries, hre);
   const artifactFacet = await deployArtifactFacet(
     { diamondAddress: diamond.address },
     libraries,
     hre
   );
   const getterFacet = await deployGetterFacet({}, libraries, hre);
+  const spaceshipFacet = await deploySpaceshipFacet({}, libraries, hre);
   const whitelistFacet = await deployWhitelistFacet({}, libraries, hre);
   const verifierFacet = await deployVerifierFacet({}, libraries, hre);
   const adminFacet = await deployAdminFacet({}, libraries, hre);
@@ -270,6 +272,8 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFAdminFacet', adminFacet),
     ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
     ...changes.getFacetCuts('DFRewardFacet', rewardFacet),
+    ...changes.getFacetCuts('DFSpaceshipFacet', spaceshipFacet),
+    ...changes.getFacetCuts('DFTokenFacet', tokenFacet),
   ];
 
   if (isDev) {
@@ -308,16 +312,19 @@ export async function deployAndCut(
 
   return [diamond, diamondInit, initReceipt] as const;
 }
+export async function deploySpaceshipFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
+  const factory = await hre.ethers.getContractFactory('DFSpaceshipFacet', {
+    libraries: {},
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log('DFSpacehipFacet deployed to:', contract.address);
+  return contract;
+}
 
-export async function deployGetterFacet(
-  {},
-  { LibGameUtils }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
+export async function deployGetterFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
   const factory = await hre.ethers.getContractFactory('DFGetterFacet', {
-    libraries: {
-      LibGameUtils,
-    },
+    libraries: {},
   });
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
@@ -327,12 +334,11 @@ export async function deployGetterFacet(
 
 export async function deployAdminFacet(
   {},
-  { LibGameUtils, LibPlanet, LibArtifactUtils }: Libraries,
+  { LibGameUtils, LibPlanet }: Libraries,
   hre: HardhatRuntimeEnvironment
 ) {
   const factory = await hre.ethers.getContractFactory('DFAdminFacet', {
     libraries: {
-      LibArtifactUtils,
       LibGameUtils,
       LibPlanet,
     },
@@ -372,6 +378,16 @@ export async function deployVerifierFacet({}, {}: Libraries, hre: HardhatRuntime
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log(`DFVerifierFacet deployed to: ${contract.address}`);
+  return contract;
+}
+
+export async function deployTokenFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
+  const factory = await hre.ethers.getContractFactory('DFTokenFacet', {
+    libraries: {},
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFTokenFacet deployed to: ${contract.address}`);
   return contract;
 }
 

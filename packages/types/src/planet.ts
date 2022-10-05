@@ -1,6 +1,8 @@
+import type { Artifact } from './artifact';
 import type { Biome, SpaceType } from './game_types';
-import type { ArtifactId, EthAddress, LocationId } from './identifier';
+import type { EthAddress, LocationId } from './identifier';
 import type { PlanetMessage } from './planetmessage';
+import type { Spaceship } from './spaceship';
 import type { TransactionCollection } from './transaction';
 import type { Upgrade, UpgradeState } from './upgrade';
 import type { Abstract } from './utility';
@@ -117,7 +119,12 @@ export type Planet = {
   lastUpdated: number;
   upgradeState: UpgradeState;
   hasTriedFindingArtifact: boolean;
-  heldArtifactIds: ArtifactId[];
+  artifacts: Artifact[];
+  spaceships: Spaceship[];
+  activeArtifact: Artifact | undefined;
+  artifactActivationTime: number;
+  wormholeTo: LocationId | undefined;
+
   destroyed: boolean;
   prospectedBlockNumber?: number;
   localPhotoidUpgrade?: Upgrade;

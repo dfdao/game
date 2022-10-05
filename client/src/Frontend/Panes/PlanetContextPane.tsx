@@ -8,7 +8,7 @@ import { MineArtifactButton } from '../Components/MineArtifactButton';
 import {
   OpenBroadcastPaneButton,
   OpenHatPaneButton,
-  OpenManagePlanetArtifactsButton,
+  OpenManagePlanetInventoryButton,
   OpenPlanetInfoButton,
   OpenUpgradeDetailsPaneButton,
 } from '../Components/OpenPaneButtons';
@@ -90,7 +90,7 @@ function PlanetContextPaneContent({
           <OpenPlanetInfoButton modal={modal} planetId={p?.locationId} />
         </>
         <>
-          <OpenManagePlanetArtifactsButton modal={modal} planetId={p?.locationId} />
+          <OpenManagePlanetInventoryButton modal={modal} planetId={p?.locationId} />
           {hatRow}
         </>
       </VerticalSplit>

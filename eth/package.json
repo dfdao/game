@@ -63,6 +63,7 @@
     "node": ">=16"
   },
   "scripts": {
+    "hardhat": "hardhat",
     "test": "hardhat test && npm run subgraph:template:dev",
     "lint": "eslint .",
     "format": "prettier --write .",
