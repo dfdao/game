@@ -309,6 +309,8 @@ struct SpaceshipPrices {
     uint256 ShipWhale;
     uint256 ShipGear;
     uint256 ShipTitan;
+}
+
 enum SilverInfo {
     Unknown,
     TokenType

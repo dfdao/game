@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
 import {LibArtifact} from "../libraries/LibArtifact.sol";
+import {LibSpaceship} from "../libraries/LibSpaceship.sol";
 import {LibSilver} from "../libraries/LibSilver.sol";
 
 // External contract imports
@@ -26,6 +27,7 @@ import {
 contract DFShopFacet is WithStorage {
 
     event ArtifactPurchased(address buyer, uint256 tokenId);
+    event SpaceshipPurchased(address buyer, uint256 tokenId);
 
     function purchaseArtifact(ArtifactType artifactType, ArtifactRarity rarity) public {
 
@@ -39,6 +41,19 @@ contract DFShopFacet is WithStorage {
         DFTokenFacet(address(this)).burn(msg.sender, LibSilver.create(), artifactPrice);
 
         emit ArtifactPurchased(msg.sender, tokenId);
+    }
+
+    function purchaseSpaceship(SpaceshipType spaceship) public {
+        uint256 spaceshipPrice = getSpaceshipPrice(spaceship);
+
+        require(spaceshipPrice <=  DFTokenFacet(address(this)).getSilverBalance(msg.sender), 'not enough silver to purchase this artifact');
+
+        uint256 tokenId = LibSpaceship.create(spaceship);
+
+        DFTokenFacet(address(this)).mint(msg.sender, tokenId, 1);
+        DFTokenFacet(address(this)).burn(msg.sender, LibSilver.create(), spaceshipPrice);
+
+        emit SpaceshipPurchased(msg.sender, tokenId);
     }
 
 
@@ -79,6 +94,21 @@ contract DFShopFacet is WithStorage {
         }
 
         return typePrice * rarityPrice;
+    }
+
+    function getSpaceshipPrice(SpaceshipType spaceship) public view returns (uint256){
+        if(spaceship == SpaceshipType.ShipMothership) {
+            return gameConstants().SPACESHIP_PRICES.ShipMothership;
+        } else if(spaceship == SpaceshipType.ShipCrescent) {
+            return gameConstants().SPACESHIP_PRICES.ShipCrescent;
+        } else if(spaceship == SpaceshipType.ShipWhale) {
+            return gameConstants().SPACESHIP_PRICES.ShipWhale;
+        }else if(spaceship == SpaceshipType.ShipGear) {
+            return gameConstants().SPACESHIP_PRICES.ShipGear;
+        }else if(spaceship == SpaceshipType.ShipTitan) {
+            return gameConstants().SPACESHIP_PRICES.ShipTitan;
+        }
+        return 0;
     }
 }
 

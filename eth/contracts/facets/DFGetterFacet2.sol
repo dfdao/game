@@ -8,6 +8,7 @@ import {DFTokenFacet} from "./DFTokenFacet.sol";
 // Library imports
 import {LibArtifact} from "../libraries/LibArtifact.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
+import {LibSpaceship} from "../libraries/LibSpaceship.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {LibPermissions} from "../libraries/LibPermissions.sol";
 import {LibSilver} from "../libraries/LibSilver.sol";
@@ -16,7 +17,22 @@ import {LibSilver} from "../libraries/LibSilver.sol";
 import {WithStorage, SnarkConstants, GameConstants} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {RevealedCoords, Artifact, ArrivalData, Planet, PlanetEventType, PlanetEventMetadata, PlanetDefaultStats, PlanetData, Player, Upgrade, ArtifactType, ArtifactRarity, Biome} from "../DFTypes.sol";
+import {
+    RevealedCoords,
+    Artifact,
+    ArrivalData,
+    Planet,
+    PlanetEventType,
+    PlanetEventMetadata,
+    PlanetDefaultStats,
+    PlanetData,
+    Player,
+    Upgrade,
+    ArtifactType,
+    ArtifactRarity,
+    Biome,
+    SpaceshipType
+} from "../DFTypes.sol";
 
 contract DFGetterFacet2 is WithStorage {
 
@@ -99,6 +115,10 @@ contract DFGetterFacet2 is WithStorage {
 
     function getArtifactTokenId(ArtifactType artifactType, ArtifactRarity rarity, Biome biome) public pure returns (uint256 ret) {
         ret = LibArtifact.create(rarity, artifactType, biome);
+    }
+
+    function getSpaceshipTokenId(SpaceshipType spaceship) public pure returns (uint256 ret) {
+        ret = LibSpaceship.create(spaceship);
     }
 }
 

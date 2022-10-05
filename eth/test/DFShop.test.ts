@@ -1,4 +1,4 @@
-import { ArtifactRarity, ArtifactType, Biome } from '@dfdao/types';
+import { ArtifactRarity, ArtifactType, Biome, SpaceshipType } from '@dfdao/types';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { makeInitArgs } from './utils/TestUtils';
@@ -81,6 +81,46 @@ describe('DarkForestShop', async function () {
       await expect(
         world.user1Core.purchaseArtifact(ArtifactType.Monolith, ArtifactRarity.Unknown)
       ).to.be.revertedWith('artifact rarity is not valid');
+    });
+  });
+
+  describe('Purchasing spaceships', async function () {
+    it('calculates the correct price for a spaceship', async function () {
+      const whalePrice = await world.contract.getSpaceshipPrice(SpaceshipType.ShipWhale);
+
+      expect(whalePrice).to.equal(10);
+    });
+
+    it('allows a rich player to buy a common monolith', async function () {
+      const whalePrice = await world.contract.getSpaceshipPrice(SpaceshipType.ShipWhale);
+
+      const whaleId = await world.contract.getSpaceshipTokenId(SpaceshipType.ShipWhale);
+
+      await expect(world.user1Core.purchaseSpaceship(SpaceshipType.ShipWhale))
+        .to.emit(world.contract, 'SpaceshipPurchased')
+        .withArgs(world.user1.address, whaleId);
+
+      expect((await world.user1Core.getSilverBalance(world.user1.address)).toNumber()).to.equal(
+        playerInitialSilver - whalePrice.toNumber()
+      );
+
+      expect(await world.user1Core.tokenIsOwnedBy(world.user1.address, whaleId)).to.be.true;
+
+      expect(
+        (await world.user1Core.getTokenBalance(world.user1.address, whaleId)).toNumber()
+      ).to.equal(1);
+    });
+
+    it("doesn't allow a broke player to buy a whale spaceship", async function () {
+      await expect(world.user2Core.purchaseSpaceship(SpaceshipType.ShipWhale)).to.be.revertedWith(
+        'not enough silver to purchase this artifact'
+      );
+    });
+
+    it("doesn't allow a player to buy an invalid artifact", async function () {
+      await expect(world.user1Core.purchaseSpaceship(SpaceshipType.Unknown)).to.be.revertedWith(
+        'spaceship type is not valid'
+      );
     });
   });
 });
