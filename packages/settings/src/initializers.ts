@@ -78,6 +78,32 @@ export const decodeInitializers = decoders.guard(
       WHALE: decoders.boolean,
     }),
     ROUND_END_REWARDS_BY_RANK: exactArray64(decoders.number),
+    ARTIFACT_TYPE_PRICES: decoders.object({
+      Monolith: decoders.number,
+      Colossus: decoders.number,
+      Spaceship: decoders.number,
+      Pyramid: decoders.number,
+      Wormhole: decoders.number,
+      PlanetaryShield: decoders.number,
+      PhotoidCannon: decoders.number,
+      BloomFilter: decoders.number,
+      BlackDomain: decoders.number,
+    }),
+    ARTIFACT_RARITY_PRICES: decoders.object({
+      Common: decoders.number,
+      Rare: decoders.number,
+      Epic: decoders.number,
+      Legendary: decoders.number,
+      Mythic: decoders.number,
+    }),
+
+    SPACESHIP_PRICES: decoders.object({
+      ShipMothership: decoders.number,
+      ShipCrescent: decoders.number,
+      ShipWhale: decoders.number,
+      ShipGear: decoders.number,
+      ShipTitan: decoders.number,
+    }),
   }),
   { style: 'simple' }
 );

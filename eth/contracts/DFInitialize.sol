@@ -28,7 +28,7 @@ import {WithStorage, SpaceshipConstants} from "./libraries/LibStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
 
 // Type imports
-import {PlanetDefaultStats, Upgrade, UpgradeBranch} from "./DFTypes.sol";
+import {PlanetDefaultStats, Upgrade, UpgradeBranch, ArtifactTypePrices, ArtifactRarityPrices, SpaceshipPrices} from "./DFTypes.sol";
 
 struct InitArgs {
     bool START_PAUSED;
@@ -96,6 +96,10 @@ struct InitArgs {
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
     SpaceshipConstants SPACESHIPS;
     uint256[64] ROUND_END_REWARDS_BY_RANK;
+
+    ArtifactTypePrices ARTIFACT_TYPE_PRICES;
+    ArtifactRarityPrices ARTIFACT_RARITY_PRICES;
+    SpaceshipPrices SPACESHIP_PRICES;
 }
 
 contract DFInitialize is WithStorage {
@@ -176,6 +180,10 @@ contract DFInitialize is WithStorage {
         gs().TOKEN_MINT_END_TIMESTAMP = initArgs.TOKEN_MINT_END_TIMESTAMP;
 
         gameConstants().ROUND_END_REWARDS_BY_RANK = initArgs.ROUND_END_REWARDS_BY_RANK;
+
+        gameConstants().ARTIFACT_TYPE_PRICES = initArgs.ARTIFACT_TYPE_PRICES;
+        gameConstants().ARTIFACT_RARITY_PRICES = initArgs.ARTIFACT_RARITY_PRICES;
+        gameConstants().SPACESHIP_PRICES = initArgs.SPACESHIP_PRICES;
 
         initializeDefaults();
         initializeUpgrades();
