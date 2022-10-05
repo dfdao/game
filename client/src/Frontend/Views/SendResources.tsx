@@ -1,6 +1,10 @@
 import { formatNumber } from '@dfdao/gamelogic';
 import { nameOfArtifact, nameOfSpaceship } from '@dfdao/procedural';
-import { isUnconfirmedMoveTx, isUnconfirmedReleaseTx } from '@dfdao/serde';
+import {
+  isUnconfirmedMoveTx,
+  isUnconfirmedReleaseTx,
+  isUnconfirmedWithdrawSilverTx,
+} from '@dfdao/serde';
 import { Artifact, Planet, Spaceship, TooltipName } from '@dfdao/types';
 import React, { useCallback } from 'react';
 import styled from 'styled-components';
@@ -170,12 +174,10 @@ function AbandonButton({
 function ExtractButton({
   planet,
   extracting,
-  toggleExtracting,
   disabled,
 }: {
   planet?: Planet;
   extracting: boolean;
-  toggleExtracting: () => void;
   disabled?: boolean;
 }) {
   const uiManager = useUIManager();
@@ -188,7 +190,7 @@ function ExtractButton({
     <MaybeShortcutButton
       size='stretch'
       active={extracting}
-      onClick={toggleExtracting}
+      onClick={() => uiManager.withdrawSilver(planet.locationId, planet.silver)}
       shortcutKey={TOGGLE_WITHDRAW}
       shortcutText={TOGGLE_WITHDRAW}
       disabled={planet.isHomePlanet || disabled}
@@ -249,12 +251,10 @@ export function SendResources({
   planetWrapper: p,
   onToggleSendForces,
   onToggleAbandon,
-  onToggleExtract,
 }: {
   planetWrapper: Wrapper<Planet | undefined>;
   onToggleSendForces: () => void;
   onToggleAbandon: () => void;
-  onToggleExtract: () => void;
 }) {
   const uiManager = useUIManager();
   const account = useAccount(uiManager);
@@ -281,15 +281,6 @@ export function SendResources({
     },
     [uiManager, locationId]
   );
-
-  const updateSilverSending = useCallback(
-    (silverPercent) => {
-      if (!locationId) return;
-      uiManager.setSilverSending(locationId, silverPercent);
-    },
-    [uiManager, locationId]
-  );
-
   const updateArtifactSending = useCallback(
     (sendArtifact) => {
       if (!locationId) return;
@@ -310,16 +301,11 @@ export function SendResources({
   // that key is
   const energyShortcuts = '1234567890'.split('');
 
-  // same as above, except for silver
-  const silverShortcuts = '!@#$%^&*()'.split('');
-
   // for each of the above keys, we set up a listener that is triggered whenever that key is
   // pressed, and sets the corresponding resource sending amount
   for (let i = 0; i < energyShortcuts.length; i++) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useOnUp(energyShortcuts[i], () => updateEnergySending((i + 1) * 10), [updateEnergySending]);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useOnUp(silverShortcuts[i], () => updateSilverSending((i + 1) * 10), [updateSilverSending]);
   }
 
   useOnUp(
@@ -378,7 +364,7 @@ export function SendResources({
   }
 
   let extractRow;
-  if (p.value && p.value.transactions?.hasTransaction(isUnconfirmedReleaseTx)) {
+  if (p.value && p.value.transactions?.hasTransaction(isUnconfirmedWithdrawSilverTx)) {
     extractRow = (
       <Btn size='stretch' disabled>
         <LoadingSpinner initialText='Extracting...' />
@@ -386,12 +372,7 @@ export function SendResources({
     );
   } else if (p.value && !p.value.destroyed) {
     extractRow = (
-      <ExtractButton
-        planet={p.value}
-        extracting={isExtracting}
-        toggleExtracting={onToggleExtract}
-        disabled={isSendingShip}
-      />
+      <ExtractButton planet={p.value} extracting={isExtracting} disabled={isExtracting} />
     );
   }
 

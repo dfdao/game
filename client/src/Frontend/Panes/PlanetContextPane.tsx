@@ -6,7 +6,7 @@ import { CapturePlanetButton } from '../Components/CapturePlanetButton';
 import { VerticalSplit } from '../Components/CoreUI';
 import { MineArtifactButton } from '../Components/MineArtifactButton';
 import {
-  OpenManagePlanetArtifactsButton,
+  OpenManagePlanetInventoryButton,
   OpenPlanetInfoButton,
   OpenUpgradeDetailsPaneButton,
 } from '../Components/OpenPaneButtons';
@@ -72,7 +72,6 @@ function PlanetContextPaneContent({
         planetWrapper={planet}
         onToggleSendForces={onToggleSendForces}
         onToggleAbandon={onToggleAbandon}
-        onToggleExtract={() => {}}
       />
       <MineArtifactButton planetWrapper={planet} />
       {captureRow}
@@ -83,7 +82,7 @@ function PlanetContextPaneContent({
           <OpenPlanetInfoButton modal={modal} planetId={p?.locationId} />
         </>
         <>
-          <OpenManagePlanetArtifactsButton modal={modal} planetId={p?.locationId} />
+          <OpenManagePlanetInventoryButton modal={modal} planetId={p?.locationId} />
         </>
       </VerticalSplit>
       {withdrawRow}

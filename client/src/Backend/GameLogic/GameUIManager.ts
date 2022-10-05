@@ -398,16 +398,6 @@ class GameUIManager extends EventEmitter {
   }
 
   public withdrawSilver(locationId: LocationId, amount: number) {
-    const dontShowWarningStorageKey = `${this.getAccount()?.toLowerCase()}-withdrawnWarningAcked`;
-
-    if (localStorage.getItem(dontShowWarningStorageKey) !== 'true') {
-      localStorage.setItem(dontShowWarningStorageKey, 'true');
-      const confirmationText =
-        `Are you sure you want withdraw this silver? Once you withdraw it, you ` +
-        `cannot deposit it again. Your withdrawn silver amount will be added to your score. You'll only see this warning once!`;
-      if (!confirm(confirmationText)) return;
-    }
-
     this.gameManager.withdrawSilver(locationId, amount);
   }
 
