@@ -36,7 +36,9 @@ describe('DFSilver', async function () {
   });
 
   it('allows player to withdraw silver from asteroid', async function () {
-    const withdrawnAmount = (await world.contract.planets(LVL1_ASTEROID_1.id)).silverCap.div(1000);
+    const withdrawnAmount = (await world.contract.planets(LVL1_ASTEROID_1.id)).silverCap.div(
+      CONTRACT_PRECISION
+    );
 
     await expect(world.user1Core.withdrawSilver(LVL1_ASTEROID_1.id))
       .to.emit(world.contract, 'PlanetSilverWithdrawn')
