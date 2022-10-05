@@ -2429,7 +2429,6 @@ class GameManager extends EventEmitter {
 
   public async withdrawSilver(
     locationId: LocationId,
-    amount: number,
     bypassChecks = false
   ): Promise<Transaction<UnconfirmedWithdrawSilver>> {
     try {
@@ -2442,20 +2441,14 @@ class GameManager extends EventEmitter {
         if (!planet) {
           throw new Error('tried to withdraw silver from an unknown planet');
         }
-        if (planet.planetType !== PlanetType.TRADING_POST) {
-          throw new Error('can only withdraw silver from spacetime rips');
+        if (planet.planetType !== PlanetType.SILVER_MINE) {
+          throw new Error('can only withdraw silver from asteroid');
         }
         if (planet.owner !== this.account) {
           throw new Error('can only withdraw silver from a planet you own');
         }
         if (planet.transactions?.hasTransaction(isUnconfirmedWithdrawSilverTx)) {
           throw new Error('a withdraw silver action is already in progress for this planet');
-        }
-        if (amount > planet.silver) {
-          throw new Error('not enough silver to withdraw!');
-        }
-        if (amount === 0) {
-          throw new Error('must withdraw more than 0 silver!');
         }
         if (planet.destroyed) {
           throw new Error("can't withdraw silver from a destroyed planet");
@@ -2467,9 +2460,8 @@ class GameManager extends EventEmitter {
       const txIntent: UnconfirmedWithdrawSilver = {
         methodName: 'withdrawSilver',
         contract: this.contractsAPI.contract,
-        args: Promise.resolve([locationIdToDecStr(locationId), amount * CONTRACT_PRECISION]),
+        args: Promise.resolve([locationIdToDecStr(locationId)]),
         locationId,
-        amount,
       };
 
       // Always await the submitTransaction so we can catch rejections

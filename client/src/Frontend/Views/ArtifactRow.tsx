@@ -104,18 +104,25 @@ export function SelectArtifactRow({
   artifacts: Artifact[];
 }) {
   return (
-    <RowWrapper>
-      {artifacts.length > 0 &&
-        artifacts.map((a) => (
-          <span key={a.id}>
-            <ArtifactThumb
-              artifact={a}
-              selectedArtifact={selectedArtifact}
-              onArtifactChange={onArtifactChange}
-            />
-            <Spacer width={4} />
-          </span>
-        ))}
-    </RowWrapper>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+      }}
+    >
+      <RowWrapper>
+        {artifacts.length > 0 &&
+          artifacts.map((a) => (
+            <span key={a.id}>
+              <ArtifactThumb
+                artifact={a}
+                selectedArtifact={selectedArtifact}
+                onArtifactChange={onArtifactChange}
+              />
+              <Spacer width={4} />
+            </span>
+          ))}
+      </RowWrapper>
+    </div>
   );
 }

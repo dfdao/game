@@ -18,7 +18,7 @@ export type Player = {
   lastRevealTimestamp: number;
   lastClaimTimestamp: number;
   score: number;
-
+  silver: number;
   spaceJunk: number;
   spaceJunkLimit: number;
   claimedShips: boolean;

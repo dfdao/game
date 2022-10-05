@@ -6,8 +6,6 @@ import { CapturePlanetButton } from '../Components/CapturePlanetButton';
 import { VerticalSplit } from '../Components/CoreUI';
 import { MineArtifactButton } from '../Components/MineArtifactButton';
 import {
-  OpenBroadcastPaneButton,
-  OpenHatPaneButton,
   OpenManagePlanetInventoryButton,
   OpenPlanetInfoButton,
   OpenUpgradeDetailsPaneButton,
@@ -53,13 +51,8 @@ function PlanetContextPaneContent({
   }
 
   let upgradeRow = null;
-  if (!p?.destroyed && owned) {
+  if (!p?.destroyed && owned && p?.planetType == PlanetType.PLANET) {
     upgradeRow = <OpenUpgradeDetailsPaneButton modal={modal} planetId={p?.locationId} />;
-  }
-
-  let hatRow = null;
-  if (!p?.destroyed && owned) {
-    hatRow = <OpenHatPaneButton modal={modal} planetId={p?.locationId} />;
   }
 
   let withdrawRow = null;
@@ -86,12 +79,10 @@ function PlanetContextPaneContent({
       <VerticalSplit>
         <>
           {upgradeRow}
-          <OpenBroadcastPaneButton modal={modal} planetId={p?.locationId} />
           <OpenPlanetInfoButton modal={modal} planetId={p?.locationId} />
         </>
         <>
           <OpenManagePlanetInventoryButton modal={modal} planetId={p?.locationId} />
-          {hatRow}
         </>
       </VerticalSplit>
       {withdrawRow}

@@ -79,7 +79,7 @@ export function WithdrawSilver({ wrapper }: { wrapper: Wrapper<Planet | undefine
       if (typeof silver !== 'number') {
         setError(true);
       } else {
-        uiManager.withdrawSilver(wrapper.value.locationId, silver);
+        uiManager.withdrawSilver(wrapper.value.locationId);
       }
       setAmt(0);
     },
