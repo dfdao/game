@@ -38,6 +38,10 @@ export function isSpaceShip(type: ArtifactType | undefined): boolean {
   return type !== undefined && type >= MIN_SPACESHIP_TYPE && type <= MAX_SPACESHIP_TYPE;
 }
 
+export function isAntimatterCube(type: ArtifactType | undefined): boolean {
+  return type === ArtifactType.AntimatterCube;
+}
+
 export function hasStatBoost(type: ArtifactType | undefined): boolean {
   return (
     !isSpaceShip(type) &&

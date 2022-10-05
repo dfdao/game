@@ -1,13 +1,16 @@
 import { ArtifactFileColor, artifactFileName, isSpaceShip } from '@dfdao/gamelogic';
-import { Artifact } from '@dfdao/types';
+import { Artifact, ArtifactType } from '@dfdao/types';
 import React from 'react';
 import styled, { css } from 'styled-components';
 import dfstyles from '../Styles/dfstyles';
 
 export const ARTIFACT_URL = 'https://d2wspbczt15cqu.cloudfront.net/v0.6.0-artifacts/';
-// const ARTIFACT_URL = '/img/artifacts/videos/';
+const LOCAL_ARTIFACT_URL = '/img/sprites/';
 
 function getArtifactUrl(thumb: boolean, artifact: Artifact, color: ArtifactFileColor): string {
+  // if (artifact.artifactType == ArtifactType.AntimatterCube) {
+  return '/sprites/antimatter-cube.png';
+  // }
   const fileName = artifactFileName(true, thumb, artifact, color);
   return ARTIFACT_URL + fileName;
 }
@@ -24,13 +27,14 @@ export function ArtifactImage({
   bgColor?: ArtifactFileColor;
 }) {
   const url = getArtifactUrl(thumb || false, artifact, bgColor || ArtifactFileColor.BLUE);
-  const image = isSpaceShip(artifact.artifactType) ? (
-    <img width={size} height={size} src={url} />
-  ) : (
-    <video width={size} height={size} loop autoPlay key={artifact.id}>
-      <source src={url} type={'video/webm'} />
-    </video>
-  );
+  const image =
+    isSpaceShip(artifact.artifactType) || artifact.artifactType == ArtifactType.AntimatterCube ? (
+      <img width={size} height={size} src={url} />
+    ) : (
+      <video width={size} height={size} loop autoPlay key={artifact.id}>
+        <source src={url} type={'video/webm'} />
+      </video>
+    );
 
   return (
     <Container width={size} height={size}>

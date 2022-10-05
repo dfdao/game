@@ -28,6 +28,7 @@ export const ArtifactType = {
   ShipWhale: 12 as ArtifactType,
   ShipGear: 13 as ArtifactType,
   ShipTitan: 14 as ArtifactType,
+  AntimatterCube: 15 as ArtifactType,
 
   // Don't forget to update MIN_ARTIFACT_TYPE and/or MAX_ARTIFACT_TYPE in the `constants` package
 } as const;
@@ -51,6 +52,7 @@ export const ArtifactTypeNames = {
   [ArtifactType.ShipWhale]: 'Whale',
   [ArtifactType.ShipGear]: 'Gear',
   [ArtifactType.ShipTitan]: 'Titan',
+  [ArtifactType.AntimatterCube]: 'Antimatter Cube',
 } as const;
 
 /**
