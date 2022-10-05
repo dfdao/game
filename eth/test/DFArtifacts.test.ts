@@ -119,7 +119,6 @@ describe('DarkForestArtifacts', function () {
 
       // artifact and gear should be on planet. Gear is 0 and Artifact is 1.
       const artifactsOnPlanet = await getArtifactsOnPlanet(world, ARTIFACT_PLANET_1.id);
-      console.log(`AAS`, artifactsOnPlanet);
       expect(artifactsOnPlanet.length).to.be.equal(1);
 
       // artifact should be owned by contract

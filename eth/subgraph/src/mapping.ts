@@ -21,7 +21,7 @@ import {
   PlanetTransferred,
   PlanetUpgraded,
   PlayerInitialized,
-  Transfer,
+  TransferSingle,
 } from '../generated/DarkForest/DarkForest';
 import {
   Arrival,
@@ -336,9 +336,9 @@ export function handleLocationRevealed(event: LocationRevealed): void {
   planet.save();
 }
 
-export function handleTransfer(event: Transfer): void {
-  let artifact = Artifact.load(event.params.tokenId.toHexString());
-  let spaceship = Spaceship.load(event.params.tokenId.toHexString());
+export function handleTransferSingle(event: TransferSingle): void {
+  const artifact = Artifact.load(event.params.id.toHexString());
+  const spaceship = Spaceship.load(event.params.id.toHexString());
   if (artifact !== null) {
     artifact.ownerAddress = event.params.to.toHexString();
     artifact.save();
@@ -346,9 +346,9 @@ export function handleTransfer(event: Transfer): void {
     // artifact was just minted, so it's not in store yet
     // note that a _mint does emit a Transfer ERC721 event
     const contract = DarkForest.bind(Address.fromString(CONTRACT_ADDRESS));
-    const rawArtifact = contract.bulkGetArtifactsByIds([event.params.tokenId]);
+    const rawArtifact = contract.bulkGetArtifactsByIds([event.params.id]);
 
-    refreshArtifactOrSpaceship(event.params.tokenId, rawArtifact[0]);
+    refreshArtifactOrSpaceship(event.params.id, rawArtifact[0]);
   }
 }
 
