@@ -9,10 +9,7 @@ import {
   ArtifactTypeNames,
   Biome,
   BiomeNames,
-  EthAddress,
-  Planet,
   PlanetLevel,
-  PlanetType,
   RenderedArtifact,
 } from '@dfdao/types';
 
@@ -158,22 +155,4 @@ export function getActiveBlackDomain(artifacts: Artifact[]): Artifact | undefine
     if (artifact.artifactType === ArtifactType.BlackDomain) return artifact;
   }
   return undefined;
-}
-
-export function canWithdrawArtifact(account: EthAddress, planet?: Planet) {
-  return (
-    planet &&
-    !planet.destroyed &&
-    planet.owner === account &&
-    planet.planetType === PlanetType.TRADING_POST
-  );
-}
-
-export function canDepositArtifact(account: EthAddress, artifact: Artifact, planet?: Planet) {
-  return (
-    planet &&
-    !planet.destroyed &&
-    planet.owner === account &&
-    planet.planetType === PlanetType.TRADING_POST
-  );
 }

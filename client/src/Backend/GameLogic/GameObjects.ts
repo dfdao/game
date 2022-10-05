@@ -210,12 +210,12 @@ export class GameObjects {
    * Whenever an artifact changes in a player's wallet, this event emitter publishes. See
    * {@link GameObjects.myPlanetsUpdated$} for more info.
    */
-  public readonly myArtifactsUpdated$: Monomitter<[ArtifactId, Artifact]>;
+  public readonly myArtifactsUpdated$: Monomitter<[ArtifactId, Artifact | undefined]>;
   /**
    * Whenever a spaceship changes in a player's wallet, this event emitter publishes. See
    * {@link GameObjects.myPlanetsUpdated$} for more info.
    */
-  public readonly mySpaceshipsUpdated$: Monomitter<[SpaceshipId, Spaceship]>;
+  public readonly mySpaceshipsUpdated$: Monomitter<[SpaceshipId, Spaceship | undefined]>;
 
   constructor(
     address: EthAddress | undefined,
@@ -801,8 +801,27 @@ export class GameObjects {
   public getMyArtifactMap(): Map<ArtifactId, Artifact> {
     return this.myArtifacts;
   }
+  // TODO: This needs to track the AMOUNT of a given artifact in my wallet
+  public addMyArtifact(artifact: Artifact) {
+    this.myArtifacts.set(artifact.id, artifact);
+    this.myArtifactsUpdated$.publish([artifact.id, artifact]);
+  }
+  // TODO: This needs to track the AMOUNT of a given artifact in my wallet
+  public removeMyArtifact(artifact: Artifact) {
+    this.myArtifacts.delete(artifact.id);
+    this.myArtifactsUpdated$.publish([artifact.id, undefined]);
+  }
+
   public getMySpaceshipMap(): Map<SpaceshipId, Spaceship> {
     return this.mySpaceships;
+  }
+  public addMySpaceship(spaceship: Spaceship) {
+    this.mySpaceships.set(spaceship.id, spaceship);
+    this.mySpaceshipsUpdated$.publish([spaceship.id, spaceship]);
+  }
+  public removeMySpaceship(spaceship: Spaceship) {
+    this.mySpaceships.delete(spaceship.id);
+    this.mySpaceshipsUpdated$.publish([spaceship.id, undefined]);
   }
 
   public getRevealedLocations(): Map<LocationId, RevealedLocation> {

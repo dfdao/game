@@ -117,7 +117,6 @@ class GameUIManager extends EventEmitter {
   public readonly hoverPlanet$: Monomitter<Planet | undefined>;
   public readonly hoverArtifactId$: Monomitter<ArtifactId | undefined>;
   public readonly hoverSpaceshipId$: Monomitter<SpaceshipId | undefined>;
-  public readonly myArtifacts$: Monomitter<[ArtifactId, Artifact]>;
 
   public readonly isSending$: Monomitter<boolean>;
   public readonly isAbandoning$: Monomitter<boolean>;
@@ -166,7 +165,6 @@ class GameUIManager extends EventEmitter {
 
     this.hoverArtifactId$ = monomitter<ArtifactId | undefined>();
     this.hoverSpaceshipId$ = monomitter<SpaceshipId | undefined>();
-    this.myArtifacts$ = this.gameManager.getMyArtifactsUpdated$();
     this.viewportEntities = new ViewportEntities(this.gameManager, this);
 
     this.isSending$ = monomitter(true);
@@ -1470,6 +1468,13 @@ class GameUIManager extends EventEmitter {
 
   public getUpgradeForArtifact(artifactId: ArtifactId) {
     return this.gameManager.getUpgradeForArtifact(artifactId);
+  }
+
+  public getMyArtifactsUpdated$() {
+    return this.gameManager.getMyArtifactsUpdated$();
+  }
+  public getMySpaceshipsUpdated$() {
+    return this.gameManager.getMySpaceshipsUpdated$();
   }
 }
 

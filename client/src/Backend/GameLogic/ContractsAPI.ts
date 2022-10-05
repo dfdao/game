@@ -250,18 +250,40 @@ export class ContractsAPI extends EventEmitter {
       ) => {
         this.emit(ContractsAPIEvent.PlanetUpdate, locationIdFromEthersBN(loc));
       },
+      [ContractEvent.SpaceshipFound]: (
+        playerAddr: string,
+        rawSpaceshipId: EthersBN,
+        loc: EthersBN
+      ) => {
+        this.emit(
+          ContractsAPIEvent.SpaceshipFound,
+          address(playerAddr),
+          decodeSpaceship(rawSpaceshipId)
+        );
+        this.emit(ContractsAPIEvent.PlanetUpdate, locationIdFromEthersBN(loc));
+      },
       [ContractEvent.ArtifactDeposited]: (
-        _playerAddr: string,
+        playerAddr: string,
         rawArtifactId: EthersBN,
         loc: EthersBN
       ) => {
+        this.emit(
+          ContractsAPIEvent.ArtifactDeposited,
+          address(playerAddr),
+          decodeArtifact(rawArtifactId)
+        );
         this.emit(ContractsAPIEvent.PlanetUpdate, locationIdFromEthersBN(loc));
       },
       [ContractEvent.ArtifactWithdrawn]: (
-        _playerAddr: string,
+        playerAddr: string,
         rawArtifactId: EthersBN,
         loc: EthersBN
       ) => {
+        this.emit(
+          ContractsAPIEvent.ArtifactWithdrawn,
+          address(playerAddr),
+          decodeArtifact(rawArtifactId)
+        );
         this.emit(ContractsAPIEvent.PlanetUpdate, locationIdFromEthersBN(loc));
       },
       [ContractEvent.ArtifactActivated]: (

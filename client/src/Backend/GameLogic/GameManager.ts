@@ -697,6 +697,21 @@ class GameManager extends EventEmitter {
 
     // set up listeners: whenever ContractsAPI reports some game state update, do some logic
     gameManager.contractsAPI
+      .on(ContractsAPIEvent.ArtifactWithdrawn, (owner: EthAddress, artifact: Artifact) => {
+        if (owner === account) {
+          gameManager.entityStore.addMyArtifact(artifact);
+        }
+      })
+      .on(ContractsAPIEvent.ArtifactDeposited, (owner: EthAddress, artifact: Artifact) => {
+        if (owner === account) {
+          gameManager.entityStore.removeMyArtifact(artifact);
+        }
+      })
+      .on(ContractsAPIEvent.SpaceshipFound, (owner: EthAddress, spaceship: Spaceship) => {
+        if (owner === account) {
+          gameManager.entityStore.addMySpaceship(spaceship);
+        }
+      })
       .on(
         ContractsAPIEvent.PlanetTransferred,
         async (planetId: LocationId, newOwner: EthAddress) => {
@@ -3282,8 +3297,11 @@ class GameManager extends EventEmitter {
     return this.entityStore.myPlanetsUpdated$;
   }
 
-  public getMyArtifactsUpdated$(): Monomitter<[ArtifactId, Artifact]> {
+  public getMyArtifactsUpdated$(): Monomitter<[ArtifactId, Artifact | undefined]> {
     return this.entityStore.myArtifactsUpdated$;
+  }
+  public getMySpaceshipsUpdated$(): Monomitter<[SpaceshipId, Spaceship | undefined]> {
+    return this.entityStore.mySpaceshipsUpdated$;
   }
 
   /**

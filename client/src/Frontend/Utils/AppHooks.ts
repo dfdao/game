@@ -116,26 +116,26 @@ export function useHoverSpaceshipId(uiManager: GameUIManager): Wrapper<Spaceship
 }
 
 export function useMyArtifactsList(uiManager: GameUIManager) {
-  const [myArtifacts, _setMyArtifacts] = useState(uiManager.getMyArtifacts());
-  // useEmitterSubscribe(
-  //   uiManager.getArtifactUpdated$(),
-  //   () => {
-  //     setMyArtifacts(uiManager.getMyArtifacts());
-  //   },
-  //   [uiManager, setMyArtifacts]
-  // );
-  return myArtifacts;
+  const [myArtifacts, setMyArtifacts] = useState(new Wrapper(uiManager.getMyArtifacts()));
+  useEmitterSubscribe(
+    uiManager.getMyArtifactsUpdated$(),
+    () => {
+      setMyArtifacts(new Wrapper(uiManager.getMyArtifacts()));
+    },
+    [uiManager, setMyArtifacts]
+  );
+  return myArtifacts.value;
 }
 export function useMySpaceshipsList(uiManager: GameUIManager) {
-  const [mySpaceships, _setMySpaceship] = useState(uiManager.getMySpaceships());
-  // useEmitterSubscribe(
-  //   uiManager.getArtifactUpdated$(),
-  //   () => {
-  //     setMyArtifacts(uiManager.getMyArtifacts());
-  //   },
-  //   [uiManager, setMyArtifacts]
-  // );
-  return mySpaceships;
+  const [mySpaceships, setMySpaceships] = useState(new Wrapper(uiManager.getMySpaceships()));
+  useEmitterSubscribe(
+    uiManager.getMySpaceshipsUpdated$(),
+    () => {
+      setMySpaceships(new Wrapper(uiManager.getMySpaceships()));
+    },
+    [uiManager, setMySpaceships]
+  );
+  return mySpaceships.value;
 }
 
 // note that this is going to throw an error if the pointer to `artifacts` changes but not to `planet`

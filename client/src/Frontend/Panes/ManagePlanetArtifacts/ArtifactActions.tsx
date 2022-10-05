@@ -1,17 +1,17 @@
-import { canDepositArtifact, canWithdrawArtifact, isLocatable } from '@dfdao/gamelogic';
+import { isLocatable } from '@dfdao/gamelogic';
 import {
   isUnconfirmedActivateArtifactTx,
   isUnconfirmedDeactivateArtifactTx,
   isUnconfirmedDepositArtifactTx,
   isUnconfirmedWithdrawArtifactTx,
 } from '@dfdao/serde';
-import { Artifact, ArtifactType, LocationId, Planet, TooltipName } from '@dfdao/types';
+import { Artifact, ArtifactType, LocationId, Planet, PlanetType, TooltipName } from '@dfdao/types';
 import React, { useCallback } from 'react';
 import { Btn } from '../../Components/Btn';
 import { Spacer } from '../../Components/CoreUI';
 import { ArtifactRarityLabelAnim } from '../../Components/Labels/ArtifactLabels';
 import { LoadingSpinner } from '../../Components/LoadingSpinner';
-import { useAccount, usePlanet, useUIManager } from '../../Utils/AppHooks';
+import { useAccount, useMyArtifactsList, usePlanet, useUIManager } from '../../Utils/AppHooks';
 import { TooltipTrigger, TooltipTriggerProps } from '../Tooltip';
 
 function hasArtifact(planet: Planet, artifact: Artifact) {
@@ -30,7 +30,10 @@ export function ArtifactActions({
   const uiManager = useUIManager();
   const account = useAccount(uiManager);
 
+  const myArtifacts = useMyArtifactsList(uiManager);
+
   const depositPlanetWrapper = usePlanet(uiManager, depositOn);
+  const depositPlanet = depositPlanetWrapper.value;
 
   const onPlanetWrapper = usePlanet(uiManager, planet?.locationId);
   const onPlanet = onPlanetWrapper.value;
@@ -90,7 +93,29 @@ export function ArtifactActions({
     depositPlanetWrapper.value && depositPlanetWrapper.value.planetLevel > artifact.rarity;
   const canHandleWithdraw = onPlanet && onPlanet.planetLevel > artifact.rarity;
 
-  if (canDepositArtifact(account, artifact, depositPlanetWrapper.value)) {
+  const canDepositArtifact =
+    depositPlanet &&
+    !depositPlanet.destroyed &&
+    depositPlanet.owner === account &&
+    depositPlanet.planetType === PlanetType.TRADING_POST &&
+    myArtifacts.some(({ id }) => id === artifact.id);
+
+  const canWithdrawArtifact =
+    onPlanet &&
+    !onPlanet.destroyed &&
+    onPlanet.owner === account &&
+    onPlanet.planetType === PlanetType.TRADING_POST &&
+    hasArtifact(onPlanet, artifact) &&
+    onPlanet.activeArtifact?.id !== artifact.id;
+
+  const canDeactivateArtifact =
+    onPlanet.activeArtifact?.id === artifact.id &&
+    artifact.artifactType !== ArtifactType.BlackDomain;
+
+  const canActivateArtifact =
+    onPlanet.activeArtifact === undefined && hasArtifact(onPlanet, artifact);
+
+  if (canDepositArtifact) {
     actions.unshift({
       name: TooltipName.DepositArtifact,
       extraContent: !canHandleDeposit && (
@@ -112,10 +137,7 @@ export function ArtifactActions({
       ),
     });
   }
-  if (
-    onPlanet.activeArtifact?.id === artifact.id &&
-    artifact.artifactType !== ArtifactType.BlackDomain
-  ) {
+  if (canDeactivateArtifact) {
     actions.unshift({
       name: TooltipName.DeactivateArtifact,
       children: (
@@ -131,7 +153,7 @@ export function ArtifactActions({
       ),
     });
   }
-  if (canWithdrawArtifact(account, onPlanet)) {
+  if (canWithdrawArtifact) {
     actions.unshift({
       name: TooltipName.WithdrawArtifact,
       extraContent: !canHandleWithdraw && (
@@ -154,7 +176,7 @@ export function ArtifactActions({
     });
   }
 
-  if (onPlanet.activeArtifact === undefined) {
+  if (canActivateArtifact) {
     actions.unshift({
       name: TooltipName.ActivateArtifact,
       children: (
