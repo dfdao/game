@@ -365,35 +365,8 @@ library LibPlanet {
         }
     }
 
-    function withdrawSilver(uint256 locationId, uint256 silverToWithdraw) public {
-        Planet storage planet = gs().planets[locationId];
-        require(planet.owner == msg.sender, "you must own this planet");
-        require(
-            planet.planetType == PlanetType.TRADING_POST,
-            "can only withdraw silver from trading posts"
-        );
-        require(!planet.destroyed, "planet is destroyed");
-        require(
-            planet.silver >= silverToWithdraw,
-            "tried to withdraw more silver than exists on planet"
-        );
-
-        planet.silver -= silverToWithdraw;
-
-        // Energy and Silver are not stored as floats in the smart contracts,
-        // so any of those values coming from the contracts need to be divided by
-        // `CONTRACT_PRECISION` to get their true integer value.
-        uint256 scoreGained = silverToWithdraw / 1000;
-        // increase silver token count;
-        uint256 silverId = LibSilver.create();
-        DFTokenFacet(address(this)).mint(msg.sender, silverId, scoreGained);
-
-        scoreGained = (scoreGained * gameConstants().SILVER_SCORE_VALUE) / 100;
-        gs().players[msg.sender].score += scoreGained;
-    }
-
     // Withdraws All Silver on Asteroid
-    function withdrawSilverAsteroid(uint256 locationId) public returns (uint256) {
+    function withdrawSilver(uint256 locationId) public returns (uint256) {
         Planet storage planet = gs().planets[locationId];
         require(planet.owner == msg.sender, "you must own this planet");
         require(
@@ -410,9 +383,6 @@ library LibPlanet {
         planet.silver = 0;
         DFTokenFacet(address(this)).mint(msg.sender, silverId, silverAmount);
 
-        uint256 scoreGained = silverAmount;
-        scoreGained = (scoreGained * gameConstants().SILVER_SCORE_VALUE) / 100;
-        gs().players[msg.sender].score += scoreGained;
         return silverAmount;
     }
 }

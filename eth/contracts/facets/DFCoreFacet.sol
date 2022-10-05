@@ -28,8 +28,6 @@ contract DFCoreFacet is WithStorage {
     event LocationRevealed(address revealer, uint256 loc, uint256 x, uint256 y);
 
     event PlanetSilverWithdrawn(address player, uint256 loc, uint256 amount);
-    // The difference here is that TokenSilver amount is divided by contract precision
-    event TokenSilverWithdrawn(address player, uint256 loc, uint256 amount);
 
     //////////////////////
     /// ACCESS CONTROL ///
@@ -210,27 +208,20 @@ contract DFCoreFacet is WithStorage {
     }
 
     // withdraw silver
-    function withdrawSilver(uint256 locationId, uint256 amount) public notPaused {
+    function withdrawSilver(uint256 locationId) public notPaused {
         refreshPlanet(locationId);
-        LibPlanet.withdrawSilver(locationId, amount);
+        uint256 amount = LibPlanet.withdrawSilver(locationId);
         emit PlanetSilverWithdrawn(msg.sender, locationId, amount);
     }
 
     // withdraw silver
-    function withdrawSilverAsteroid(uint256 locationId) public notPaused {
-        refreshPlanet(locationId);
-        uint256 amount = LibPlanet.withdrawSilverAsteroid(locationId);
-        emit TokenSilverWithdrawn(msg.sender, locationId, amount);
-    }
-
-    // withdraw silver
-    function bulkWithdrawSilverAsteroid(uint256[] memory locationIds) public notPaused {
+    function bulkWithdrawSilver(uint256[] memory locationIds) public notPaused {
         uint256 amount = 0;
         for (uint256 i = 0; i < locationIds.length; i++) {
             refreshPlanet(locationIds[i]);
-            amount += LibPlanet.withdrawSilverAsteroid(locationIds[i]);
+            amount += LibPlanet.withdrawSilver(locationIds[i]);
         }
         // Using 0 for locationId, bad pattern
-        emit TokenSilverWithdrawn(msg.sender, 0, amount);
+        emit PlanetSilverWithdrawn(msg.sender, 0, amount);
     }
 }

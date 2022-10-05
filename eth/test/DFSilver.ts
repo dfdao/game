@@ -1,27 +1,20 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
-import {
-  conquerUnownedPlanet,
-  feedSilverToCap,
-  increaseBlockchainTime,
-  makeInitArgs,
-} from './utils/TestUtils';
+import { conquerUnownedPlanet, increaseBlockchainTime, makeInitArgs } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import {
   LVL1_ASTEROID_1,
   LVL1_ASTEROID_2,
   LVL1_ASTEROID_DEEP_SPACE,
   LVL1_ASTEROID_NEBULA,
-  LVL3_SPACETIME_1,
   SPAWN_PLANET_1,
 } from './utils/WorldConstants';
 
 const CONTRACT_PRECISION = 1_000;
 
-describe.only('DFSilver', async function () {
+describe('DFSilver', async function () {
   // Bump the time out so that the test doesn't timeout during
   // initial fixture creation
-  this.timeout(1000 * 60);
   let world: World;
 
   async function worldFixture() {
@@ -30,11 +23,11 @@ describe.only('DFSilver', async function () {
 
     // Conquer MINE_REGULAR and LVL3_SPACETIME_1 to accumulate silver
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_1);
-    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL3_SPACETIME_1);
 
-    // Fill up LVL3_SPACETIME_1 with silvers
-    await feedSilverToCap(world, world.user1Core, LVL1_ASTEROID_1, LVL3_SPACETIME_1);
+    await increaseBlockchainTime();
 
+    // Wait for Asteroid to fill up
+    await world.contract.refreshPlanet(LVL1_ASTEROID_1.id);
     return world;
   }
 
@@ -42,12 +35,12 @@ describe.only('DFSilver', async function () {
     world = await loadFixture(worldFixture);
   });
 
-  it('allows player to withdraw silver from trading posts', async function () {
-    const withdrawnAmount = (await world.contract.planets(LVL3_SPACETIME_1.id)).silverCap;
+  it('allows player to withdraw silver from asteroid', async function () {
+    const withdrawnAmount = (await world.contract.planets(LVL1_ASTEROID_1.id)).silverCap.div(1000);
 
-    await expect(world.user1Core.withdrawSilver(LVL3_SPACETIME_1.id, withdrawnAmount))
+    await expect(world.user1Core.withdrawSilver(LVL1_ASTEROID_1.id))
       .to.emit(world.contract, 'PlanetSilverWithdrawn')
-      .withArgs(world.user1.address, LVL3_SPACETIME_1.id, withdrawnAmount);
+      .withArgs(world.user1.address, LVL1_ASTEROID_1.id, withdrawnAmount);
 
     // According to DarkForestPlanet.sol:
     // Energy and Silver are not stored as floats in the smart contracts,
@@ -56,9 +49,7 @@ describe.only('DFSilver', async function () {
     // FIXME(blaine): This should have been done client-side because this type of
     // division isn't supposed to be done in the contract. That's the whole point of
     // `CONTRACT_PRECISION`
-    expect(await world.contract.getSilverBalance(world.user1.address)).to.equal(
-      withdrawnAmount.div(1000)
-    );
+    expect(await world.contract.getSilverBalance(world.user1.address)).to.equal(withdrawnAmount);
   });
 
   it('allows player to bulk withdraw silver from asteroids', async function () {
@@ -71,7 +62,7 @@ describe.only('DFSilver', async function () {
     // Let Asteroids fill up
     await increaseBlockchainTime();
 
-    const tx = await world.user1Core.bulkWithdrawSilverAsteroid([
+    const tx = await world.user1Core.bulkWithdrawSilver([
       LVL1_ASTEROID_1.id,
       LVL1_ASTEROID_2.id,
       LVL1_ASTEROID_NEBULA.id,
@@ -100,32 +91,18 @@ describe.only('DFSilver', async function () {
     );
   });
 
-  it("doesn't allow player to withdraw more silver than planet has", async function () {
-    const withdrawnAmount = (await world.contract.planets(LVL3_SPACETIME_1.id)).silverCap.add(1000);
-
-    await expect(
-      world.user1Core.withdrawSilver(LVL3_SPACETIME_1.id, withdrawnAmount)
-    ).to.be.revertedWith('tried to withdraw more silver than exists on planet');
-
-    expect(await world.contract.getSilverBalance(world.user1.address)).to.equal(0);
-  });
-
-  it("doesn't allow player to withdraw silver from non-trading post", async function () {
-    const withdrawnAmount = (await world.contract.planets(LVL1_ASTEROID_1.id)).silverCap;
-
-    await expect(
-      world.user1Core.withdrawSilver(LVL1_ASTEROID_1.id, withdrawnAmount)
-    ).to.be.revertedWith('can only withdraw silver from trading posts');
+  it("doesn't allow player to withdraw silver from non asteroid", async function () {
+    await expect(world.user1Core.withdrawSilver(SPAWN_PLANET_1.id)).to.be.revertedWith(
+      'can only withdraw silver from asteroids'
+    );
 
     expect(await world.contract.getSilverBalance(world.user1.address)).to.equal(0);
   });
 
   it("doesn't allow player to withdraw silver from planet that is not theirs", async function () {
-    const withdrawnAmount = (await world.contract.planets(LVL3_SPACETIME_1.id)).silverCap;
-
-    await expect(
-      world.user2Core.withdrawSilver(LVL3_SPACETIME_1.id, withdrawnAmount)
-    ).to.be.revertedWith('you must own this planet');
+    await expect(world.user2Core.withdrawSilver(LVL1_ASTEROID_1.id)).to.be.revertedWith(
+      'you must own this planet'
+    );
 
     expect(await world.contract.getSilverBalance(world.user1.address)).to.equal(0);
     expect(await world.contract.getSilverBalance(world.user2.address)).to.equal(0);
