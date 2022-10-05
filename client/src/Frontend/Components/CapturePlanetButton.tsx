@@ -117,6 +117,7 @@ export function CapturePlanetButton({
     gameManager.capturePlanet(planetWrapper.value.locationId);
   }, [gameManager, planetWrapper]);
 
+  if (!shouldShow) return <></>;
   return (
     shouldShow && (
       <StyledRow>

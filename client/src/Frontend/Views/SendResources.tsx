@@ -391,7 +391,6 @@ export function SendResources({
 
       {p.value && artifacts.length > 0 && (
         <SelectArtifactRow
-          planet={p.value}
           artifacts={artifacts}
           onArtifactChange={updateArtifactSending}
           selectedArtifact={artifactSending}
