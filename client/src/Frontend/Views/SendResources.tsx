@@ -268,7 +268,6 @@ export function SendResources({
 
   const isSendingForces = useEmitterValue(uiManager.isSending$, false);
   const energySending = uiManager.getForcesSending(locationId);
-  const silverSending = 100;
   const artifactSending = uiManager.getArtifactSending(locationId);
   const spaceshipSending = uiManager.getSpaceshipSending(locationId);
 

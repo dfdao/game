@@ -666,7 +666,10 @@ export class ContractsAPI extends EventEmitter {
   public async getPlayerById(playerId: EthAddress): Promise<Player | undefined> {
     const rawPlayer = await this.makeCall(this.contract.players, [playerId]);
     if (!rawPlayer.isInitialized) return undefined;
-    const player = decodePlayer(rawPlayer);
+    // This is horrible and unsustainable. We need some way to get Player + Silver token balance for
+    // bulk players as well.
+    const balance = await this.makeCall(this.contract.getSilverBalance, [playerId]);
+    const player = decodePlayer(rawPlayer, balance.toNumber());
 
     return player;
   }

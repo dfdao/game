@@ -36,12 +36,9 @@ function BoardPlacement({ account }: { account: EthAddress | undefined }) {
   if (!player.value) {
     content = <Sub>n/a</Sub>;
   } else {
-    let formattedScore = uiManager
-      .getGameManager()
-      .getContract()
-      .getSilverBalance(player.value.address);
+    let formattedScore = 'n/a';
     if (player.value.score !== undefined && player.value.score !== null) {
-      formattedScore = player.value.score.toLocaleString();
+      formattedScore = player.value.silver.toLocaleString();
     }
 
     content = (
