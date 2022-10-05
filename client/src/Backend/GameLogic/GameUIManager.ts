@@ -1467,6 +1467,10 @@ class GameUIManager extends EventEmitter {
     const renderer = this.getRenderer();
     if (renderer) renderer.removeCustomRenderer(customRenderer);
   }
+
+  public getUpgradeForArtifact(artifactId: ArtifactId) {
+    return this.gameManager.getUpgradeForArtifact(artifactId);
+  }
 }
 
 export default GameUIManager;

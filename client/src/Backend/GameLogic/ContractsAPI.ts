@@ -10,6 +10,7 @@ import {
 } from '@dfdao/network';
 import {
   address,
+  artifactIdToDecStr,
   decodeArrival,
   decodeArtifact,
   decodeArtifactPointValues,
@@ -19,6 +20,7 @@ import {
   decodePlayer,
   decodeRevealedCoords,
   decodeSpaceship,
+  decodeUpgrade,
   decodeUpgradeBranches,
   isArtifact,
   isSpaceship,
@@ -27,6 +29,7 @@ import {
 } from '@dfdao/serde';
 import {
   Artifact,
+  ArtifactId,
   ArtifactType,
   AutoGasSetting,
   DiagnosticUpdater,
@@ -41,6 +44,7 @@ import {
   Transaction,
   TransactionId,
   TxIntent,
+  Upgrade,
   VoyageId,
 } from '@dfdao/types';
 import { BigNumber as EthersBN, ContractFunction, Event, providers } from 'ethers';
@@ -819,6 +823,14 @@ export class ContractsAPI extends EventEmitter {
       onProgress(1);
     }
     return spaceships;
+  }
+
+  public async getUpgradeForArtifact(artifactId: ArtifactId): Promise<Upgrade> {
+    const rawUpgrade = await this.makeCall(this.contract.getUpgradeForArtifact, [
+      artifactIdToDecStr(artifactId),
+    ]);
+
+    return decodeUpgrade(rawUpgrade);
   }
 
   public setDiagnosticUpdater(diagnosticUpdater?: DiagnosticUpdater) {

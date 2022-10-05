@@ -3438,6 +3438,10 @@ class GameManager extends EventEmitter {
   public getPaused$(): Monomitter<boolean> {
     return this.paused$;
   }
+
+  public getUpgradeForArtifact(artifactId: ArtifactId) {
+    return this.contractsAPI.getUpgradeForArtifact(artifactId);
+  }
 }
 
 export default GameManager;

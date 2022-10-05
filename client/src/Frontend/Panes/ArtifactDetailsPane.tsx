@@ -10,7 +10,7 @@ import {
   Upgrade,
 } from '@dfdao/types';
 import _ from 'lodash';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { getUpgradeStat } from '../../Backend/Utils/Utils';
 import { StatIdx } from '../../_types/global/GlobalTypes';
@@ -158,6 +158,12 @@ export function ArtifactDetailsBody({
 }) {
   const uiManager = useUIManager();
 
+  // TODO: I don't like the async nature of this...we should have the logic on the client somehow
+  const [upgrade, setUpgrade] = useState<Upgrade | undefined>(undefined);
+  useEffect(() => {
+    uiManager.getUpgradeForArtifact(artifact.id).then(setUpgrade);
+  }, [uiManager, artifact, setUpgrade]);
+
   let readyInStr = undefined;
 
   if (
@@ -196,8 +202,7 @@ export function ArtifactDetailsBody({
           <StatsContainer>
             {_.range(0, 5).map((val) => (
               <UpgradeStatInfo
-                // upgrades={[artifact.upgrade, artifact.timeDelayedUpgrade]}
-                upgrades={[]}
+                upgrades={[upgrade, planet?.localPhotoidUpgrade]}
                 stat={val}
                 key={val}
               />
@@ -222,7 +227,9 @@ export function ArtifactDetailsBody({
           </div>
         )}
 
-        {!noActions && <ArtifactActions artifactId={artifact.id} depositOn={depositOn} />}
+        {!noActions && (
+          <ArtifactActions artifact={artifact} planet={planet} depositOn={depositOn} />
+        )}
       </StyledArtifactDetailsBody>
     </>
   );
