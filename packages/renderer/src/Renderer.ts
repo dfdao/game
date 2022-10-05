@@ -48,7 +48,6 @@ import {
   VoyageRendererType,
   WorldCoords,
   WorldLocation,
-  Wormhole,
   WormholeRendererType,
 } from '@dfdao/types';
 import autoBind from 'auto-bind';
@@ -139,7 +138,7 @@ export interface RendererGameContext extends DiagnosticUpdater {
     energy: number
   ): number;
   getIsChoosingTargetPlanet(): boolean;
-  getWormholes(): Iterable<Wormhole>;
+  getWormholes(): Iterable<[LocationId, LocationId]>;
   getRadiusOfPlanetLevel(planetRarity: PlanetLevel): number;
   getDistCoords(from: WorldCoords, to: WorldCoords): number;
   isOverOwnPlanet(coords: WorldCoords): Planet | undefined;

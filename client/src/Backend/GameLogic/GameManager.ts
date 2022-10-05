@@ -89,7 +89,6 @@ import {
   VoyageId,
   WorldCoords,
   WorldLocation,
-  Wormhole,
 } from '@dfdao/types';
 import bigInt, { BigInteger } from 'big-integer';
 import delay from 'delay';
@@ -3256,7 +3255,7 @@ class GameManager extends EventEmitter {
     return NotificationManager.getInstance();
   }
 
-  getWormholes(): Iterable<Wormhole> {
+  getWormholes(): Iterable<[LocationId, LocationId]> {
     return this.entityStore.getWormholes();
   }
 

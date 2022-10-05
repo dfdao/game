@@ -57,7 +57,6 @@ import {
   VoyageId,
   WorldCoords,
   WorldLocation,
-  Wormhole,
 } from '@dfdao/types';
 import autoBind from 'auto-bind';
 import bigInt from 'big-integer';
@@ -134,7 +133,7 @@ export class GameObjects {
   /**
    * Map from artifact ids to wormholes.
    */
-  private readonly wormholes: Map<ArtifactId, Wormhole>;
+  private readonly wormholes: Map<LocationId, LocationId>;
 
   /**
    * Set of all planet ids that we know have been interacted-with on-chain.
@@ -324,8 +323,8 @@ export class GameObjects {
     }, 120 * 1000);
   }
 
-  public getWormholes(): Iterable<Wormhole> {
-    return this.wormholes.values();
+  public getWormholes(): Iterable<[LocationId, LocationId]> {
+    return this.wormholes.entries();
   }
 
   public getPlanetArtifacts(planetId: LocationId): Artifact[] {
@@ -877,6 +876,12 @@ export class GameObjects {
   private setPlanet(planet: Planet) {
     if (isLocatable(planet)) {
       this.layeredMap.insertPlanet(planet.location, planet.planetLevel);
+    }
+
+    if (planet.wormholeTo) {
+      this.wormholes.set(planet.locationId, planet.wormholeTo);
+    } else {
+      this.wormholes.delete(planet.locationId);
     }
 
     setObjectSyncState<Planet, LocationId>(

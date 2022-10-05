@@ -1,5 +1,5 @@
 import type { Biome } from './game_types';
-import type { ArtifactId, LocationId } from './identifier';
+import type { ArtifactId } from './identifier';
 import type { TransactionCollection } from './transaction';
 import type { Abstract } from './utility';
 
@@ -131,8 +131,3 @@ export interface RenderedArtifact extends Partial<Artifact> {
   rarity: ArtifactRarity;
   id: ArtifactId; // for rolls
 }
-
-export type Wormhole = {
-  from: LocationId;
-  to: LocationId;
-};

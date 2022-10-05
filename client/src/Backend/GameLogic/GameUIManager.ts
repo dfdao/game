@@ -35,7 +35,6 @@ import {
   UpgradeBranchName,
   WorldCoords,
   WorldLocation,
-  Wormhole,
 } from '@dfdao/types';
 import autoBind from 'auto-bind';
 import { BigNumber } from 'ethers';
@@ -1155,7 +1154,7 @@ class GameUIManager extends EventEmitter {
     return this.gameManager.getUnconfirmedWormholeActivations();
   }
 
-  public getWormholes(): Iterable<Wormhole> {
+  public getWormholes(): Iterable<[LocationId, LocationId]> {
     return this.gameManager.getWormholes();
   }
 
