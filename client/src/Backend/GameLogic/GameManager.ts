@@ -2439,6 +2439,7 @@ class GameManager extends EventEmitter {
           throw new Error('game has ended');
         }
         const planet = this.entityStore.getPlanetWithId(locationId);
+        console.log(`basic withdraw planet`, planet);
         if (!planet) {
           throw new Error('tried to withdraw silver from an unknown planet');
         }
