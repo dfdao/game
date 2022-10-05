@@ -10,6 +10,7 @@ import {LibArtifact} from "../libraries/LibArtifact.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {LibPermissions} from "../libraries/LibPermissions.sol";
+import {LibSilver} from "../libraries/LibSilver.sol";
 
 // Storage imports
 import {WithStorage, SnarkConstants, GameConstants} from "../libraries/LibStorage.sol";
@@ -92,5 +93,8 @@ contract DFGetterFacet2 is WithStorage {
         }
     }
 
+    function getSilverTokenId() public pure returns (uint256 ret) {
+        ret = LibSilver.create();
+    }
 }
 
