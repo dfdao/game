@@ -9,7 +9,6 @@ import {
   SpaceshipId,
 } from '@dfdao/types';
 
-// TODO: get this out of here
 
 const godGrammar = {
   god1: [
