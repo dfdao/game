@@ -78,6 +78,7 @@ export function PlanetCard({
 
   return (
     <>
+      {/* TODO: This tooltip stuff is FUBAR and doesn't work if you try to use it from elsewhere */}
       <ArtifactHoverPane planet={planet} />
       <SpaceshipHoverPane />
       {standalone && (
