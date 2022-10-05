@@ -9,7 +9,6 @@ import {
   SpaceshipId,
 } from '@dfdao/types';
 
-
 const godGrammar = {
   god1: [
     "c'",
