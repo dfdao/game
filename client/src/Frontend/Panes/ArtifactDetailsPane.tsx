@@ -251,8 +251,6 @@ function ArtifactDescription({
   const photoidRanges = [0, 2, 2, 2, 2, 2];
   const photoidSpeeds = [0, 5, 10, 15, 20, 25];
 
-  // const genericSpaceshipDescription = <>Can move between planets without sending energy.</>;
-
   switch (artifact.artifactType) {
     case ArtifactType.BlackDomain:
       content = (
