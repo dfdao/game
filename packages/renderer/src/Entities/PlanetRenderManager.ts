@@ -1,5 +1,5 @@
 import { EMPTY_ADDRESS } from '@dfdao/constants';
-import { formatNumber, getRange, hasOwner, isLocatable, isSpaceShip } from '@dfdao/gamelogic';
+import { formatNumber, getRange, hasOwner, isLocatable } from '@dfdao/gamelogic';
 import { getOwnerColorVec, getPlanetCosmetic } from '@dfdao/procedural';
 import { isUnconfirmedMoveTx } from '@dfdao/serde';
 import {
@@ -12,6 +12,7 @@ import {
   PlanetRenderManagerType,
   PlanetType,
   RendererType,
+  Spaceship,
   TextAlign,
   TextAnchor,
   WorldCoords,
@@ -53,9 +54,6 @@ export class PlanetRenderManager implements PlanetRenderManagerType {
       textAlpha *= renderInfo.radii.radiusPixels / (2 * maxRadius);
     }
 
-    const artifacts = uiManager
-      .getArtifactsWithIds(planet.heldArtifactIds)
-      .filter((a) => !!a) as Artifact[];
     const color = uiManager.isOwnedByMe(planet) ? whiteA : getOwnerColorVec(planet);
 
     // draw planet body
@@ -63,7 +61,15 @@ export class PlanetRenderManager implements PlanetRenderManagerType {
     this.queueAsteroids(planet, planet.location.coords, renderInfo.radii.radiusWorld);
     this.queueArtifactsAroundPlanet(
       planet,
-      artifacts,
+      planet.artifacts,
+      planet.location.coords,
+      renderInfo.radii.radiusWorld,
+      now,
+      textAlpha
+    );
+    this.queueSpaceshipsAroundPlanet(
+      planet,
+      planet.spaceships,
       planet.location.coords,
       renderInfo.radii.radiusWorld,
       now,
@@ -143,10 +149,8 @@ export class PlanetRenderManager implements PlanetRenderManagerType {
     now: number,
     alpha: number
   ) {
-    const numArtifacts = artifacts.length;
-
     const MS_PER_ROTATION = 10 * 1000 * (planet.planetLevel + 1);
-    const anglePerArtifact = (Math.PI * 2) / numArtifacts;
+    const anglePerArtifact = (Math.PI * 2) / artifacts.length;
     const startingAngle = 0 - Math.PI / 2;
     const nowAngle = (Math.PI * 2 * (now % MS_PER_ROTATION)) / MS_PER_ROTATION;
     const artifactSize = 0.67 * radiusW;
@@ -167,6 +171,41 @@ export class PlanetRenderManager implements PlanetRenderManagerType {
         artifactSize,
         alpha,
         undefined,
+        undefined,
+        undefined,
+        this.renderer.getViewport()
+      );
+    }
+  }
+  private queueSpaceshipsAroundPlanet(
+    planet: Planet,
+    spaceships: Spaceship[],
+    centerW: WorldCoords,
+    radiusW: number,
+    now: number,
+    alpha: number
+  ) {
+    const MS_PER_ROTATION = 10 * 1000 * (planet.planetLevel + 1);
+    const anglePerArtifact = (Math.PI * 2) / spaceships.length;
+    const startingAngle = 0 - Math.PI / 2;
+    const nowAngle = (Math.PI * 2 * (now % MS_PER_ROTATION)) / MS_PER_ROTATION;
+    const artifactSize = 0.67 * radiusW;
+    const distanceRadiusScale = 1.5;
+    const distanceFromCenterOfPlanet = radiusW * distanceRadiusScale + artifactSize;
+
+    for (let i = 0; i < spaceships.length; i++) {
+      const x =
+        Math.cos(anglePerArtifact * i + startingAngle + nowAngle) * distanceFromCenterOfPlanet +
+        centerW.x;
+      const y =
+        Math.sin(anglePerArtifact * i + startingAngle + nowAngle) * distanceFromCenterOfPlanet +
+        centerW.y;
+
+      this.renderer.spriteRenderer.queueSpaceshipWorld(
+        spaceships[i],
+        { x, y },
+        artifactSize,
+        alpha,
         undefined,
         undefined,
         this.renderer.getViewport()
@@ -449,8 +488,7 @@ export class PlanetRenderManager implements PlanetRenderManagerType {
       range: { energy },
     } = engineConsts.colors;
     const { x, y } = planet.location.coords;
-    const sendingArtifact = this.renderer.context.getArtifactSending(planet.locationId);
-    const sendingSpaceShip = isSpaceShip(sendingArtifact?.artifactType);
+    const sendingSpaceShip = this.renderer.context.getSpaceshipSending(planet.locationId);
 
     if (sendingSpaceShip) return;
 

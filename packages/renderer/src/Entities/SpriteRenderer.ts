@@ -5,6 +5,7 @@ import {
   CanvasCoords,
   GameViewport,
   RenderedArtifact,
+  RenderedSpaceship,
   RendererType,
   RGBAVec,
   RGBVec,
@@ -18,6 +19,7 @@ import {
   loadArtifactAtlas,
   loadArtifactThumbAtlas,
   spriteFromArtifact,
+  spriteFromSpaceship,
   SpriteRectangle,
 } from '../TextureManager';
 import { GenericRenderer } from '../WebGL/GenericRenderer';
@@ -91,14 +93,28 @@ export class SpriteRenderer
     const rarity = artifact.rarity;
 
     if (rarity >= ArtifactRarity.Rare) {
-      this.queueOutline(artifact, pos, width, alpha, theta);
+      this.queueArtifactOutline(artifact, pos, width, alpha, theta);
     }
 
     if (artifact.transactions?.hasTransaction(isUnconfirmedMoveTx)) {
       alpha = 127;
     }
 
-    this.queueSprite(artifact, pos, width, alpha, color, atFrame, theta);
+    this.queueArtifactSprite(artifact, pos, width, alpha, color, atFrame, theta);
+  }
+  public queueSpaceship(
+    spaceship: RenderedSpaceship,
+    pos: CanvasCoords,
+    width = 128,
+    alpha = 255,
+    color: RGBVec | undefined = undefined,
+    theta: number | undefined = undefined
+  ) {
+    if (spaceship.transactions?.hasTransaction(isUnconfirmedMoveTx)) {
+      alpha = 127;
+    }
+
+    this.queueSpaceshipSprite(spaceship, pos, width, alpha, color, theta);
   }
 
   /** Queue artifact to worldcoords, centered */
@@ -126,8 +142,31 @@ export class SpriteRenderer
       theta
     );
   }
+  /** Queue spaceship to worldcoords, centered */
+  public queueSpaceshipWorld(
+    spaceship: RenderedSpaceship,
+    posW: CanvasCoords,
+    widthW: number,
+    alpha = 255,
+    color: RGBVec | undefined = undefined,
+    theta: number | undefined = undefined,
+    viewport: GameViewport
+  ) {
+    const pos = viewport.worldToCanvasCoords(posW);
+    const width = viewport.worldToCanvasDist(widthW);
+    const displayedW = Math.max(width, 4);
 
-  public queueSprite(
+    this.queueSpaceship(
+      spaceship,
+      { x: pos.x - width / 2, y: pos.y - width / 2 },
+      displayedW,
+      alpha,
+      color,
+      theta
+    );
+  }
+
+  public queueArtifactSprite(
     artifact: RenderedArtifact,
     topLeft: CanvasCoords,
     width: number,
@@ -206,8 +245,71 @@ export class SpriteRenderer
     }
     this.verts += 6;
   }
+  public queueSpaceshipSprite(
+    spaceship: RenderedSpaceship,
+    topLeft: CanvasCoords,
+    width: number,
+    alpha: number,
+    color: RGBVec | undefined = undefined,
+    theta: number | undefined = undefined // rotate around [w/2, w/2]
+  ) {
+    if (!this.loaded) return;
 
-  public queueOutline(
+    const {
+      position: posA,
+      texcoord: texA,
+      rectPos: rectPosA,
+      color: colorA,
+      shine: shineA,
+      invert: invertA,
+      mythic: mythicA,
+    } = this.attribManagers;
+
+    /* set up attributes */
+    // we'll always want pixel-perfect icons
+    const { x, y } = { x: Math.floor(topLeft.x), y: Math.floor(topLeft.y) };
+
+    const shineLoc = -1000;
+
+    const tex: SpriteRectangle = spriteFromSpaceship(spaceship);
+
+    const { x1, x2, y1, y2 } = tex;
+
+    const dim = width;
+    EngineUtils.makeQuadVec2Buffered(this.posBuffer, 0, 0, dim, dim);
+
+    if (theta !== undefined) {
+      EngineUtils.translateQuadVec2(this.posBuffer, [-dim / 2, -dim / 2]);
+      EngineUtils.rotateQuadVec2(this.posBuffer, theta);
+      EngineUtils.translateQuadVec2(this.posBuffer, [dim / 2, dim / 2]);
+    }
+
+    EngineUtils.translateQuadVec2(this.posBuffer, [x, y]);
+
+    if (this.flip) {
+      EngineUtils.makeQuadVec2Buffered(this.texBuffer, x1, 1 - y1, x2, 1 - y2);
+    } else {
+      EngineUtils.makeQuadVec2Buffered(this.texBuffer, x1, y1, x2, y2);
+    }
+
+    // 0, 0, 0 is a special color; the program looks for it
+    const myColor: RGBAVec = [...(color || [0, 0, 0]), alpha];
+
+    /* buffer attributes */
+    posA.setVertex(this.posBuffer, this.verts);
+    texA.setVertex(this.texBuffer, this.verts);
+    rectPosA.setVertex(this.rectposBuffer, this.verts);
+
+    for (let i = 0; i < 6; i++) {
+      colorA.setVertex(myColor, this.verts + i);
+      shineA.setVertex([shineLoc], this.verts + i);
+      invertA.setVertex([0], this.verts + i);
+      mythicA.setVertex([0], this.verts + i);
+    }
+    this.verts += 6;
+  }
+
+  public queueArtifactOutline(
     artifact: RenderedArtifact,
     { x, y }: CanvasCoords,
     width: number,
@@ -218,17 +320,49 @@ export class SpriteRenderer
     const s = this.thumb ? width / 16 : width / 64;
     const iters = this.thumb ? 1 : 2;
     for (let del = s; del <= iters * s; del += s) {
-      this.queueSprite(artifact, { x, y: y - del }, width, alpha, color, undefined, theta);
-      this.queueSprite(artifact, { x, y: y + del }, width, alpha, color, undefined, theta);
-      this.queueSprite(artifact, { x: x + del, y }, width, alpha, color, undefined, theta);
-      this.queueSprite(artifact, { x: x - del, y }, width, alpha, color, undefined, theta);
+      this.queueArtifactSprite(artifact, { x, y: y - del }, width, alpha, color, undefined, theta);
+      this.queueArtifactSprite(artifact, { x, y: y + del }, width, alpha, color, undefined, theta);
+      this.queueArtifactSprite(artifact, { x: x + del, y }, width, alpha, color, undefined, theta);
+      this.queueArtifactSprite(artifact, { x: x - del, y }, width, alpha, color, undefined, theta);
     }
 
     if (iters === 2) {
-      this.queueSprite(artifact, { x: x - 1, y: y - 1 }, width, alpha, color, undefined, theta);
-      this.queueSprite(artifact, { x: x - 1, y: y + 1 }, width, alpha, color, undefined, theta);
-      this.queueSprite(artifact, { x: x + 1, y: y - 1 }, width, alpha, color, undefined, theta);
-      this.queueSprite(artifact, { x: x + 1, y: y + 1 }, width, alpha, color, undefined, theta);
+      this.queueArtifactSprite(
+        artifact,
+        { x: x - 1, y: y - 1 },
+        width,
+        alpha,
+        color,
+        undefined,
+        theta
+      );
+      this.queueArtifactSprite(
+        artifact,
+        { x: x - 1, y: y + 1 },
+        width,
+        alpha,
+        color,
+        undefined,
+        theta
+      );
+      this.queueArtifactSprite(
+        artifact,
+        { x: x + 1, y: y - 1 },
+        width,
+        alpha,
+        color,
+        undefined,
+        theta
+      );
+      this.queueArtifactSprite(
+        artifact,
+        { x: x + 1, y: y + 1 },
+        width,
+        alpha,
+        color,
+        undefined,
+        theta
+      );
     }
   }
 

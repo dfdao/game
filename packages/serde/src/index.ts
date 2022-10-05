@@ -33,5 +33,6 @@ export * from './location';
 export * from './planet';
 export * from './player';
 export * from './reveal';
+export * from './spaceship';
 export * from './transactions';
 export * from './upgrade';

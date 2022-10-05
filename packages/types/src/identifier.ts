@@ -31,3 +31,11 @@ export type EthAddress = Abstract<string, 'EthAddress'>;
  * in `serde`.
  */
 export type ArtifactId = Abstract<string, 'ArtifactId'>;
+
+/**
+ * A unique identifier for a Dark Forest NFT spaceship. This is a 64-character
+ * lowercase hex string not prefixed with 0x. Spacehip IDs should only be
+ * instantiated through `spaceshipIdFromHexStr`, `spaceshipIdFromDecStr`,
+ * and `spaceshipIdFromEthersBN` in `serde`.
+ */
+export type SpaceshipId = Abstract<string, 'SpaceshipId'>;

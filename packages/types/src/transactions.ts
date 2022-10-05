@@ -1,6 +1,6 @@
 import type { Contract } from 'ethers';
 import type { LiteralUnion } from 'type-fest';
-import type { ArtifactId, EthAddress, LocationId } from './identifier';
+import type { ArtifactId, EthAddress, LocationId, SpaceshipId } from './identifier';
 import type { WorldLocation } from './world';
 
 export type ContractMethodName =
@@ -65,7 +65,8 @@ export type UnconfirmedMove = TxIntent & {
   forces: number;
   silver: number;
   abandoning: boolean;
-  artifact?: ArtifactId;
+  // TODO: Make this less shit
+  artifact?: ArtifactId | SpaceshipId;
 };
 
 /**

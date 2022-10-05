@@ -1,6 +1,6 @@
 import { EMPTY_ADDRESS, MAX_PLANET_LEVEL, MIN_PLANET_LEVEL } from '@dfdao/constants';
 import { Monomitter, monomitter } from '@dfdao/events';
-import { hasOwner, isActivated, isLocatable } from '@dfdao/gamelogic';
+import { hasOwner, isLocatable } from '@dfdao/gamelogic';
 import { bonusFromHex, getBytesFromHex } from '@dfdao/hexgen';
 import { TxCollection } from '@dfdao/network';
 import {
@@ -37,7 +37,6 @@ import {
   ArrivalWithTimer,
   Artifact,
   ArtifactId,
-  ArtifactType,
   Biome,
   Chunk,
   ClaimedLocation,
@@ -50,26 +49,21 @@ import {
   QueuedArrival,
   Radii,
   RevealedLocation,
+  Spaceship,
+  SpaceshipId,
   SpaceType,
   Transaction,
   TransactionCollection,
   VoyageId,
   WorldCoords,
   WorldLocation,
-  Wormhole,
 } from '@dfdao/types';
 import autoBind from 'auto-bind';
 import bigInt from 'big-integer';
 import { ethers } from 'ethers';
 import _ from 'lodash';
 import NotificationManager from '../../Frontend/Game/NotificationManager';
-import {
-  getArtifactId,
-  getArtifactOwner,
-  getPlanetId,
-  getPlanetOwner,
-  setObjectSyncState,
-} from '../../Frontend/Utils/EmitterUtils';
+import { getPlanetId, getPlanetOwner, setObjectSyncState } from '../../Frontend/Utils/EmitterUtils';
 import { ContractConstants } from '../../_types/darkforest/api/ContractsAPITypes';
 import { arrive, PlanetDiff, updatePlanetToTime } from './ArrivalUtils';
 import { LayeredMap } from './LayeredMap';
@@ -110,7 +104,7 @@ export class GameObjects {
    *
    * @todo extract the pattern we're using for the field tuples
    *   - {planets, myPlanets, myPlanetsUpdated, planetUpdated$}
-   *   - {artifacts, myArtifacts, myArtifactsUpdated, artifactUpdated$}
+   *   - {artifacts, myArtifacts, myArtifactsUpdated}
    *
    *   into some sort of class.
    */
@@ -124,23 +118,22 @@ export class GameObjects {
   private readonly myPlanets: Map<LocationId, Planet>;
 
   /**
-   * Cached index of all known artifact data.
-   *
-   * @see The same warning applys as the one on {@link GameObjects.planets}
-   */
-  private readonly artifacts: Map<ArtifactId, Artifact>;
-
-  /**
-   * Cached index of artifacts owned by the player.
+   * Cached index of artifacts in a players wallet.
    *
    * @see The same warning applys as the one on {@link GameObjects.planets}
    */
   private readonly myArtifacts: Map<ArtifactId, Artifact>;
+  /**
+   * Cached index of spaceships in a players wallet.
+   *
+   * @see The same warning applys as the one on {@link GameObjects.planets}
+   */
+  private readonly mySpaceships: Map<SpaceshipId, Spaceship>;
 
   /**
    * Map from artifact ids to wormholes.
    */
-  private readonly wormholes: Map<ArtifactId, Wormhole>;
+  private readonly wormholes: Map<LocationId, LocationId>;
 
   /**
    * Set of all planet ids that we know have been interacted-with on-chain.
@@ -205,11 +198,6 @@ export class GameObjects {
   public readonly planetUpdated$: Monomitter<LocationId>;
 
   /**
-   * Event emitter which publishes whenever an artifact has been updated.
-   */
-  public readonly artifactUpdated$: Monomitter<ArtifactId>;
-
-  /**
    * Whenever a planet is updated, we publish to this event with a reference to a map from location
    * id to planet. We need to rethink this event emitter because it currently publishes every time
    * that any planet is updated, and if a lot of them are updated at once (which i think is the case
@@ -219,10 +207,15 @@ export class GameObjects {
   public readonly myPlanetsUpdated$: Monomitter<Map<LocationId, Planet>>;
 
   /**
-   * Whenever one of the player's artifacts are updated, this event emitter publishes. See
+   * Whenever an artifact changes in a player's wallet, this event emitter publishes. See
    * {@link GameObjects.myPlanetsUpdated$} for more info.
    */
-  public readonly myArtifactsUpdated$: Monomitter<Map<ArtifactId, Artifact>>;
+  public readonly myArtifactsUpdated$: Monomitter<[ArtifactId, Artifact | undefined]>;
+  /**
+   * Whenever a spaceship changes in a player's wallet, this event emitter publishes. See
+   * {@link GameObjects.myPlanetsUpdated$} for more info.
+   */
+  public readonly mySpaceshipsUpdated$: Monomitter<[SpaceshipId, Spaceship | undefined]>;
 
   constructor(
     address: EthAddress | undefined,
@@ -230,12 +223,13 @@ export class GameObjects {
     allTouchedPlanetIds: Set<LocationId>,
     revealedLocations: Map<LocationId, RevealedLocation>,
     claimedLocations: Map<LocationId, ClaimedLocation>,
-    artifacts: Map<ArtifactId, Artifact>,
     allChunks: Iterable<Chunk>,
     unprocessedArrivals: Map<VoyageId, QueuedArrival>,
     unprocessedPlanetArrivalIds: Map<LocationId, VoyageId[]>,
     contractConstants: ContractConstants,
-    worldRadius: number
+    worldRadius: number,
+    myArtifacts: Map<ArtifactId, Artifact>,
+    mySpaceships: Map<SpaceshipId, Spaceship>
   ) {
     autoBind(this);
 
@@ -245,8 +239,8 @@ export class GameObjects {
     this.touchedPlanetIds = allTouchedPlanetIds;
     this.revealedLocations = revealedLocations;
     this.claimedLocations = claimedLocations;
-    this.artifacts = artifacts;
-    this.myArtifacts = new Map();
+    this.myArtifacts = myArtifacts;
+    this.mySpaceships = mySpaceships;
     this.contractConstants = contractConstants;
     this.coordsToLocation = new Map();
     this.planetLocationMap = new Map();
@@ -257,8 +251,8 @@ export class GameObjects {
     this.layeredMap = new LayeredMap(worldRadius);
 
     this.planetUpdated$ = monomitter();
-    this.artifactUpdated$ = monomitter();
     this.myArtifactsUpdated$ = monomitter();
+    this.mySpaceshipsUpdated$ = monomitter();
     this.myPlanetsUpdated$ = monomitter();
 
     for (const chunk of allChunks) {
@@ -270,8 +264,6 @@ export class GameObjects {
       this.markLocationRevealed(location);
       this.addPlanetLocation(location);
     }
-
-    this.replaceArtifactsFromContractData(artifacts.values());
 
     touchedPlanets.forEach((planet, planetId) => {
       const arrivalIds = unprocessedPlanetArrivalIds.get(planetId);
@@ -325,52 +317,18 @@ export class GameObjects {
     setInterval(() => {
       this.planets.forEach((planet) => {
         if (planet && hasOwner(planet)) {
-          updatePlanetToTime(
-            planet,
-            this.getPlanetArtifacts(planet.locationId),
-            Date.now(),
-            this.contractConstants
-          );
+          updatePlanetToTime(planet, Date.now(), this.contractConstants);
         }
       });
     }, 120 * 1000);
   }
 
-  public getWormholes(): Iterable<Wormhole> {
-    return this.wormholes.values();
-  }
-
-  public getArtifactById(artifactId?: ArtifactId): Artifact | undefined {
-    return artifactId ? this.artifacts.get(artifactId) : undefined;
-  }
-
-  public getArtifactsOwnedBy(addr: EthAddress): Artifact[] {
-    const ret: Artifact[] = [];
-    this.artifacts.forEach((artifact) => {
-      if (artifact.currentOwner === addr || artifact.controller === addr) {
-        ret.push(artifact);
-      }
-    });
-    return ret;
+  public getWormholes(): Iterable<[LocationId, LocationId]> {
+    return this.wormholes.entries();
   }
 
   public getPlanetArtifacts(planetId: LocationId): Artifact[] {
-    return (this.planets.get(planetId)?.heldArtifactIds || [])
-      .map((id) => this.artifacts.get(id))
-      .filter((a) => !!a) as Artifact[];
-  }
-
-  public getArtifactsOnPlanetsOwnedBy(addr: EthAddress): Artifact[] {
-    const ret: Artifact[] = [];
-    this.artifacts.forEach((artifact) => {
-      if (artifact.onPlanetId) {
-        const planet = this.getPlanetWithId(artifact.onPlanetId, false);
-        if (planet && planet.owner === addr) {
-          ret.push(artifact);
-        }
-      }
-    });
-    return ret;
+    return this.planets.get(planetId)?.artifacts || [];
   }
 
   // get planet by ID - must be in contract or known chunks
@@ -413,25 +371,6 @@ export class GameObjects {
   }
 
   /**
-   * received some artifact data from the contract. update our stores
-   */
-  public replaceArtifactFromContractData(artifact: Artifact): void {
-    const localArtifact = this.artifacts.get(artifact.id);
-    if (localArtifact) {
-      artifact.transactions = localArtifact.transactions;
-      artifact.onPlanetId = localArtifact.onPlanetId;
-    }
-
-    this.setArtifact(artifact);
-  }
-
-  public replaceArtifactsFromContractData(artifacts: Iterable<Artifact>) {
-    for (const artifact of artifacts) {
-      this.replaceArtifactFromContractData(artifact);
-    }
-  }
-
-  /**
    * Given a planet id, update the state of the given planet by calling the given update function.
    * If the planet was updated, then also publish the appropriate event.
    */
@@ -445,25 +384,11 @@ export class GameObjects {
   }
 
   /**
-   * Given a planet id, update the state of the given planet by calling the given update function.
-   * If the planet was updated, then also publish the appropriate event.
-   */
-  public updateArtifact(id: ArtifactId | undefined, updateFn: (p: Artifact) => void) {
-    const artifact = this.getArtifactById(id);
-
-    if (artifact !== undefined) {
-      updateFn(artifact);
-      this.setArtifact(artifact);
-    }
-  }
-
-  /**
    * received some planet data from the contract. update our stores
    */
   public replacePlanetFromContractData(
     planet: Planet,
     updatedArrivals?: QueuedArrival[],
-    updatedArtifactsOnPlanet?: ArtifactId[],
     revealedLocation?: RevealedLocation,
     claimerEthAddress?: EthAddress // TODO: Remove this
   ): void {
@@ -490,16 +415,10 @@ export class GameObjects {
       planet.emojiZoopAnimation = emojiZoopAnimation;
       planet.emojiZoopOutAnimation = emojiZoopOutAnimation;
       planet.messages = messages;
-
-      // Possibly non updated props
-      planet.heldArtifactIds = localPlanet.heldArtifactIds;
     } else {
       this.planets.set(planet.locationId, planet);
     }
 
-    if (updatedArtifactsOnPlanet) {
-      planet.heldArtifactIds = updatedArtifactsOnPlanet;
-    }
     // make planet Locatable if we know its location
     const loc = this.planetLocationMap.get(planet.locationId) || revealedLocation;
     if (loc) {
@@ -692,13 +611,6 @@ export class GameObjects {
         planet.transactions?.addTransaction(tx);
         this.setPlanet(planet);
       }
-      if (tx.intent.artifact) {
-        const artifact = this.getArtifactById(tx.intent.artifact);
-        if (artifact) {
-          artifact.transactions?.addTransaction(tx);
-          this.setArtifact(artifact);
-        }
-      }
     } else if (isUnconfirmedUpgradeTx(tx)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
       if (planet) {
@@ -731,47 +643,27 @@ export class GameObjects {
       }
     } else if (isUnconfirmedDepositArtifactTx(tx)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
       if (planet) {
         planet.transactions?.addTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.addTransaction(tx);
-        this.setArtifact(artifact);
       }
     } else if (isUnconfirmedWithdrawArtifactTx(tx)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
       if (planet) {
         planet.transactions?.addTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.addTransaction(tx);
-        this.setArtifact(artifact);
       }
     } else if (isUnconfirmedActivateArtifactTx(tx)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
       if (planet) {
         planet.transactions?.addTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.addTransaction(tx);
-        this.setArtifact(artifact);
       }
     } else if (isUnconfirmedDeactivateArtifactTx(tx)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
       if (planet) {
         planet.transactions?.addTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.addTransaction(tx);
-        this.setArtifact(artifact);
       }
     } else if (isUnconfirmedWithdrawSilverTx(tx)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
@@ -820,13 +712,6 @@ export class GameObjects {
         planet.transactions?.removeTransaction(tx);
         this.setPlanet(planet);
       }
-      if (tx.intent.artifact) {
-        const artifact = this.getArtifactById(tx.intent.artifact);
-        if (artifact) {
-          artifact.transactions?.removeTransaction(tx);
-          this.setArtifact(artifact);
-        }
-      }
     } else if (isUnconfirmedUpgrade(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
       if (planet) {
@@ -848,27 +733,17 @@ export class GameObjects {
       }
     } else if (isUnconfirmedDepositArtifact(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
 
       if (planet) {
         planet.transactions?.removeTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.removeTransaction(tx);
-        this.setArtifact(artifact);
       }
     } else if (isUnconfirmedWithdrawArtifact(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
 
       if (planet) {
         planet.transactions?.removeTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.removeTransaction(tx);
-        this.setArtifact(artifact);
       }
     } else if (isUnconfirmedTransfer(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.planetId);
@@ -884,25 +759,15 @@ export class GameObjects {
       }
     } else if (isUnconfirmedActivateArtifact(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
       if (planet) {
         planet.transactions?.removeTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.removeTransaction(tx);
-        this.setArtifact(artifact);
       }
     } else if (isUnconfirmedDeactivateArtifact(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
-      const artifact = this.getArtifactById(tx.intent.artifactId);
       if (planet) {
         planet.transactions?.removeTransaction(tx);
         this.setPlanet(planet);
-      }
-      if (artifact) {
-        artifact.transactions?.removeTransaction(tx);
-        this.setArtifact(artifact);
       }
     } else if (isUnconfirmedWithdrawSilver(tx.intent)) {
       const planet = this.getPlanetWithId(tx.intent.locationId);
@@ -929,16 +794,34 @@ export class GameObjects {
     return this.planets;
   }
 
-  public getArtifactMap(): Map<ArtifactId, Artifact> {
-    return this.artifacts;
-  }
-
   public getMyPlanetMap(): Map<LocationId, Planet> {
     return this.myPlanets;
   }
 
   public getMyArtifactMap(): Map<ArtifactId, Artifact> {
     return this.myArtifacts;
+  }
+  // TODO: This needs to track the AMOUNT of a given artifact in my wallet
+  public addMyArtifact(artifact: Artifact) {
+    this.myArtifacts.set(artifact.id, artifact);
+    this.myArtifactsUpdated$.publish([artifact.id, artifact]);
+  }
+  // TODO: This needs to track the AMOUNT of a given artifact in my wallet
+  public removeMyArtifact(artifact: Artifact) {
+    this.myArtifacts.delete(artifact.id);
+    this.myArtifactsUpdated$.publish([artifact.id, undefined]);
+  }
+
+  public getMySpaceshipMap(): Map<SpaceshipId, Spaceship> {
+    return this.mySpaceships;
+  }
+  public addMySpaceship(spaceship: Spaceship) {
+    this.mySpaceships.set(spaceship.id, spaceship);
+    this.mySpaceshipsUpdated$.publish([spaceship.id, spaceship]);
+  }
+  public removeMySpaceship(spaceship: Spaceship) {
+    this.mySpaceships.delete(spaceship.id);
+    this.mySpaceshipsUpdated$.publish([spaceship.id, undefined]);
   }
 
   public getRevealedLocations(): Map<LocationId, RevealedLocation> {
@@ -1014,6 +897,12 @@ export class GameObjects {
       this.layeredMap.insertPlanet(planet.location, planet.planetLevel);
     }
 
+    if (planet.wormholeTo) {
+      this.wormholes.set(planet.locationId, planet.wormholeTo);
+    } else {
+      this.wormholes.delete(planet.locationId);
+    }
+
     setObjectSyncState<Planet, LocationId>(
       this.planets,
       this.myPlanets,
@@ -1026,35 +915,6 @@ export class GameObjects {
     );
   }
 
-  /**
-   * Set an artifact into our cached store. Should ALWAYS call this when setting an artifact.
-   * `this.artifacts` and `this.myArtifacts` should NEVER be accessed directly!
-   * This function also handles managing artifact update messages and indexing the map of owned artifacts.
-   * @param artifact the artifact to set
-   */
-  private setArtifact(artifact: Artifact) {
-    if (artifact.artifactType === ArtifactType.Wormhole && artifact.onPlanetId) {
-      if (artifact.wormholeTo && isActivated(artifact)) {
-        this.wormholes.set(artifact.id, {
-          from: artifact.onPlanetId,
-          to: artifact.wormholeTo,
-        });
-      } else {
-        this.wormholes.delete(artifact.id);
-      }
-    }
-
-    setObjectSyncState<Artifact, ArtifactId>(
-      this.artifacts,
-      this.myArtifacts,
-      this.address,
-      this.artifactUpdated$,
-      this.myArtifactsUpdated$,
-      getArtifactId,
-      getArtifactOwner,
-      artifact
-    );
-  }
   /**
    * Emit notifications based on a planet's state change
    */
@@ -1111,13 +971,7 @@ export class GameObjects {
       try {
         if (nowInSeconds - arrival.arrivalTime > 0) {
           // if arrival happened in the past, run this arrival
-          const update = arrive(
-            planet,
-            this.getPlanetArtifacts(planet.locationId),
-            arrival,
-            this.getArtifactById(arrival.artifactId),
-            this.contractConstants
-          );
+          const update = arrive(planet, arrival, this.contractConstants);
 
           this.removeArrival(planetId, update.arrival.eventId);
           this.emitArrivalNotifications(update);
@@ -1125,13 +979,7 @@ export class GameObjects {
           // otherwise, set a timer to do this arrival in the future
           // and append it to arrivalsWithTimers
           const applyFutureArrival = setTimeout(() => {
-            const update = arrive(
-              planet,
-              this.getPlanetArtifacts(planet.locationId),
-              arrival,
-              this.getArtifactById(arrival.artifactId),
-              this.contractConstants
-            );
+            const update = arrive(planet, arrival, this.contractConstants);
             this.emitArrivalNotifications(update);
             this.removeArrival(planetId, update.arrival.eventId);
           }, arrival.arrivalTime * 1000 - Date.now());
@@ -1394,7 +1242,12 @@ export class GameObjects {
       silverSpent: 0,
 
       prospectedBlockNumber: undefined,
-      heldArtifactIds: [],
+      artifacts: [],
+      spaceships: [],
+      activeArtifact: undefined,
+      artifactActivationTime: 0,
+      wormholeTo: undefined,
+
       destroyed: false,
       isInContract: this.touchedPlanetIds.has(hex),
       syncedWithContract: false,
@@ -1416,13 +1269,7 @@ export class GameObjects {
   private updatePlanetIfStale(planet: Planet): void {
     const now = Date.now();
     if (now / 1000 - planet.lastUpdated > 1) {
-      updatePlanetToTime(
-        planet,
-        this.getPlanetArtifacts(planet.locationId),
-        now,
-        this.contractConstants,
-        this.setPlanet
-      );
+      updatePlanetToTime(planet, now, this.contractConstants, this.setPlanet);
     }
   }
 
@@ -1459,32 +1306,6 @@ export class GameObjects {
     let timeToTarget = 0;
     timeToTarget += silverDiff / planet.silverGrowth;
     return planet.lastUpdated + timeToTarget;
-  }
-
-  /**
-   * Returns the EthAddress of the player who can control the owner:
-   * if the artifact is on a planet, this is the owner of the planet
-   * if the artifact is on a voyage, this is the initiator of the voyage
-   * if the artifact is not on either, then it is the owner of the artifact NFT
-   */
-  public getArtifactController(artifactId: ArtifactId): EthAddress | undefined {
-    const artifact = this.getArtifactById(artifactId);
-    if (!artifact) {
-      return undefined;
-    }
-
-    if (artifact.onPlanetId) {
-      const planet = this.getPlanetWithId(artifact.onPlanetId);
-      if (!planet) {
-        return undefined;
-      }
-      return planet.owner === EMPTY_ADDRESS ? undefined : planet.owner;
-    } else if (artifact.onVoyageId) {
-      const arrival = this.arrivals.get(artifact.onVoyageId);
-      return arrival?.arrivalData.player || undefined;
-    } else {
-      return artifact.currentOwner === EMPTY_ADDRESS ? undefined : artifact.currentOwner;
-    }
   }
 
   /**

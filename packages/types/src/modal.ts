@@ -21,7 +21,7 @@ export const ModalName = {
   Broadcast: 'Broadcast' as ModalName,
   Hats: 'Hats' as ModalName,
   Settings: 'Settings' as ModalName,
-  YourArtifacts: 'YourArtifacts' as ModalName,
+  YourInventory: 'YourInventory' as ModalName,
   ManageArtifacts: 'ManageArtifacts' as ModalName,
   Plugins: 'Plugins' as ModalName,
   PluginWarning: 'PluginWarning' as ModalName,
