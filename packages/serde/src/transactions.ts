@@ -2,6 +2,7 @@ import {
   Transaction,
   TxIntent,
   UnconfirmedActivateArtifact,
+  UnconfirmedBulkWithdrawSilver,
   UnconfirmedBuyHat,
   UnconfirmedCapturePlanet,
   UnconfirmedDeactivateArtifact,
@@ -92,6 +93,12 @@ export function isUnconfirmedWithdrawSilver(
   return txIntent.methodName === 'withdrawSilver';
 }
 
+export function isUnconfirmedBulkWithdrawSilver(
+  txIntent: TxIntent
+): txIntent is UnconfirmedBulkWithdrawSilver {
+  return txIntent.methodName === 'bulkWithdrawSilver';
+}
+
 export function isUnconfirmedGetShips(txIntent: TxIntent): txIntent is UnconfirmedGetShips {
   return txIntent.methodName === 'giveSpaceShips';
 }
@@ -176,6 +183,12 @@ export function isUnconfirmedWithdrawSilverTx(
   tx: Transaction
 ): tx is Transaction<UnconfirmedWithdrawSilver> {
   return isUnconfirmedWithdrawSilver(tx.intent);
+}
+
+export function isUnconfirmedBulkWithdrawSilverTx(
+  tx: Transaction
+): tx is Transaction<UnconfirmedBulkWithdrawSilver> {
+  return isUnconfirmedBulkWithdrawSilver(tx.intent);
 }
 
 export function isUnconfirmedGetShipsTx(tx: Transaction): tx is Transaction<UnconfirmedGetShips> {

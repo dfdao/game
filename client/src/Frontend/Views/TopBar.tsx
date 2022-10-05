@@ -48,7 +48,15 @@ function BoardPlacement({ account }: { account: EthAddress | undefined }) {
             stockpile: <Text>{formattedScore}</Text>
           </TooltipTrigger>
         </Sub>
-        <Btn size='small'>Extract all</Btn>
+        <Btn
+          size='small'
+          onclick={() => {
+            console.log(`extract clicked`);
+            // uiManager.getGameManager().withdrawFrom20Largest();
+          }}
+        >
+          Extract all
+        </Btn>
       </div>
     );
   }

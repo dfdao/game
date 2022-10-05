@@ -216,12 +216,11 @@ contract DFCoreFacet is WithStorage {
 
     // withdraw silver
     function bulkWithdrawSilver(uint256[] memory locationIds) public notPaused {
-        uint256 amount = 0;
         for (uint256 i = 0; i < locationIds.length; i++) {
             refreshPlanet(locationIds[i]);
-            amount += LibPlanet.withdrawSilver(locationIds[i]);
+            uint256 amount = LibPlanet.withdrawSilver(locationIds[i]);
+            emit PlanetSilverWithdrawn(msg.sender, locationIds[i], amount);
         }
         // Using 0 for locationId, bad pattern
-        emit PlanetSilverWithdrawn(msg.sender, 0, amount);
     }
 }

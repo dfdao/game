@@ -168,6 +168,14 @@ export type UnconfirmedWithdrawSilver = TxIntent & {
 /**
  * @hidden
  */
+export type UnconfirmedBulkWithdrawSilver = TxIntent & {
+  methodName: 'bulkWithdrawSilver';
+  locationIds: LocationId[];
+};
+
+/**
+ * @hidden
+ */
 export type UnconfirmedReveal = TxIntent & {
   methodName: 'revealLocation';
   locationId: LocationId;

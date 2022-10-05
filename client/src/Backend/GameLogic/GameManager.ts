@@ -70,6 +70,7 @@ import {
   Transaction,
   TxIntent,
   UnconfirmedActivateArtifact,
+  UnconfirmedBulkWithdrawSilver,
   UnconfirmedBuyHat,
   UnconfirmedCapturePlanet,
   UnconfirmedClaimReward,
@@ -2472,6 +2473,70 @@ class GameManager extends EventEmitter {
       this.getNotificationsManager().txInitError('withdrawSilver', e.message);
       throw e;
     }
+  }
+
+  public async bulkWithdrawSilver(
+    locationIds: LocationId[],
+    bypassChecks = false
+  ): Promise<Transaction<UnconfirmedBulkWithdrawSilver>> {
+    const planets: Planet[] = [];
+    // Clean Ids
+    for (const locationId of locationIds) {
+      if (!bypassChecks) {
+        const planet = this.entityStore.getPlanetWithId(locationId);
+        if (!planet) {
+          continue;
+        }
+        if (planet.planetType !== PlanetType.SILVER_MINE) {
+          continue;
+        }
+        if (planet.owner !== this.account) {
+          continue;
+        }
+        if (planet.destroyed) {
+          continue;
+        }
+        planets.push(planet);
+      }
+    }
+    try {
+      if (!bypassChecks) {
+        if (!this.account) throw new Error('no account');
+        if (this.checkGameHasEnded()) {
+          throw new Error('game has ended');
+        }
+      }
+
+      if (locationIds.length === 0) throw new Error('no asteriods found to withdraw');
+
+      const ids = planets.map((p) => `0x${p.locationId}`);
+      const txIntent: UnconfirmedBulkWithdrawSilver = {
+        methodName: 'bulkWithdrawSilver',
+        contract: this.contractsAPI.contract,
+        args: Promise.resolve([[...ids]]),
+        locationIds: planets.map((p) => p.locationId),
+      };
+
+      console.log(`clean args`, Promise.resolve([[...ids]]));
+
+      // Always await the submitTransaction so we can catch rejections
+      const tx = await this.contractsAPI.submitTransaction(txIntent, { gasLimit: 15000000 });
+
+      return tx;
+    } catch (e) {
+      this.getNotificationsManager().txInitError('withdrawSilver', e.message);
+      throw e;
+    }
+  }
+
+  public async withdrawFrom20Largest() {
+    const locationIds = this.getMyPlanets()
+      .filter((p) => p.planetType === PlanetType.SILVER_MINE)
+      .sort((a, b) => b.planetLevel - a.planetLevel)
+      .slice(0, 20)
+      .map((p) => p.locationId);
+    console.log(`withdrawing from`, locationIds);
+    return this.bulkWithdrawSilver(locationIds);
   }
 
   /**
