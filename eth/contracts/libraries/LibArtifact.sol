@@ -150,8 +150,6 @@ library LibArtifact {
             ret.popGroMultiplier += 5;
         } else if (artifact.artifactType == ArtifactType.Colossus) {
             ret.speedMultiplier += 5;
-        } else if (artifact.artifactType == ArtifactType.Spaceship) {
-            ret.rangeMultiplier += 5;
         } else if (artifact.artifactType == ArtifactType.Pyramid) {
             ret.defMultiplier += 5;
         }
@@ -249,11 +247,7 @@ library LibArtifact {
             artifactType = ArtifactType.Monolith;
         } else if (lastByteOfSeed < 78) {
             artifactType = ArtifactType.Colossus;
-        }
-        // else if (lastByteOfSeed < 117) {
-        //     artifactType = ArtifactType.Spaceship;
-        // }
-        else if (lastByteOfSeed < 156) {
+        } else if (lastByteOfSeed < 156) {
             artifactType = ArtifactType.Pyramid;
         } else if (lastByteOfSeed < 171) {
             artifactType = ArtifactType.Wormhole;

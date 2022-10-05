@@ -37,11 +37,6 @@ export const artifactTypePrices: Map<ArtifactType, number> = new Map([
   [ArtifactType.PhotoidCannon, 1e5],
   [ArtifactType.PlanetaryShield, 1e5],
   [ArtifactType.Pyramid, 1e5],
-  [ArtifactType.ShipCrescent, 1e5],
-  [ArtifactType.ShipGear, 1e5],
-  [ArtifactType.ShipMothership, 1e5],
-  [ArtifactType.ShipTitan, 1e5],
-  [ArtifactType.ShipWhale, 1e5],
   [ArtifactType.Wormhole, 1e5],
   [ArtifactType.Unknown, 1e5],
 ]);

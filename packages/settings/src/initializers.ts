@@ -81,7 +81,6 @@ export const decodeInitializers = decoders.guard(
     ARTIFACT_TYPE_PRICES: decoders.object({
       Monolith: decoders.number,
       Colossus: decoders.number,
-      Spaceship: decoders.number,
       Pyramid: decoders.number,
       Wormhole: decoders.number,
       PlanetaryShield: decoders.number,

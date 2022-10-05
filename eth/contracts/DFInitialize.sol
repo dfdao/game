@@ -96,7 +96,6 @@ struct InitArgs {
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
     SpaceshipConstants SPACESHIPS;
     uint256[64] ROUND_END_REWARDS_BY_RANK;
-
     ArtifactTypePrices ARTIFACT_TYPE_PRICES;
     ArtifactRarityPrices ARTIFACT_RARITY_PRICES;
     SpaceshipPrices SPACESHIP_PRICES;

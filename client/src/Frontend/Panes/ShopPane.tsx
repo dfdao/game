@@ -2,9 +2,8 @@ import { RECOMMENDED_MODAL_WIDTH } from '@dfdao/constants';
 import { ModalName } from '@dfdao/types';
 import React from 'react';
 import { Spacer } from '../Components/CoreUI';
-import { useUIManager } from '../Utils/AppHooks';
-import { ModalHandle, ModalPane } from '../Views/ModalPane';
-import { ArtifactShop } from './ArtifactsList';
+import { ModalPane } from '../Views/ModalPane';
+import { TabbedView } from '../Views/TabbedView';
 
 function HelpContent() {
   return (
@@ -21,10 +20,6 @@ function HelpContent() {
 }
 
 export function ShopPane({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const uiManager = useUIManager();
-
-  const render = (handle: ModalHandle) => <ArtifactShop modal={handle} />;
-
   return (
     <ModalPane
       id={ModalName.Shop}
@@ -34,7 +29,25 @@ export function ShopPane({ visible, onClose }: { visible: boolean; onClose: () =
       helpContent={HelpContent}
       width={RECOMMENDED_MODAL_WIDTH}
     >
-      {render}
+      <TabbedView
+        tabTitles={['Artifacts', 'Ships']}
+        tabContents={(i) => {
+          switch (i) {
+            case 0:
+              return <ArtifactShop />;
+            case 1:
+              return <ShipShop />;
+          }
+        }}
+      />
     </ModalPane>
   );
+}
+
+function ArtifactShop(): JSX.Element {
+  return <>hello</>;
+}
+
+function ShipShop(): JSX.Element {
+  return <>goodbye</>;
 }

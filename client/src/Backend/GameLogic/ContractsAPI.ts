@@ -643,8 +643,7 @@ export class ContractsAPI extends EventEmitter {
       ],
       ARTIFACT_TYPE_PRICES: {
         Monolith: ARTIFACT_TYPE_PRICES.Monolith.toNumber(),
-        Colossus: ARTIFACT_TYPE_PRICES.Spaceship.toNumber(),
-        Spaceship: ARTIFACT_TYPE_PRICES.Spaceship.toNumber(),
+        Colossus: ARTIFACT_TYPE_PRICES.Colossus.toNumber(),
         Pyramid: ARTIFACT_TYPE_PRICES.Pyramid.toNumber(),
         Wormhole: ARTIFACT_TYPE_PRICES.Wormhole.toNumber(),
         PlanetaryShield: ARTIFACT_TYPE_PRICES.PlanetaryShield.toNumber(),

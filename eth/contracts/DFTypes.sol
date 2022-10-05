@@ -206,7 +206,6 @@ enum ArtifactType {
     Unknown,
     Monolith,
     Colossus,
-    Spaceship,
     Pyramid,
     Wormhole,
     PlanetaryShield,
@@ -273,7 +272,6 @@ struct Artifact {
 struct ArtifactTypePrices {
     uint256 Monolith;
     uint256 Colossus;
-    uint256 Spaceship;
     uint256 Pyramid;
     uint256 Wormhole;
     uint256 PlanetaryShield;

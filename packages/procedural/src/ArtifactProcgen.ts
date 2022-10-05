@@ -116,7 +116,7 @@ const randomHex = (len: number): string => {
 
 export const mockArtifact = (
   rarity: ArtifactRarity,
-  artifactType: ArtifactType = ArtifactType.Spaceship,
+  artifactType: ArtifactType = ArtifactType.Monolith,
   planetBiome: Biome = Biome.WASTELAND
 ): Artifact =>
   ({
@@ -143,30 +143,30 @@ export const mockArtifact = (
 
 export const mockArtifactWithRarity = (
   rarity: ArtifactRarity,
-  artifactType: ArtifactType = ArtifactType.Spaceship,
+  artifactType: ArtifactType = ArtifactType.Monolith,
   planetBiome: Biome = Biome.WASTELAND
 ): Artifact => mockArtifact(rarity, artifactType, planetBiome);
 
 export const mockCommon = mockArtifactWithRarity(
   ArtifactRarity.Common,
-  ArtifactType.Spaceship,
+  ArtifactType.Monolith,
   Biome.WASTELAND
 );
 
 export const mockRare = mockArtifactWithRarity(
   ArtifactRarity.Rare,
-  ArtifactType.Spaceship,
+  ArtifactType.Monolith,
   Biome.WASTELAND
 );
 
 export const mockEpic = mockArtifactWithRarity(
   ArtifactRarity.Epic,
-  ArtifactType.Spaceship,
+  ArtifactType.Monolith,
   Biome.WASTELAND
 );
 
 export const mockLegendary = mockArtifactWithRarity(
   ArtifactRarity.Legendary,
-  ArtifactType.Spaceship,
+  ArtifactType.Monolith,
   Biome.WASTELAND
 );

@@ -301,7 +301,6 @@ export interface ContractConstants {
   ARTIFACT_TYPE_PRICES: {
     Monolith: number;
     Colossus: number;
-    Spaceship: number;
     Pyramid: number;
     Wormhole: number;
     PlanetaryShield: number;

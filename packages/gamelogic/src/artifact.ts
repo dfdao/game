@@ -32,12 +32,7 @@ export function isBasic(type: ArtifactType): boolean {
 }
 
 export function isSpaceShip(type: ArtifactType | undefined): boolean {
-  return (
-    type !== undefined &&
-    type >= MIN_SPACESHIP_TYPE &&
-    type <= MAX_SPACESHIP_TYPE &&
-    type !== ArtifactType.Spaceship
-  );
+  return type !== undefined && type >= MIN_SPACESHIP_TYPE && type <= MAX_SPACESHIP_TYPE;
 }
 
 export function hasStatBoost(type: ArtifactType | undefined): boolean {
