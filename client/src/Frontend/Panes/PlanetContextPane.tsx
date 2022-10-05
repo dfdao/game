@@ -5,7 +5,11 @@ import { Wrapper } from '../../Backend/Utils/Wrapper';
 import { CapturePlanetButton } from '../Components/CapturePlanetButton';
 import { VerticalSplit } from '../Components/CoreUI';
 import { MineArtifactButton } from '../Components/MineArtifactButton';
-import { OpenPlanetInfoButton, OpenUpgradeDetailsPaneButton } from '../Components/OpenPaneButtons';
+import {
+  OpenManagePlanetInventoryButton,
+  OpenPlanetInfoButton,
+  OpenUpgradeDetailsPaneButton,
+} from '../Components/OpenPaneButtons';
 import { snips } from '../Styles/dfstyles';
 import { useAccount, useSelectedPlanet, useUIManager } from '../Utils/AppHooks';
 import { useEmitterSubscribe } from '../Utils/EmitterHooks';

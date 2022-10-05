@@ -1,7 +1,9 @@
+import { isActivated } from '@dfdao/gamelogic';
 import { Artifact } from '@dfdao/types';
 import React, { useCallback, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import { ArtifactImage } from '../Components/ArtifactImage';
+import { Btn } from '../Components/Btn';
 import { Spacer } from '../Components/CoreUI';
 import dfstyles from '../Styles/dfstyles';
 import { useUIManager } from '../Utils/AppHooks';
@@ -104,18 +106,30 @@ export function SelectArtifactRow({
   artifacts: Artifact[];
 }) {
   return (
-    <RowWrapper>
-      {artifacts.length > 0 &&
-        artifacts.map((a) => (
-          <span key={a.id}>
-            <ArtifactThumb
-              artifact={a}
-              selectedArtifact={selectedArtifact}
-              onArtifactChange={onArtifactChange}
-            />
-            <Spacer width={4} />
-          </span>
-        ))}
-    </RowWrapper>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+      }}
+    >
+      <RowWrapper>
+        {artifacts.length > 0 &&
+          artifacts.map((a) => (
+            <span key={a.id}>
+              <ArtifactThumb
+                artifact={a}
+                selectedArtifact={selectedArtifact}
+                onArtifactChange={onArtifactChange}
+              />
+              <Spacer width={4} />
+            </span>
+          ))}
+      </RowWrapper>
+      {owned && (
+        <Btn size='small' disabled={!selectedArtifact}>
+          {isActivated(selectedArtifact, planet) ? 'deactivate' : 'activate'}
+        </Btn>
+      )}
+    </div>
   );
 }
