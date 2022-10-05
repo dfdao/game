@@ -6,6 +6,11 @@ import { CapturePlanetButton } from '../Components/CapturePlanetButton';
 import { VerticalSplit } from '../Components/CoreUI';
 import { MineArtifactButton } from '../Components/MineArtifactButton';
 import {
+<<<<<<< HEAD
+=======
+  OpenBroadcastPaneButton,
+  OpenHatPaneButton,
+>>>>>>> origin/devcon
   OpenManagePlanetInventoryButton,
   OpenPlanetInfoButton,
   OpenUpgradeDetailsPaneButton,
@@ -83,6 +88,10 @@ function PlanetContextPaneContent({
         </>
         <>
           <OpenManagePlanetInventoryButton modal={modal} planetId={p?.locationId} />
+<<<<<<< HEAD
+=======
+          {hatRow}
+>>>>>>> origin/devcon
         </>
       </VerticalSplit>
       {withdrawRow}

@@ -316,16 +316,21 @@ export async function user1MintArtifactPlanet(user1Core: DarkForest) {
 }
 
 export async function getArtifactsOwnedBy(contract: DarkForest, addr: string) {
-  const artifactsIds = await contract.getPlayerArtifactIds(addr);
-  return (await contract.bulkGetArtifactsByIds(artifactsIds)).map(
-    (artifactWithMetadata) => artifactWithMetadata[0]
-  );
+  return await contract.getPlayerArtifacts(addr);
 }
 
 // Gets Artifacts but not Spaceships
 export async function getArtifactsOnPlanet(world: World, locationId: BigNumberish) {
+  return await world.contract.getArtifactsOnPlanet(locationId);
+}
+
+export async function getArtifactTypeOnPlanet(
+  world: World,
+  locationId: BigNumberish,
+  artifactType: ArtifactType
+) {
   return (await world.contract.getArtifactsOnPlanet(locationId)).filter(
-    (artifact) => artifact.artifactType < ArtifactType.ShipMothership
+    (artifact) => artifact.artifactType === artifactType
   );
 }
 

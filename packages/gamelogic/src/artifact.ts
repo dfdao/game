@@ -107,7 +107,7 @@ export function setForceAncient(force: boolean): void {
 }
 
 export function isActivated(artifact: Artifact | undefined, planet: Planet | undefined) {
-  return !!planet && !!artifact && planet.activeArtifact == artifact;
+  return !!planet && !!artifact && planet.activeArtifact === artifact;
 }
 
 export function artifactFileName(

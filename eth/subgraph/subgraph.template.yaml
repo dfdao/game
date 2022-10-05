@@ -58,8 +58,8 @@ dataSources:
           handler: handlePlanetSilverWithdrawn
         - event: LocationRevealed(address,uint256,uint256,uint256)
           handler: handleLocationRevealed
-        - event: Transfer(indexed address,indexed address,indexed uint256)
-          handler: handleTransfer
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleTransferSingle
         - event: LobbyCreated(address,address)
           handler: handleLobbyCreated
         - event: PlanetInvaded(address,uint256)
