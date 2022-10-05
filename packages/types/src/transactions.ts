@@ -163,7 +163,6 @@ export type UnconfirmedDeactivateArtifact = TxIntent & {
 export type UnconfirmedWithdrawSilver = TxIntent & {
   methodName: 'withdrawSilver';
   locationId: LocationId;
-  amount: number;
 };
 
 /**

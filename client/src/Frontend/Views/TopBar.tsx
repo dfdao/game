@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { CaptureZonesGeneratedEvent } from '../../Backend/GameLogic/CaptureZoneGenerator';
 import { Hook } from '../../_types/global/GlobalTypes';
+import { Btn } from '../Components/Btn';
 import { AlignCenterHorizontally } from '../Components/CoreUI';
 import { AccountLabel } from '../Components/Labels/Labels';
 import { Gold, Red, Sub, Text, White } from '../Components/Text';
@@ -35,17 +36,23 @@ function BoardPlacement({ account }: { account: EthAddress | undefined }) {
   if (!player.value) {
     content = <Sub>n/a</Sub>;
   } else {
-    let formattedScore = 'n/a';
+    let formattedScore = uiManager
+      .getGameManager()
+      .getContract()
+      .getSilverBalance(player.value.address);
     if (player.value.score !== undefined && player.value.score !== null) {
       formattedScore = player.value.score.toLocaleString();
     }
 
     content = (
-      <Sub>
-        <TooltipTrigger name={TooltipName.Score}>
-          score: <Text>{formattedScore}</Text>
-        </TooltipTrigger>
-      </Sub>
+      <div style={{ gap: '8px' }}>
+        <Sub>
+          <TooltipTrigger name={TooltipName.Score}>
+            stockpile: <Text>{formattedScore}</Text>
+          </TooltipTrigger>
+        </Sub>
+        <Btn size='small'>Extract all</Btn>
+      </div>
     );
   }
 
