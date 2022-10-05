@@ -308,45 +308,6 @@ function ArtifactDescription({
         </Text>
       );
       break;
-    // case ArtifactType.ShipMothership:
-    //   content = (
-    //     <Text>
-    //       Doubles energy regeneration of the planet that it is currently on.{' '}
-    //       {genericSpaceshipDescription}
-    //     </Text>
-    //   );
-    //   break;
-    // case ArtifactType.ShipCrescent:
-    //   content = (
-    //     <Text>
-    //       Activate to convert an un-owned planet whose level is more than 0 into an Asteroid Field.{' '}
-    //       <Red>Can only be used once.</Red> {genericSpaceshipDescription}
-    //     </Text>
-    //   );
-    //   break;
-    // case ArtifactType.ShipGear:
-    //   content = (
-    //     <Text>
-    //       Allows you to prospect planets, and subsequently find artifacts on them.{' '}
-    //       {genericSpaceshipDescription}
-    //     </Text>
-    //   );
-    //   break;
-    // case ArtifactType.ShipTitan:
-    //   content = (
-    //     <Text>
-    //       Pauses energy and silver regeneration on the planet it's on. {genericSpaceshipDescription}
-    //     </Text>
-    //   );
-    //   break;
-    // case ArtifactType.ShipWhale:
-    //   content = (
-    //     <Text>
-    //       Doubles the silver regeneration of the planet that it is currently on.{' '}
-    //       {genericSpaceshipDescription}
-    //     </Text>
-    //   );
-    //   break;
   }
 
   if (content) {
