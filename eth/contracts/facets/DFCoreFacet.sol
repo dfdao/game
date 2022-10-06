@@ -130,7 +130,6 @@ contract DFCoreFacet is WithStorage {
             Planet storage _planet = gs().planets[_location];
 
             require(_planet.spawnPlanet, "Planet is not a spawn planet");
-
             require(_planet.isInitialized, "Planet not initialized");
             require(_planet.owner == address(0), "Planet is owned");
             require(!_planet.isHomePlanet, "Planet is already a home planet");

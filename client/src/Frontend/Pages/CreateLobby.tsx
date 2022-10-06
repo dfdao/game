@@ -1,9 +1,11 @@
 import { INIT_ADDRESS } from '@dfdao/contracts';
 import initContractAbiUrl from '@dfdao/contracts/abis/DFInitialize.json?url';
 import { DarkForest } from '@dfdao/contracts/typechain';
+import { fakeHash, mimcHash } from '@dfdao/hashing';
 import { EthConnection } from '@dfdao/network';
-import { address } from '@dfdao/serde';
-import { ArtifactRarity, EthAddress, UnconfirmedCreateLobby } from '@dfdao/types';
+import { address, locationIdFromBigInt } from '@dfdao/serde';
+import { decodeArenaAdminPlanets } from '@dfdao/settings';
+import { ArtifactRarity, EthAddress, PlanetType, UnconfirmedCreateLobby } from '@dfdao/types';
 import { Contract, providers } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import _ from 'lodash';
@@ -110,6 +112,9 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
               config.ARTIFACT_POINT_VALUES[ArtifactRarity.Legendary],
               config.ARTIFACT_POINT_VALUES[ArtifactRarity.Mythic],
             ],
+            MANUAL_SPAWN: true,
+            TARGETS_REQUIRED_FOR_VICTORY: 1,
+            CLAIM_VICTORY_ENERGY_PERCENT: 20,
           });
         })
         .catch((e) => {
@@ -146,12 +151,6 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
       args: Promise.resolve([initAddress, initFunctionCall]),
     };
 
-    // contract.once(ContractsAPIEvent.LobbyCreated, (owner: EthAddress, lobby: EthAddress) => {
-    //   if (owner === ownerAddress) {
-    //     setLobbyAddress(lobby);
-    //   }
-    // });
-
     const tx = await contract.submitTransaction(txIntent, {
       // The createLobby function costs somewhere around 12mil gas
       gasLimit: '15000000',
@@ -167,6 +166,42 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
     console.log(`start submitted`);
     const startRct = await startTx.wait();
     console.log(`start confirmed with ${startRct.gasUsed} gas`);
+    const planetHashMimc = config.DISABLE_ZK_CHECKS
+      ? fakeHash(config.PLANET_RARITY)
+      : mimcHash(config.PLANETHASH_KEY);
+
+    console.log(`creating planets...`);
+    const coords = { x: 0, y: 0 };
+    const planets = [
+      {
+        location: `0x` + locationIdFromBigInt(planetHashMimc(coords.x, coords.y)),
+        x: coords.x,
+        y: coords.y,
+        perlin: 20,
+        level: 5,
+        planetType: PlanetType.SILVER_MINE,
+        requireValidLocationId: false,
+        isTargetPlanet: false,
+        isSpawnPlanet: true,
+        blockedPlanetIds: [],
+      },
+      {
+        location: `0x` + locationIdFromBigInt(planetHashMimc(100, 100)),
+        x: 100,
+        y: 100,
+        perlin: 20,
+        level: 3,
+        planetType: PlanetType.SILVER_BANK,
+        requireValidLocationId: false,
+        isTargetPlanet: true,
+        isSpawnPlanet: false,
+        blockedPlanetIds: [],
+      },
+    ];
+    const createTx = await newLobby.bulkCreateAndReveal(decodeArenaAdminPlanets(planets));
+    const createRct = await createTx.wait();
+    console.log(`create planets confirmed with ${createRct.gasUsed} gas`);
+
     setLobbyAddress(lobby);
   }
 

@@ -854,6 +854,27 @@ export class ContractsAPI extends EventEmitter {
     return spaceships;
   }
 
+  public async getSpawnPlanetIds(
+    startingAt: number,
+    onProgress?: (fractionCompleted: number) => void
+  ): Promise<LocationId[]> {
+    const nPlanets: number = (
+      await this.makeCall<EthersBN>(this.contract.getNSpawnPlanets)
+    ).toNumber();
+
+    const planetIds = await aggregateBulkGetter<EthersBN>(
+      nPlanets - startingAt,
+      1000,
+      async (start, end) =>
+        await this.makeCall(this.contract.bulkGetSpawnPlanetIds, [
+          start + startingAt,
+          end + startingAt,
+        ]),
+      onProgress
+    );
+    return planetIds.map(locationIdFromEthersBN);
+  }
+
   public async getUpgradeForArtifact(artifactId: ArtifactId): Promise<Upgrade> {
     const rawUpgrade = await this.makeCall(this.contract.getUpgradeForArtifact, [
       artifactIdToDecStr(artifactId),
