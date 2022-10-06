@@ -187,10 +187,8 @@ describe('DarkForestArena', function () {
       const planetType = 1; // asteroid field
       const planets = [ADMIN_PLANET, ADMIN_PLANET_CLOAKED, LVL1_PLANET_SPACE];
 
-      const planetArgList: any = [];
-
-      planets.map((p) => {
-        const planetArgs = {
+      const planetArgList = planets.map((p) => {
+        return {
           location: p.id,
           x: Math.floor(Math.random() * 100),
           y: Math.floor(Math.random() * 100),
@@ -202,8 +200,6 @@ describe('DarkForestArena', function () {
           isSpawnPlanet: true,
           blockedPlanetIds: [],
         };
-
-        planetArgList.push(planetArgs);
       });
 
       const tx = await world.contract.bulkCreateAndReveal(planetArgList);
