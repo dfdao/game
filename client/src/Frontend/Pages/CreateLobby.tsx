@@ -28,6 +28,7 @@ function getLobbyCreatedEvent(
   contract: DarkForest
 ): { owner: EthAddress; lobby: EthAddress } {
   const lobbyCreatedHash = keccak256(toUtf8Bytes('LobbyCreated(address,address)'));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const log = lobbyReceipt.logs.find((log: any) => log.topics[0] === lobbyCreatedHash);
   if (log) {
     return {

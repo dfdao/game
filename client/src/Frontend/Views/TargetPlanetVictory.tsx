@@ -11,7 +11,6 @@ export function TargetPlanetVictory() {
   const uiManager = useUIManager();
   const gameManager = uiManager.getGameManager();
   const canClaimVictory = gameManager.checkVictoryCondition();
-  console.log(`can claim victory`, canClaimVictory);
   const gameover = useGameover();
   const [claiming, setClaiming] = useState(false);
 
@@ -24,10 +23,10 @@ export function TargetPlanetVictory() {
     setClaiming(true);
     try {
       const tx = await gameManager.claimVictory();
-      const res = await tx.confirmedPromise;
+      await tx.confirmedPromise;
       // Manual emit just to be sure
       uiManager.getGameManager().getContractAPI().emit(ContractsAPIEvent.PlayerUpdate, player);
-      // uiManager.getGameManager().getContractAPI().emit(ContractsAPIEvent.Gameover);
+      uiManager.getGameManager().getContractAPI().emit(ContractsAPIEvent.Gameover);
     } catch (error) {
       setClaiming(false);
     }
@@ -69,17 +68,12 @@ export function TargetPlanetVictory() {
           )}
         </TooltipTrigger>
       </GameoverContainer>
-      {/* <TimeContainer>Game length: {prettyTime(gameDuration)}</TimeContainer> */}
     </>
   );
 }
 
 const GameoverContainer = styled.div`
   // font-size: 2em;
-  text-align: center;
-`;
-const TimeContainer = styled.div`
-  font-size: 1em;
   text-align: center;
 `;
 
