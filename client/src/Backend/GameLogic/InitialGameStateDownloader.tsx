@@ -1,14 +1,16 @@
 import {
   Artifact,
+  ArtifactId,
+  BlocklistMap,
   ClaimedCoords,
+  EthAddress,
   LocationId,
   Planet,
   Player,
   QueuedArrival,
   RevealedCoords,
-  Spaceship,
   VoyageId,
-} from '@dfdao/types';
+} from '@darkforest_eth/types';
 import _ from 'lodash';
 import React from 'react';
 import { Link } from '../../Frontend/Components/CoreUI';
@@ -18,7 +20,6 @@ import { TerminalHandle } from '../../Frontend/Views/Terminal';
 import { ContractConstants } from '../../_types/darkforest/api/ContractsAPITypes';
 import { AddressTwitterMap } from '../../_types/darkforest/api/UtilityServerAPITypes';
 import { tryGetAllTwitters } from '../Network/UtilityServerAPI';
-import OtherStore from '../Storage/OtherStore';
 import PersistentChunkStore from '../Storage/PersistentChunkStore';
 import { ContractsAPI } from './ContractsAPI';
 
@@ -31,8 +32,9 @@ export interface InitialGameState {
   allClaimedCoords?: ClaimedCoords[];
   pendingMoves: QueuedArrival[];
   touchedAndLocatedPlanets: Map<LocationId, Planet>;
+  artifactsOnVoyages: Artifact[];
   myArtifacts: Artifact[];
-  mySpaceships: Spaceship[];
+  heldArtifacts: Artifact[][];
   loadedPlanets: LocationId[];
   revealedCoordsMap: Map<LocationId, RevealedCoords>;
   claimedCoordsMap?: Map<LocationId, ClaimedCoords>;
@@ -40,6 +42,10 @@ export interface InitialGameState {
   arrivals: Map<VoyageId, QueuedArrival>;
   twitters: AddressTwitterMap;
   paused: boolean;
+  startTime: number | undefined;
+  endTime: number | undefined;
+  gameover: boolean;
+  winners: EthAddress[];
 }
 
 export class InitialGameStateDownloader {
@@ -61,19 +67,18 @@ export class InitialGameStateDownloader {
 
   async download(
     contractsAPI: ContractsAPI,
-    persistentChunkStore: PersistentChunkStore,
-    otherStore: OtherStore
+    persistentChunkStore: PersistentChunkStore
   ): Promise<InitialGameState> {
+    const isDev = process.env.NODE_ENV !== 'production';
+
     /**
      * In development we use the same contract address every time we deploy,
      * so storage is polluted with the IDs of old universes.
      */
-    const storedTouchedPlanetIds = import.meta.env.DEV
+    const storedTouchedPlanetIds = isDev
       ? []
-      : await otherStore.getSavedTouchedPlanetIds();
-    const storedRevealedCoords = import.meta.env.DEV
-      ? []
-      : await otherStore.getSavedRevealedCoords();
+      : await persistentChunkStore.getSavedTouchedPlanetIds();
+    const storedRevealedCoords = isDev ? [] : await persistentChunkStore.getSavedRevealedCoords();
 
     this.terminal.printElement(<DarkForestTips tips={tips} />);
     this.terminal.newline();
@@ -87,8 +92,10 @@ export class InitialGameStateDownloader {
 
     const pendingMovesLoadingBar = this.makeProgressListener('Pending Moves');
     const planetsLoadingBar = this.makeProgressListener('Planets');
+    const planetsMetadataLoadingBar = this.makeProgressListener('Planet Metadatas');
+    const artifactsOnPlanetsLoadingBar = this.makeProgressListener('Artifacts On Planets');
+    const artifactsInFlightLoadingBar = this.makeProgressListener('Artifacts On Moves');
     const yourArtifactsLoadingBar = this.makeProgressListener('Your Artifacts');
-    const yourSpaceshipsLoadingBar = this.makeProgressListener('Your Spaceships');
 
     const contractConstants = contractsAPI.getConstants();
     const worldRadius = contractsAPI.getWorldRadius();
@@ -98,9 +105,7 @@ export class InitialGameStateDownloader {
     const arrivals: Map<VoyageId, QueuedArrival> = new Map();
     const planetVoyageIdMap: Map<LocationId, VoyageId[]> = new Map();
 
-    // Ensure that all chunks have been loaded from indexeddb
-    await persistentChunkStore.chunksLoaded();
-    const minedChunks = Array.from(persistentChunkStore.allChunks());
+    const minedChunks = Array.from(await persistentChunkStore.allChunks());
     const minedPlanetIds = new Set(
       _.flatMap(minedChunks, (c) => c.planetLocations).map((l) => l.hash)
     );
@@ -139,7 +144,8 @@ export class InitialGameStateDownloader {
 
     const touchedAndLocatedPlanets = await contractsAPI.bulkGetPlanets(
       planetsToLoad,
-      planetsLoadingBar
+      planetsLoadingBar,
+      planetsMetadataLoadingBar
     );
 
     touchedAndLocatedPlanets.forEach((_planet, locId) => {
@@ -157,17 +163,33 @@ export class InitialGameStateDownloader {
       arrivals.set(arrival.eventId, arrival);
     }
 
+    const artifactIdsOnVoyages: ArtifactId[] = [];
+    for (const arrival of pendingMoves) {
+      if (arrival.artifactId) {
+        artifactIdsOnVoyages.push(arrival.artifactId);
+      }
+    }
+
+    const artifactsOnVoyages = await contractsAPI.bulkGetArtifacts(
+      artifactIdsOnVoyages,
+      artifactsInFlightLoadingBar
+    );
+
+    const heldArtifacts = contractsAPI.bulkGetArtifactsOnPlanets(
+      planetsToLoad,
+      artifactsOnPlanetsLoadingBar
+    );
     const myArtifacts = contractsAPI.getPlayerArtifacts(
       contractsAPI.getAddress(),
       yourArtifactsLoadingBar
     );
-    const mySpaceships = contractsAPI.getPlayerSpaceships(
-      contractsAPI.getAddress(),
-      yourSpaceshipsLoadingBar
-    );
 
     const twitters = await tryGetAllTwitters();
     const paused = contractsAPI.getIsPaused();
+    const gameover = contractsAPI.getGameover();
+    const winners = contractsAPI.getWinners();
+    const startTime = contractsAPI.getStartTime();
+    const endTime = contractsAPI.getEndTime();
 
     const initialState: InitialGameState = {
       contractConstants: await contractConstants,
@@ -177,8 +199,9 @@ export class InitialGameStateDownloader {
       allRevealedCoords,
       pendingMoves,
       touchedAndLocatedPlanets,
+      artifactsOnVoyages,
       myArtifacts: await myArtifacts,
-      mySpaceships: await mySpaceships,
+      heldArtifacts: await heldArtifacts,
       loadedPlanets: planetsToLoad,
       revealedCoordsMap,
       claimedCoordsMap,
@@ -186,6 +209,10 @@ export class InitialGameStateDownloader {
       arrivals,
       twitters,
       paused: await paused,
+      gameover: await gameover,
+      winners: await winners,
+      startTime: await startTime,
+      endTime: await endTime,
     };
 
     return initialState;

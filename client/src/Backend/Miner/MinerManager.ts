@@ -1,10 +1,10 @@
-import { perlin } from '@dfdao/hashing';
-import { Chunk, PerlinConfig, Rectangle } from '@dfdao/types';
+import { perlin } from '@darkforest_eth/hashing';
+import { Chunk, PerlinConfig, Rectangle } from '@darkforest_eth/types';
 import { EventEmitter } from 'events';
 import _ from 'lodash';
+import { ChunkStore } from '../../_types/darkforest/api/ChunkStoreTypes';
 import { HashConfig, MinerWorkerMessage } from '../../_types/global/GlobalTypes';
-import { ChunkStore, getChunkKey } from './ChunkUtils';
-import DefaultWorker from './miner.worker.ts?worker';
+import { getChunkKey } from './ChunkUtils';
 import { MiningPattern } from './MiningPatterns';
 
 export const enum MinerManagerEvent {
@@ -14,7 +14,7 @@ export const enum MinerManagerEvent {
 export type workerFactory = () => Worker;
 
 function defaultWorker() {
-  return new DefaultWorker();
+  return new Worker(new URL('./miner.worker.ts', import.meta.url));
 }
 
 export class HomePlanetMinerChunkStore implements ChunkStore {
@@ -56,6 +56,7 @@ export class HomePlanetMinerChunkStore implements ChunkStore {
 class MinerManager extends EventEmitter {
   private readonly minedChunksStore: ChunkStore;
   private readonly planetRarity: number;
+  private readonly planetLevelThresholds: number[];
 
   private isExploring = false;
   private miningPattern: MiningPattern;
@@ -78,6 +79,7 @@ class MinerManager extends EventEmitter {
     miningPattern: MiningPattern,
     worldRadius: number,
     planetRarity: number,
+    planetLevelThresholds: number[],
     hashConfig: HashConfig,
     useMockHash: boolean,
     workerFactory: workerFactory
@@ -87,6 +89,7 @@ class MinerManager extends EventEmitter {
     this.miningPattern = miningPattern;
     this.worldRadius = worldRadius;
     this.planetRarity = planetRarity;
+    this.planetLevelThresholds = planetLevelThresholds;
     this.workers = [];
     this.hashConfig = hashConfig;
     this.perlinOptions = {
@@ -122,6 +125,7 @@ class MinerManager extends EventEmitter {
     miningPattern: MiningPattern,
     worldRadius: number,
     planetRarity: number,
+    planetLevelThresholds: number[],
     hashConfig: HashConfig,
     useMockHash = false,
     workerFactory: workerFactory = defaultWorker
@@ -131,6 +135,7 @@ class MinerManager extends EventEmitter {
       miningPattern,
       worldRadius,
       planetRarity,
+      planetLevelThresholds,
       hashConfig,
       useMockHash,
       workerFactory

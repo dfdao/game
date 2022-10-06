@@ -1,9 +1,4 @@
-import {
-  ArtifactPointValues,
-  EthAddress,
-  PlanetTypeWeightsBySpaceType,
-  UpgradeBranches,
-} from '@dfdao/types';
+import { ArtifactPointValues, EthAddress, LocationId, UpgradeBranches } from '@darkforest_eth/types';
 import { BigNumber as EthersBN } from 'ethers';
 
 export const enum ZKArgIdx {
@@ -35,6 +30,9 @@ export const enum MoveArgIdxs {
   PERLIN_LENGTH_SCALE,
   PERLIN_MIRROR_X,
   PERLIN_MIRROR_Y,
+  SHIPS_SENT,
+  SILVER_SENT,
+  ARTIFACT_SENT,
 }
 
 export const enum UpgradeArgIdxs {
@@ -52,7 +50,6 @@ export const enum ContractEvent {
   PlanetCaptured = 'PlanetCaptured',
   LocationRevealed = 'LocationRevealed',
   ArtifactFound = 'ArtifactFound',
-  SpaceshipFound = 'SpaceshipFound',
   ArtifactDeposited = 'ArtifactDeposited',
   ArtifactWithdrawn = 'ArtifactWithdrawn',
   ArtifactActivated = 'ArtifactActivated',
@@ -62,16 +59,18 @@ export const enum ContractEvent {
   AdminGiveSpaceship = 'AdminGiveSpaceship',
   PauseStateChanged = 'PauseStateChanged',
   LobbyCreated = 'LobbyCreated',
+  Gameover = 'Gameover',
+  GameStarted = 'GameStarted',
+  PlayerReady = 'PlayerReady',
+  PlayerNotReady = 'PlayerNotReady',
 }
 
 export const enum ContractsAPIEvent {
   PlayerUpdate = 'PlayerUpdate',
   PlanetUpdate = 'PlanetUpdate',
-  ArtifactWithdrawn = 'ArtifactWithdrawn',
-  ArtifactDeposited = 'ArtifactDeposited',
-  SpaceshipFound = 'SpaceshipFound',
   PauseStateChanged = 'PauseStateChanged',
   ArrivalQueued = 'ArrivalQueued',
+  ArtifactUpdate = 'ArtifactUpdate',
   RadiusUpdated = 'RadiusUpdated',
   LocationRevealed = 'LocationRevealed',
   /**
@@ -109,8 +108,11 @@ export const enum ContractsAPIEvent {
    */
   TxCancelled = 'TxCancelled',
   PlanetTransferred = 'PlanetTransferred',
-  PlanetClaimed = 'PlanetClaimed',
   LobbyCreated = 'LobbyCreated',
+  Gameover = 'Gameover',
+  GameStarted = 'GameStarted',
+  PlayerReady = 'PlayerReady',
+  PlayerNotReady = 'PlayerNotReady',
 }
 
 // planet locationID(BigInt), branch number
@@ -134,12 +136,12 @@ export type MoveArgs = [
     string, // spaceTypeKey
     string, // perlin lengthscale
     string, // perlin xmirror (1 true, 0 false)
-    string // perlin ymirror (1 true, 0 false)
-  ],
-  string, // ships sent
-  string, // silver sent
-  string, // artifactId sent
-  string // is planet being released (1 true, 0 false)
+    string, // perlin ymirror (1 true, 0 false)
+    string, // ships sent
+    string, // silver sent
+    string, // artifactId sent
+    string // is planet being released (1 true, 0 false)
+  ]
 ];
 
 // Same as reveal args with Explicit coords attached
@@ -153,6 +155,26 @@ export type ClaimArgs = [
 export type DepositArtifactArgs = [string, string]; // locationId, artifactId
 export type WithdrawArtifactArgs = [string, string]; // locationId, artifactId
 export type WhitelistArgs = [string, string]; // hashed whitelist key, recipient address
+
+export type PlanetTypeWeights = [number, number, number, number, number]; // relative frequencies of the 5 planet types
+export type PlanetTypeWeightsByLevel = [
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights,
+  PlanetTypeWeights
+];
+export type PlanetTypeWeightsBySpaceType = [
+  PlanetTypeWeightsByLevel,
+  PlanetTypeWeightsByLevel,
+  PlanetTypeWeightsByLevel,
+  PlanetTypeWeightsByLevel
+];
 
 export interface ContractConstants {
   ADMIN_CAN_ADD_PLANETS: boolean;
@@ -168,7 +190,7 @@ export interface ContractConstants {
   PERLIN_MIRROR_X: boolean;
   PERLIN_MIRROR_Y: boolean;
 
-  TOKEN_MINT_END_SECONDS: number;
+  TOKEN_MINT_END_TIMESTAMP: number;
 
   MAX_NATURAL_PLANET_LEVEL: number;
   TIME_FACTOR_HUNDREDTHS: number;
@@ -253,6 +275,7 @@ export interface ContractConstants {
 
   PHOTOID_ACTIVATION_DELAY: number;
   LOCATION_REVEAL_COOLDOWN: number;
+  CLAIM_PLANET_COOLDOWN?: number;
 
   defaultPopulationCap: number[];
   defaultPopulationGrowth: number[];
@@ -265,6 +288,7 @@ export interface ContractConstants {
   defaultDefense: number[];
   defaultBarbarianPercentage: number[];
 
+  planetLevelThresholds: number[];
   planetCumulativeRarities: number[];
 
   upgrades: UpgradeBranches;
@@ -274,6 +298,7 @@ export interface ContractConstants {
   // Capture Zones
   GAME_START_BLOCK: number;
   CAPTURE_ZONES_ENABLED: boolean;
+  CAPTURE_ZONE_COUNT: number;
   CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL: number;
   CAPTURE_ZONE_RADIUS: number;
   CAPTURE_ZONE_PLANET_LEVEL_SCORE: [
@@ -290,15 +315,11 @@ export interface ContractConstants {
   ];
   CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED: number;
   CAPTURE_ZONES_PER_5000_WORLD_RADIUS: number;
-  SPACESHIPS: {
-    GEAR: boolean;
-    MOTHERSHIP: boolean;
-    TITAN: boolean;
-    CRESCENT: boolean;
-    WHALE: boolean;
-  };
 
-  ROUND_END_REWARDS_BY_RANK: [
+  MANUAL_SPAWN: boolean;
+  TARGET_PLANETS: boolean;
+  CLAIM_VICTORY_ENERGY_PERCENT: number;
+  MODIFIERS : [
     number,
     number,
     number,
@@ -307,63 +328,28 @@ export interface ContractConstants {
     number,
     number,
     number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number
   ];
+  SPACESHIPS : [
+    boolean,
+    boolean,
+    boolean,
+    boolean,
+    boolean
+  ];
+
+  RANDOM_ARTIFACTS: boolean;
+  NO_ADMIN: boolean;
+  INIT_PLANET_HASHES: string[];
+  CONFIG_HASH: string;
+  CONFIRM_START: boolean;
+  BLOCK_MOVES: boolean;
+  BLOCK_CAPTURE: boolean;
+
+  TARGETS_REQUIRED_FOR_VICTORY: number;
+  TEAMS_ENABLED: boolean;
+  NUM_TEAMS: number;
+  RANKED: boolean;
+  START_PAUSED: boolean;
 }
 
 export type ClientMockchainData =

@@ -1,4 +1,4 @@
-import { ArtifactFileColor } from '@dfdao/gamelogic';
+import { ArtifactFileColor } from '@darkforest_eth/gamelogic';
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { GifRenderer } from '../Renderers/GifRenderer';
@@ -21,7 +21,7 @@ const StyledGifMaker = styled.div`
 `;
 
 /**
- * Entrypoint for gif and sprite generation, accessed via `npm run gifs`.
+ * Entrypoint for gif and sprite generation, accessed via `yarn run gifs`.
  * Wait a second or so for the textures to get loaded, then click the buttons to download files as a zip.
  * gifs are saved as 60fps webm, and can take a while - open the console to see progress (logged verbosely)
  */
@@ -38,7 +38,7 @@ export function GifMaker() {
   useEffect(() => {
     const script = document.createElement('script');
 
-    script.src = '/CCapture.all.min.js';
+    script.src = '/public/CCapture.all.min.js';
     script.async = true;
 
     document.body.appendChild(script);

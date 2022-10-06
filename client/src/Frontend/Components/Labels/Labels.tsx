@@ -1,6 +1,6 @@
-import { EMPTY_ADDRESS } from '@dfdao/constants';
-import { getPlayerColor } from '@dfdao/procedural';
-import { EthAddress } from '@dfdao/types';
+import { EMPTY_ADDRESS } from '@darkforest_eth/constants';
+import { getPlayerColor } from '@darkforest_eth/procedural';
+import { EthAddress } from '@darkforest_eth/types';
 import colorFn from 'color';
 import React from 'react';
 import { usePlayer, useUIManager } from '../../Utils/AppHooks';
@@ -21,10 +21,16 @@ export function AccountLabel({
 }) {
   const uiManager = useUIManager();
   const player = usePlayer(uiManager, ethAddress);
+  const teamsEnabled = uiManager.contractConstants.TEAMS_ENABLED;
+  const color = colorFn(getPlayerColor(player.value, teamsEnabled)).darken(0.5).hex();
 
-  if (player.value !== undefined && player.value.twitter !== undefined) {
-    const color = colorFn(getPlayerColor(player.value.address)).darken(0.5).hex();
-    return (
+  if (ethAddress === EMPTY_ADDRESS || player.value == undefined) {
+    return <>nobody</>;
+  }
+
+  let label = <>nobody</>;
+  if (player.value.twitter !== undefined) {
+    label = (
       <span style={style}>
         <TwitterLink twitter={player.value.twitter} color={color} />
         {includeAddressIfHasTwitter && (
@@ -39,18 +45,21 @@ export function AccountLabel({
         )}
       </span>
     );
-  }
-
-  if (ethAddress === EMPTY_ADDRESS) {
-    return <>nobody</>;
+  } else {
+    label = (
+      <TextPreview
+        text={ethAddress || uiManager.getAccount() || '<no account>'}
+        unFocusedWidth={width ?? '150px'}
+        focusedWidth={width ?? '150px'}
+      />
+    );
   }
 
   return (
-    <TextPreview
-      text={ethAddress || uiManager.getAccount() || '<no account>'}
-      unFocusedWidth={width ?? '150px'}
-      focusedWidth={width ?? '150px'}
-    />
+    <>
+      {label} 
+      {teamsEnabled && <Sub style= {{color: color}}>(Team {player.value.team})</Sub>}
+    </>
   );
 }
 

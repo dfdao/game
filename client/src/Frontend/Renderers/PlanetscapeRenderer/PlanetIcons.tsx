@@ -1,8 +1,8 @@
-import { EMPTY_ADDRESS, MAX_PLANET_LEVEL } from '@dfdao/constants';
-import { isLocatable } from '@dfdao/gamelogic';
-import { bonusFromHex } from '@dfdao/hexgen';
-import { getPlanetName } from '@dfdao/procedural';
-import { Planet, PlanetType, TooltipName } from '@dfdao/types';
+import { EMPTY_ADDRESS, MAX_PLANET_LEVEL } from '@darkforest_eth/constants';
+import { isLocatable } from '@darkforest_eth/gamelogic';
+import { bonusFromHex } from '@darkforest_eth/hexgen';
+import { getPlanetName } from '@darkforest_eth/procedural';
+import { Planet, PlanetType, TooltipName } from '@darkforest_eth/types';
 import React from 'react';
 import styled from 'styled-components';
 import { getPlanetRank } from '../../../Backend/Utils/Utils';
@@ -48,7 +48,7 @@ const ClownIcon = styled.span`
 
 export function PlanetIcons({ planet }: { planet: Planet | undefined }) {
   const uiManager = useUIManager();
-
+  const account = uiManager.getAccount();
   if (!planet) return <StyledPlanetIcons />;
   const bonuses = bonusFromHex(planet.locationId);
   const rank = getPlanetRank(planet);
@@ -87,11 +87,29 @@ export function PlanetIcons({ planet }: { planet: Planet | undefined }) {
 
   return (
     <StyledPlanetIcons>
-      {planet.owner === EMPTY_ADDRESS && planet.energy > 0 && (
+      {account &&
+        uiManager.blockMovesEnabled() &&
+        uiManager.playerMoveBlocked(account, planet.locationId) && (
+          <TooltipTrigger name={TooltipName.Blocked}>
+            <Icon type={IconType.Blocked} />
+          </TooltipTrigger>
+        )}
+
+      {planet.isTargetPlanet && (
+        <TooltipTrigger name={TooltipName.TargetPlanet}>
+          <Icon type={IconType.TargetPlanet} />
+        </TooltipTrigger>
+      )}
+      {planet.isSpawnPlanet && (
+        <TooltipTrigger name={TooltipName.SpawnPlanet}>
+          <Icon type={IconType.SpawnPlanet} />
+        </TooltipTrigger>
+      )}
+      {/* {planet.owner === EMPTY_ADDRESS && planet.energy > 0 && (
         <TooltipTrigger name={TooltipName.Pirates}>
           <Icon type={IconType.Pirates} />
         </TooltipTrigger>
-      )}
+      )} */}
       {planet.planetLevel === MAX_PLANET_LEVEL && (
         <TooltipTrigger name={TooltipName.MaxLevel}>
           <Icon type={IconType.MaxLevel} />

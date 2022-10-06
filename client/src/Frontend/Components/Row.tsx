@@ -1,4 +1,4 @@
-import { DarkForestRow } from '@dfdao/ui';
+import { DarkForestRow } from '@darkforest_eth/ui';
 import { createComponent } from '@lit-labs/react';
 import React from 'react';
 

@@ -1,16 +1,17 @@
-import { CONTRACT_PRECISION } from '@dfdao/constants';
-import { hasOwner, isEmojiFlagMessage } from '@dfdao/gamelogic';
+import { CONTRACT_PRECISION } from '@darkforest_eth/constants';
+import { hasOwner, isActivated, isEmojiFlagMessage } from '@darkforest_eth/gamelogic';
 import {
   ArrivalType,
+  Artifact,
   ArtifactType,
   EmojiFlagBody,
   Planet,
   PlanetMessage,
   PlanetType,
+  Player,
   QueuedArrival,
-  SpaceshipType,
   Upgrade,
-} from '@dfdao/types';
+} from '@darkforest_eth/types';
 import _ from 'lodash';
 import { ContractConstants } from '../../_types/darkforest/api/ContractsAPITypes';
 
@@ -82,6 +83,7 @@ const getEnergyAtTime = (planet: Planet, atTimeMillis: number): number => {
 
 export const updatePlanetToTime = (
   planet: Planet,
+  planetArtifacts: Artifact[],
   atTimeMillis: number,
   contractConstants: ContractConstants,
   setPlanet: (p: Planet) => void = () => {}
@@ -98,25 +100,16 @@ export const updatePlanetToTime = (
   planet.lastUpdated = atTimeMillis / 1000;
 
   const photoidActivationTime = contractConstants.PHOTOID_ACTIVATION_DELAY * 1000;
-  if (planet.activeArtifact) {
-    const activePhotoid =
-      planet.activeArtifact.artifactType === ArtifactType.PhotoidCannon &&
-      atTimeMillis - planet.artifactActivationTime * 1000 >= photoidActivationTime;
+  const activePhotoid = planetArtifacts.find(
+    (a) =>
+      a.artifactType === ArtifactType.PhotoidCannon &&
+      isActivated(a) &&
+      atTimeMillis - a.lastActivated * 1000 >= photoidActivationTime
+  );
 
-    if (activePhotoid && !planet.localPhotoidUpgrade) {
-      // TODO: pre-load from contract?
-      const range = [100, 200, 200, 200, 200, 200];
-      const speedBoosts = [100, 500, 1000, 1500, 2000, 2500];
-      const timeDelayedUpgrade: Upgrade = {
-        energyCapMultiplier: 100,
-        energyGroMultiplier: 100,
-        rangeMultiplier: range[planet.activeArtifact.rarity],
-        speedMultiplier: speedBoosts[planet.activeArtifact.rarity],
-        defMultiplier: 100,
-      };
-      planet.localPhotoidUpgrade = timeDelayedUpgrade;
-      applyUpgrade(planet, timeDelayedUpgrade);
-    }
+  if (activePhotoid && !planet.localPhotoidUpgrade) {
+    planet.localPhotoidUpgrade = activePhotoid.timeDelayedUpgrade;
+    applyUpgrade(planet, activePhotoid.timeDelayedUpgrade);
   }
 
   setPlanet(planet);
@@ -151,8 +144,12 @@ export interface PlanetDiff {
 
 export const arrive = (
   toPlanet: Planet,
+  artifactsOnPlanet: Artifact[],
   arrival: QueuedArrival,
-  contractConstants: ContractConstants
+  arrivingArtifact: Artifact | undefined,
+  contractConstants: ContractConstants,
+  arrivalPlayer: Player | undefined,
+  toOwner: Player | undefined
 ): PlanetDiff => {
   // this function optimistically simulates an arrival
   if (toPlanet.locationId !== arrival.toPlanet) {
@@ -160,7 +157,7 @@ export const arrive = (
   }
 
   // update toPlanet energy and silver right before arrival
-  updatePlanetToTime(toPlanet, arrival.arrivalTime * 1000, contractConstants);
+  updatePlanetToTime(toPlanet, artifactsOnPlanet, arrival.arrivalTime * 1000, contractConstants);
 
   const prevPlanet = _.cloneDeep(toPlanet);
   if (toPlanet.destroyed) {
@@ -170,7 +167,8 @@ export const arrive = (
   // apply energy
   const { energyArriving } = arrival;
 
-  if (arrival.player !== toPlanet.owner) {
+  const onSameTeam = toOwner && arrivalPlayer?.team == toOwner?.team;
+  if (arrival.player !== toPlanet.owner && (!contractConstants.TEAMS_ENABLED || !onSameTeam) ) {
     if (arrival.arrivalType === ArrivalType.Wormhole) {
       // if this is a wormhole arrival to a planet that isn't owned by the initiator of
       // the move, then don't move any energy
@@ -212,25 +210,19 @@ export const arrive = (
   }
 
   // transfer artifact if necessary
-  if (arrival.artifact) {
-    toPlanet.artifacts.push(arrival.artifact);
+  if (arrival.artifactId) {
+    toPlanet.heldArtifactIds.push(arrival.artifactId);
   }
 
-  if (arrival.spaceship) {
-    toPlanet.spaceships.push(arrival.spaceship);
-    if (arrival.spaceship.spaceshipType === SpaceshipType.ShipMothership) {
-      if (toPlanet.energyGroDoublers === 0) {
-        toPlanet.energyGrowth *= 2;
-      }
-      toPlanet.energyGroDoublers++;
-    } else if (arrival.spaceship.spaceshipType === SpaceshipType.ShipWhale) {
-      if (toPlanet.silverGroDoublers === 0) {
-        toPlanet.silverGrowth *= 2;
-      }
-      toPlanet.silverGroDoublers++;
-    } else if (arrival.spaceship.spaceshipType === SpaceshipType.ShipTitan) {
+  if (arrivingArtifact) {
+    if (arrivingArtifact.artifactType === ArtifactType.ShipMothership) {
+      toPlanet.energyGrowth *= 2;
+    } else if (arrivingArtifact.artifactType === ArtifactType.ShipWhale) {
+      toPlanet.silverGrowth *= 2;
+    } else if (arrivingArtifact.artifactType === ArtifactType.ShipTitan) {
       toPlanet.pausers++;
     }
+    arrivingArtifact.onPlanetId = toPlanet.locationId;
   }
 
   return { arrival, current: toPlanet, previous: prevPlanet };

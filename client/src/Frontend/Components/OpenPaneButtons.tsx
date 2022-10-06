@@ -1,22 +1,22 @@
-import { LocationId } from '@dfdao/types';
+import { LocationId } from '@darkforest_eth/types';
 import React, { useCallback } from 'react';
-import { BroadcastPane, BroadcastPaneHelpContent } from '../Panes/BroadcastPane';
-import { HatPane } from '../Panes/HatPane';
+import { BroadcastPane, BroadcastPaneHelpContent } from '../Panes/Game/BroadcastPane';
+import { HatPane } from '../Panes/Game/HatPane';
 import {
-  ManagePlanetInventoryHelpContent,
-  ManagePlanetInventoryPane,
+  ManagePlanetArtifactsHelpContent,
+  ManagePlanetArtifactsPane,
   PlanetInfoHelpContent,
-} from '../Panes/ManagePlanetArtifacts/ManagePlanetInventoryPane';
-import { PlanetInfoPane } from '../Panes/PlanetInfoPane';
-import { UpgradeDetailsPane, UpgradeDetailsPaneHelpContent } from '../Panes/UpgradeDetailsPane';
+} from '../Panes/ManagePlanetArtifacts/ManagePlanetArtifactsPane';
+import { PlanetInfoPane } from '../Panes/Game/PlanetInfoPane';
+import { UpgradeDetailsPane, UpgradeDetailsPaneHelpContent } from '../Panes/Game/UpgradeDetailsPane';
 import {
   TOGGLE_BROADCAST_PANE,
   TOGGLE_HAT_PANE,
+  TOGGLE_PLANET_ARTIFACTS_PANE,
   TOGGLE_PLANET_INFO_PANE,
-  TOGGLE_PLANET_INVENTORY_PANE,
   TOGGLE_UPGRADES_PANE,
 } from '../Utils/ShortcutConstants';
-import { ModalHandle } from '../Views/ModalPane';
+import { ModalHandle } from '../Views/Game/ModalPane';
 import { MaybeShortcutButton } from './MaybeShortcutButton';
 
 export function OpenPaneButton({
@@ -105,7 +105,7 @@ export function OpenUpgradeDetailsPaneButton({
     />
   );
 }
-export function OpenManagePlanetInventoryButton({
+export function OpenManagePlanetArtifactsButton({
   modal,
   planetId,
 }: {
@@ -116,9 +116,9 @@ export function OpenManagePlanetInventoryButton({
     <OpenPaneButton
       modal={modal}
       title='Inventory'
-      shortcut={TOGGLE_PLANET_INVENTORY_PANE}
-      element={() => <ManagePlanetInventoryPane modal={modal} initialPlanetId={planetId} />}
-      helpContent={ManagePlanetInventoryHelpContent()}
+      shortcut={TOGGLE_PLANET_ARTIFACTS_PANE}
+      element={() => <ManagePlanetArtifactsPane modal={modal} initialPlanetId={planetId} />}
+      helpContent={ManagePlanetArtifactsHelpContent()}
     />
   );
 }

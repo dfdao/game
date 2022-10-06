@@ -1,5 +1,5 @@
 // organize-imports-ignore
-import type { EthAddress, LocatablePlanet, LocationId, Planet } from '@dfdao/types';
+import type { EthAddress, LocatablePlanet, LocationId, Planet } from '@darkforest_eth/types';
 import {
   MAX_ARTIFACT_RARITY,
   MAX_SPACESHIP_TYPE,
@@ -9,14 +9,17 @@ import {
   MIN_BIOME,
   MAX_BIOME,
   //@ts-ignore
-} from 'https://cdn.skypack.dev/@dfdao/constants';
+} from 'https://cdn.skypack.dev/@darkforest_eth/constants';
+  //@ts-ignore
+import { modPBigInt } from 'https://cdn.skypack.dev/@darkforest_eth/hashing';
 //@ts-ignore
-import { getPlanetNameHash } from 'https://cdn.skypack.dev/@dfdao/procedural';
+import { getPlanetNameHash } from 'https://cdn.skypack.dev/@darkforest_eth/procedural';
 import {
   locationIdToDecStr,
+  artifactIdFromHexStr,
   locationIdFromDecStr,
   //@ts-ignore
-} from 'https://cdn.skypack.dev/@dfdao/serde';
+} from 'https://cdn.skypack.dev/@darkforest_eth/serde';
 import {
   ArtifactRarityNames,
   ArtifactType,
@@ -27,7 +30,7 @@ import {
   PlanetTypeNames,
   WorldCoords,
   //@ts-ignore
-} from 'https://cdn.skypack.dev/@dfdao/types';
+} from 'https://cdn.skypack.dev/@darkforest_eth/types';
 import {
   html,
   render,
@@ -79,6 +82,7 @@ async function createArtifact(
     methodName: 'adminGiveArtifact',
   });
   tx.confirmedPromise.then(() => {
+    df.hardRefreshArtifact(artifactIdFromHexStr(tokenId.slice(2)));
     df.hardRefreshPlanet(planet.locationId);
   });
 
@@ -198,41 +202,41 @@ async function addAddressToWhitelist(address: EthAddress) {
   return tx;
 }
 
-async function createPlanet(coords: WorldCoords, level: number, type: PlanetType) {
-  coords.x = Math.round(coords.x);
-  coords.y = Math.round(coords.y);
+async function createPlanet(
+  coords: WorldCoords,
+  level: number,
+  type: PlanetType,
+  isSpawnPlanet: boolean,
+  isTargetPlanet: boolean
+) {
+  coords.x = modPBigInt(Math.round(coords.x)).toString();
+  coords.y = modPBigInt(Math.round(coords.y)).toString();
 
   const location = df.locationBigIntFromCoords(coords).toString();
   const perlinValue = df.biomebasePerlin(coords, true);
 
   const args = Promise.resolve([
     {
+      location,
       x: coords.x,
       y: coords.y,
+      perlin: perlinValue,
       level,
       planetType: type,
       requireValidLocationId: false,
-      location: location,
-      perlin: perlinValue,
+      isTargetPlanet,
+      isSpawnPlanet,
+      blockedPlanetIds: [],
     },
   ]);
 
   const tx = await df.submitTransaction({
     args,
     contract: df.getContract(),
-    methodName: 'createPlanet',
+    methodName: 'createAndReveal',
   });
 
   await tx.confirmedPromise;
-
-  const revealArgs = df.getSnarkHelper().getRevealArgs(coords.x, coords.y);
-  const revealTx = await df.submitTransaction({
-    args: revealArgs,
-    contract: df.getContract(),
-    methodName: 'revealLocation',
-  });
-
-  await revealTx.confirmedPromise;
 
   await df.hardRefreshPlanet(locationIdFromDecStr(location));
 }
@@ -354,13 +358,15 @@ function PlanetCreator() {
   const [planetType, setPlanetType] = useState(PlanetType.PLANET);
   const [choosingLocation, setChoosingLocation] = useState(false);
   const [planetCoords, setPlanetCoords] = useState(null);
+  const [isSpawn, setIsSpawn] = useState(false);
+  const [isTarget, setIsTarget] = useState(false);
 
   const placePlanet = useCallback(
     (coords: WorldCoords) => {
-      createPlanet(coords, parseInt(level), planetType);
+      createPlanet(coords, parseInt(level), planetType, isSpawn, isTarget);
       setChoosingLocation(false);
     },
-    [level, planetType, setChoosingLocation]
+    [level, planetType, setChoosingLocation, isSpawn, isTarget]
   );
 
   const updatePlanetCoords = useCallback(
@@ -386,7 +392,7 @@ function PlanetCreator() {
 
   return html`
     <div style=${{ width: '100%' }}>
-      <h2>Create Planet</h2>
+      <${Heading} title="Create planet" />
       <div style=${rowStyle}>
         <df-slider
           label="Planet Level"
@@ -405,6 +411,24 @@ function PlanetCreator() {
         </div>
       </div>
       <div style=${{ ...rowStyle, justifyContent: 'space-between' }}>
+        <div style=${rowStyle}>
+          <input
+            type="checkbox"
+            id="spawn"
+            value=${isSpawn}
+            onChange=${() => setIsSpawn(!isSpawn)}
+          />
+          ${' Spawn Planet'}
+        </div>
+        <div style=${rowStyle}>
+          <input
+            type="checkbox"
+            id="target"
+            value=${isTarget}
+            onChange=${() => setIsTarget(!isTarget)}
+          />
+          ${' Target Planet'}
+        </div>
         ${!choosingLocation &&
         html`
           <df-button

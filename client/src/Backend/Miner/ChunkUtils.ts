@@ -1,20 +1,5 @@
-import type { Abstract } from '@dfdao/types';
-import { Chunk, Rectangle, WorldCoords, WorldLocation } from '@dfdao/types';
-import { Map } from 'yjs';
-
-/**
- * one of "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
- */
-type BucketId = Abstract<string, 'BucketId'>;
-type ChunkId = Abstract<string, 'ChunkId'>;
-
-/**
- * Abstract interface shared between different types of chunk stores. Currently we have one that
- * writes to IndexedDB, and one that simply throws away the data.
- */
-export interface ChunkStore {
-  hasMinedChunk: (chunkFootprint: Rectangle) => boolean;
-}
+import { Chunk, Rectangle, WorldCoords, WorldLocation } from '@darkforest_eth/types';
+import { BucketId, ChunkId, PersistedChunk } from '../../_types/darkforest/api/ChunkStoreTypes';
 
 /**
  * Deterministically assigns a bucket ID to a rectangle, based on its position and size in the
@@ -43,6 +28,48 @@ export function getChunkKey(chunkLoc: Rectangle): ChunkId {
 }
 
 /**
+ * Converts from the in-game representation of a chunk to its persisted representation.
+ */
+export function toPersistedChunk(chunk: Chunk): PersistedChunk {
+  const planetLocations = chunk.planetLocations.map((location) => ({
+    x: location.coords.x,
+    y: location.coords.y,
+    h: location.hash,
+    p: location.perlin,
+    b: location.biomebase,
+  }));
+
+  return {
+    x: chunk.chunkFootprint.bottomLeft.x,
+    y: chunk.chunkFootprint.bottomLeft.y,
+    s: chunk.chunkFootprint.sideLength,
+    l: planetLocations,
+    p: chunk.perlin,
+  };
+}
+
+/**
+ * Converts from the persisted representation of a chunk to the in-game representation of a chunk.
+ */
+export const toExploredChunk = (chunk: PersistedChunk): Chunk => {
+  const planetLocations = chunk.l.map((location) => ({
+    coords: { x: location.x, y: location.y },
+    hash: location.h,
+    perlin: location.p,
+    biomebase: location.b,
+  }));
+
+  return {
+    chunkFootprint: {
+      bottomLeft: { x: chunk.x, y: chunk.y },
+      sideLength: chunk.s,
+    },
+    planetLocations,
+    perlin: chunk.p,
+  };
+};
+
+/**
  * An aligned chunk is one whose corner's coordinates are multiples of its side length, and its side
  * length is a power of two between {@link MIN_CHUNK_SIZE} and {@link MAX_CHUNK_SIZE} inclusive.
  *
@@ -58,7 +85,7 @@ export function getChunkKey(chunkLoc: Rectangle): ChunkId {
  * that the four chunks, if merged, would result in an "aligned" chunk whose side length is double
  * the given chunk.
  */
-function getSiblingLocations(chunkLoc: Rectangle): [Rectangle, Rectangle, Rectangle] {
+export const getSiblingLocations = (chunkLoc: Rectangle): [Rectangle, Rectangle, Rectangle] => {
   const doubleSideLen = 2 * chunkLoc.sideLength;
   const newBottomLeftX = Math.floor(chunkLoc.bottomLeft.x / doubleSideLen) * doubleSideLen;
   const newBottomLeftY = Math.floor(chunkLoc.bottomLeft.y / doubleSideLen) * doubleSideLen;
@@ -82,7 +109,7 @@ function getSiblingLocations(chunkLoc: Rectangle): [Rectangle, Rectangle, Rectan
     }
   }
   return [siblingLocs[0], siblingLocs[1], siblingLocs[2]];
-}
+};
 
 /**
  * Returns the unique aligned chunk (for definition of "aligned" see comment on
@@ -107,7 +134,7 @@ export function getChunkOfSideLengthContainingPoint(
  * At a high level, call this function to update an efficient quadtree-like store containing all of
  * the chunks that a player has either mined or imported in their client.
  *
- * More specifically, adds the given new chunk to the given map of chunks. If the map of chunks
+ * More speecifically, adds the given new chunk to the given map of chunks. If the map of chunks
  * contains all of the "sibling" chunks to this new chunk, then instead of adding it, we merge the 4
  * sibling chunks, and add the merged chunk to the map and remove the existing sibling chunks. This
  * function is recursive, which means that if the newly created merged chunk can also be merged with
@@ -122,44 +149,21 @@ export function getChunkOfSideLengthContainingPoint(
  * `existingChunks` map. `onAdd` will be called exactly once, whereas `onRemove` only ever be called
  * for sibling chunks that existed prior to this function being called.
  */
-export function processChunkInMap(
-  existingChunks: Map<Chunk>,
-  chunk: Chunk,
-  onAdd: (arg: Chunk) => void,
-  onRemove: (arg: Chunk) => void,
+export function addToChunkMap(
+  existingChunks: Map<ChunkId, Chunk>,
+  newChunk: Chunk,
+  onAdd?: (arg: Chunk) => void,
+  onRemove?: (arg: Chunk) => void,
   maxChunkSize?: number
 ) {
-  for (
-    let clearingSideLen = 16;
-    clearingSideLen < chunk.chunkFootprint.sideLength;
-    clearingSideLen *= 2
-  ) {
-    for (let x = 0; x < chunk.chunkFootprint.sideLength; x += clearingSideLen) {
-      for (let y = 0; y < chunk.chunkFootprint.sideLength; y += clearingSideLen) {
-        const queryChunk: Rectangle = {
-          bottomLeft: {
-            x: chunk.chunkFootprint.bottomLeft.x + x,
-            y: chunk.chunkFootprint.bottomLeft.y + y,
-          },
-          sideLength: clearingSideLen,
-        };
-        const queryChunkKey = getChunkKey(queryChunk);
-        const exploredChunk = existingChunks.get(queryChunkKey);
-        if (exploredChunk) {
-          onRemove(exploredChunk);
-        }
-      }
-    }
-  }
-
-  let sideLength = chunk.chunkFootprint.sideLength;
+  let sideLength = newChunk.chunkFootprint.sideLength;
   let chunkToAdd: Chunk = {
     chunkFootprint: {
-      bottomLeft: chunk.chunkFootprint.bottomLeft,
+      bottomLeft: newChunk.chunkFootprint.bottomLeft,
       sideLength,
     },
-    planetLocations: [...chunk.planetLocations],
-    perlin: chunk.perlin,
+    planetLocations: [...newChunk.planetLocations],
+    perlin: newChunk.perlin,
   };
   while (!maxChunkSize || sideLength < maxChunkSize) {
     const siblingLocs = getSiblingLocations(chunkToAdd.chunkFootprint);
@@ -177,8 +181,12 @@ export function processChunkInMap(
     for (const siblingLoc of siblingLocs) {
       const siblingKey = getChunkKey(siblingLoc);
       const sibling = existingChunks.get(siblingKey);
-      if (sibling) {
+      if (onRemove !== undefined && sibling) {
         onRemove(sibling);
+      } else {
+        existingChunks.delete(siblingKey);
+      }
+      if (sibling) {
         planetLocations = planetLocations.concat(sibling.planetLocations);
         newPerlin += sibling.perlin / 4;
       }
@@ -193,5 +201,9 @@ export function processChunkInMap(
       perlin: Math.floor(newPerlin * 1000) / 1000,
     };
   }
-  onAdd(chunkToAdd);
+  if (onAdd !== undefined) {
+    onAdd(chunkToAdd);
+  } else {
+    existingChunks.set(getChunkKey(chunkToAdd.chunkFootprint), chunkToAdd);
+  }
 }

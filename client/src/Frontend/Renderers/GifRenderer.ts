@@ -6,16 +6,16 @@ import {
   MIN_ARTIFACT_RARITY,
   MIN_ARTIFACT_TYPE,
   MIN_BIOME,
-} from '@dfdao/constants';
-import { ArtifactFileColor, artifactFileName, setForceAncient } from '@dfdao/gamelogic';
-import { mockArtifactWithRarity } from '@dfdao/procedural';
-import { SpriteRenderer, WebGLManager } from '@dfdao/renderer';
-import { Artifact, ArtifactRarity, ArtifactType, Biome } from '@dfdao/types';
-// @ts-ignore
-import FileSaver from 'file-saver';
+} from '@darkforest_eth/constants';
+import { ArtifactFileColor, artifactFileName, setForceAncient } from '@darkforest_eth/gamelogic';
+import { mockArtifactWithRarity } from '@darkforest_eth/procedural';
+import { SpriteRenderer, WebGLManager } from '@darkforest_eth/renderer';
+import { Artifact, ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
 import { mat4 } from 'gl-matrix';
 import JSZip from 'jszip';
 import { GIF_ARTIFACT_COLOR } from '../Pages/GifMaker';
+
+const FileSaver = require('file-saver');
 
 declare global {
   interface Window {

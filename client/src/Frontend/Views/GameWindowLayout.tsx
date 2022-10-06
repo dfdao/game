@@ -1,4 +1,4 @@
-import { ModalId, ModalName, Setting } from '@dfdao/types';
+import { ModalId, ModalName, Setting } from '@darkforest_eth/types';
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { BorderlessPane } from '../Components/CoreUI';
@@ -10,29 +10,35 @@ import {
   WindowWrapper,
 } from '../Components/GameWindowComponents';
 import ControllableCanvas from '../Game/ControllableCanvas';
-import { CoordsPane } from '../Panes/CoordsPane';
-import { DiagnosticsPane } from '../Panes/DiagnosticsPane';
-import { ExplorePane } from '../Panes/ExplorePane';
-import { HelpPane } from '../Panes/HelpPane';
-import { HoverPlanetPane } from '../Panes/HoverPlanetPane';
-import { InvetoryPane } from '../Panes/InventoryPane';
-import OnboardingPane from '../Panes/OnboardingPane';
-import { PlanetContextPane } from '../Panes/PlanetContextPane';
-import { PlanetDexPane } from '../Panes/PlanetDexPane';
-import { PluginLibraryPane } from '../Panes/PluginLibraryPane';
-import { PrivatePane } from '../Panes/PrivatePane';
-import { SettingsPane } from '../Panes/SettingsPane';
-import { TransactionLogPane } from '../Panes/TransactionLogPane';
-import { TutorialPane } from '../Panes/TutorialPane';
-import { TwitterVerifyPane } from '../Panes/TwitterVerifyPane';
+import { ArtifactHoverPane } from '../Panes/Game/ArtifactHoverPane';
+import { CoordsPane } from '../Panes/Game/CoordsPane';
+import { DiagnosticsPane } from '../Panes/Game/DiagnosticsPane';
+import { ExplorePane } from '../Panes/Game/ExplorePane';
+import { HelpPane } from '../Panes/Game/HelpPane';
+import { HoverPlanetPane } from '../Panes/Game/HoverPlanetPane';
+import { WaitingRoomPane } from '../Panes/Game/WaitingRoomPane';
+import { PlanetContextPane } from '../Panes/Game/PlanetContextPane';
+import { PlanetDexPane } from '../Panes/Game/PlanetDexPane';
+import { PlayerArtifactsPane } from '../Panes/Game/PlayerArtifactsPane';
+import { PluginLibraryPane } from '../Panes/Game/PluginLibraryPane';
+import { PrivatePane } from '../Panes/Game/PrivatePane';
+import { SettingsPane } from '../Panes/Game/SettingsPane';
+import { SpectatorInfoPane } from '../Panes/Game/SpectatorInfoPane';
+import { SurveyPane } from '../Panes/Game/SurveyPane';
+import { TransactionLogPane } from '../Panes/Game/TransactionLogPane';
+import { TutorialPane } from '../Panes/Game/TutorialPane';
+import { TwitterVerifyPane } from '../Panes/Game/TwitterVerifyPane';
 import { ZoomPane } from '../Panes/ZoomPane';
-import { useSelectedPlanet, useUIManager } from '../Utils/AppHooks';
+import { useGameover, useSelectedPlanet, useUIManager } from '../Utils/AppHooks';
 import { useOnUp } from '../Utils/KeyEmitters';
 import { useBooleanSetting } from '../Utils/SettingsHooks';
 import { TOGGLE_DIAGNOSTICS_PANE } from '../Utils/ShortcutConstants';
-import { NotificationsPane } from './Notifications';
-import { SidebarPane } from './SidebarPane';
-import { TopBar } from './TopBar';
+import { NotificationsPane } from './Game/Notifications';
+import { SidebarPane } from '../Panes/Game/SidebarPane';
+import { TopBar } from './Game/TopBar';
+import { tutorialConfig } from '../Utils/constants';
+import { ArenaBriefingPane } from '../Panes/Game/ArenaBriefingPane';
+import { useHistory } from 'react-router-dom';
 
 export function GameWindowLayout({
   terminalVisible,
@@ -42,6 +48,7 @@ export function GameWindowLayout({
   setTerminalVisible: (visible: boolean) => void;
 }) {
   const uiManager = useUIManager();
+  const history = useHistory();
   const modalManager = uiManager.getModalManager();
   const modalPositions = modalManager.getModalPositions();
 
@@ -61,7 +68,12 @@ export function GameWindowLayout({
     },
     [modalPositions]
   );
-
+  const exitGame = () => {
+    const confirmation = confirm('are you sure you want to quit this game?');
+    if (confirmation) {
+      history.push('/portal/home');
+    }
+  };
   const [helpVisible, setHelpVisible] = useState<boolean>(isModalOpen(ModalName.Help));
   const [transactionLogVisible, setTransactionLogVisible] = useState<boolean>(
     isModalOpen(ModalName.TransactionLog)
@@ -69,8 +81,8 @@ export function GameWindowLayout({
   const [planetdexVisible, setPlanetdexVisible] = useState<boolean>(
     isModalOpen(ModalName.PlanetDex)
   );
-  const [playerInventoryVisible, setPlayerInventoryVisible] = useState<boolean>(
-    isModalOpen(ModalName.YourInventory)
+  const [playerArtifactsVisible, setPlayerArtifactsVisible] = useState<boolean>(
+    isModalOpen(ModalName.YourArtifacts)
   );
   const [twitterVerifyVisible, setTwitterVerifyVisible] = useState<boolean>(
     isModalOpen(ModalName.TwitterVerify)
@@ -86,8 +98,17 @@ export function GameWindowLayout({
   const modalsContainerCB = useCallback((node) => {
     setModalsContainer(node);
   }, []);
-  const [onboardingVisible, setOnboardingVisible] = useBooleanSetting(uiManager, Setting.NewPlayer);
-  const tutorialHook = useBooleanSetting(uiManager, Setting.TutorialOpen);
+
+  const [waitingRoomVisible, setWaitingRoomVisible] = useState(
+    !uiManager.gameStarted &&
+      uiManager.contractConstants.MANUAL_SPAWN &&
+      uiManager.getSpawnPlanets().length !== 1
+  );
+
+  const isTutorialWorld = uiManager.contractConstants.CONFIG_HASH === tutorialConfig;
+  const showTutorial = isTutorialWorld;
+  const [showSpectatorInfo] = useBooleanSetting(uiManager, Setting.ShowSpectatorInfo);
+  const [showArenaBriefing] = useBooleanSetting(uiManager, Setting.ShowArenaBriefing);
   const selected = useSelectedPlanet(uiManager).value;
   const [selectedPlanetVisible, setSelectedPlanetVisible] = useState<boolean>(!!selected);
 
@@ -114,6 +135,8 @@ export function GameWindowLayout({
   }, [userTerminalVisibleSetting, setTerminalVisibleSetting, terminalVisible]);
 
   useEffect(() => setSelectedPlanetVisible(!!selected), [selected, setSelectedPlanetVisible]);
+
+  // useEffect(() => setWaitingRoomVisible(!uiManager.getGameStarted())), [uiManager.getGameStarted()];
 
   useOnUp(
     TOGGLE_DIAGNOSTICS_PANE,
@@ -149,9 +172,9 @@ export function GameWindowLayout({
           onOpenPrivate={() => setPrivateVisible(true)}
         />
         <PrivatePane visible={privateVisible} onClose={() => setPrivateVisible(false)} />
-        <InvetoryPane
-          visible={playerInventoryVisible}
-          onClose={() => setPlayerInventoryVisible(false)}
+        <PlayerArtifactsPane
+          visible={playerArtifactsVisible}
+          onClose={() => setPlayerArtifactsVisible(false)}
         />
         <PlanetContextPane
           visible={selectedPlanetVisible}
@@ -161,6 +184,8 @@ export function GameWindowLayout({
           visible={diagnosticsVisible}
           onClose={() => setDiagnosticsVisible(false)}
         />
+        <SurveyPane visible={useGameover()} onClose={() => {}} />
+
         {modalsContainer && (
           <PluginLibraryPane
             modalsContainer={modalsContainer}
@@ -171,7 +196,7 @@ export function GameWindowLayout({
         )}
       </div>
 
-      <OnboardingPane visible={onboardingVisible} onClose={() => setOnboardingVisible(false)} />
+      <WaitingRoomPane visible={waitingRoomVisible} onClose={() => setWaitingRoomVisible(false)} />
 
       <MainWindow>
         <CanvasContainer>
@@ -179,11 +204,11 @@ export function GameWindowLayout({
             <ZoomPane />
           </UpperLeft>
           <SidebarPane
-            transactionLogHook={[transactionLogVisible, setTransactionLogVisible]}
+            exitHook={exitGame}
             settingsHook={[settingsVisible, setSettingsVisible]}
             helpHook={[helpVisible, setHelpVisible]}
             pluginsHook={[pluginsVisible, setPluginsVisible]}
-            yourInventoryHook={[playerInventoryVisible, setPlayerInventoryVisible]}
+            yourArtifactsHook={[playerArtifactsVisible, setPlayerArtifactsVisible]}
             planetdexHook={[planetdexVisible, setPlanetdexVisible]}
           />
           <CanvasWrapper>
@@ -195,8 +220,11 @@ export function GameWindowLayout({
           <ExplorePane />
 
           <HoverPlanetPane />
+          <ArtifactHoverPane />
 
-          <TutorialPane tutorialHook={tutorialHook} />
+          {showTutorial && <TutorialPane />}
+          {showSpectatorInfo && <SpectatorInfoPane />}
+          {showArenaBriefing && !showTutorial && <ArenaBriefingPane />}
         </CanvasContainer>
       </MainWindow>
     </WindowWrapper>

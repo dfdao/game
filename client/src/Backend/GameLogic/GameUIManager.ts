@@ -1,13 +1,14 @@
-import { EMPTY_ADDRESS } from '@dfdao/constants';
-import { Monomitter, monomitter } from '@dfdao/events';
-import { biomeName, isLocatable } from '@dfdao/gamelogic';
-import { planetHasBonus } from '@dfdao/hexgen';
-import { EthConnection } from '@dfdao/network';
-import { GameGLManager, Renderer } from '@dfdao/renderer';
-import { isUnconfirmedMoveTx } from '@dfdao/serde';
+import { EMPTY_ADDRESS } from '@darkforest_eth/constants';
+import { Monomitter, monomitter } from '@darkforest_eth/events';
+import { biomeName, isLocatable, isSpaceShip } from '@darkforest_eth/gamelogic';
+import { planetHasBonus } from '@darkforest_eth/hexgen';
+import { EthConnection } from '@darkforest_eth/network';
+import { GameGLManager, Renderer } from '@darkforest_eth/renderer';
+import { isUnconfirmedMoveTx } from '@darkforest_eth/serde';
 import {
   Artifact,
   ArtifactId,
+  ArtifactType,
   BaseRenderer,
   Biome,
   Chunk,
@@ -24,8 +25,6 @@ import {
   QueuedArrival,
   Rectangle,
   Setting,
-  Spaceship,
-  SpaceshipId,
   SpaceType,
   Transaction,
   UnconfirmedActivateArtifact,
@@ -35,7 +34,8 @@ import {
   UpgradeBranchName,
   WorldCoords,
   WorldLocation,
-} from '@dfdao/types';
+  Wormhole,
+} from '@darkforest_eth/types';
 import autoBind from 'auto-bind';
 import { BigNumber } from 'ethers';
 import EventEmitter from 'events';
@@ -108,7 +108,6 @@ class GameUIManager extends EventEmitter {
   private silverSending: { [key: string]: number } = {}; // this is a percentage
 
   private artifactSending: { [key: string]: Artifact | undefined } = {};
-  private spaceshipSending: { [key: string]: Spaceship | undefined } = {};
 
   private plugins: PluginManager;
 
@@ -116,7 +115,8 @@ class GameUIManager extends EventEmitter {
   public readonly hoverPlanetId$: Monomitter<LocationId | undefined>;
   public readonly hoverPlanet$: Monomitter<Planet | undefined>;
   public readonly hoverArtifactId$: Monomitter<ArtifactId | undefined>;
-  public readonly hoverSpaceshipId$: Monomitter<SpaceshipId | undefined>;
+  public readonly hoverArtifact$: Monomitter<Artifact | undefined>;
+  public readonly myArtifacts$: Monomitter<Map<ArtifactId, Artifact>>;
 
   public readonly isSending$: Monomitter<boolean>;
   public readonly isAbandoning$: Monomitter<boolean>;
@@ -164,7 +164,12 @@ class GameUIManager extends EventEmitter {
     );
 
     this.hoverArtifactId$ = monomitter<ArtifactId | undefined>();
-    this.hoverSpaceshipId$ = monomitter<SpaceshipId | undefined>();
+    this.hoverArtifact$ = getObjectWithIdFromMap<Artifact, ArtifactId>(
+      this.getArtifactMap(),
+      this.hoverArtifactId$,
+      this.gameManager.getArtifactUpdated$()
+    );
+    this.myArtifacts$ = this.gameManager.getMyArtifactsUpdated$();
     this.viewportEntities = new ViewportEntities(this.gameManager, this);
 
     this.isSending$ = monomitter(true);
@@ -197,7 +202,7 @@ class GameUIManager extends EventEmitter {
     const uiEmitter = UIEmitter.getInstance();
 
     const uiManager = new GameUIManager(gameManager, terminalHandle);
-    const modalManager = await ModalManager.create(gameManager.getOtherStore());
+    const modalManager = await ModalManager.create(gameManager.getChunkStore());
 
     uiManager.setModalManager(modalManager);
 
@@ -310,8 +315,8 @@ class GameUIManager extends EventEmitter {
     }
   }
 
-  public joinGame(beforeRetry: (e: Error) => Promise<boolean>): Promise<void> {
-    return this.gameManager.joinGame(beforeRetry);
+  public joinGame(beforeRetry: (e: Error) => Promise<boolean>, team : number): Promise<void> {
+    return this.gameManager.joinGame(beforeRetry, team);
   }
 
   public addAccount(coords: WorldCoords): Promise<boolean> {
@@ -517,7 +522,7 @@ class GameUIManager extends EventEmitter {
 
         // make it so you leave one force behind
         if (this.isSendingShip(mouseDownPlanet.locationId)) {
-          tutorialManager.acceptInput(TutorialState.Spaceship);
+          tutorialManager.acceptInput(TutorialState.MoveSpaceship);
           forces = 0;
         } else if (forces >= from.energy) {
           forces = from.energy - 1;
@@ -554,7 +559,6 @@ class GameUIManager extends EventEmitter {
             `df.move('${from.locationId}', '${to.locationId}', ${forces}, ${silver})`
           );
           const artifact = this.getArtifactSending(from.locationId);
-          const spaceship = this.getSpaceshipSending(from.locationId);
 
           this.gameManager.move(
             from.locationId,
@@ -562,9 +566,8 @@ class GameUIManager extends EventEmitter {
             forces,
             silver,
             artifact?.id,
-            spaceship?.id,
             abandoning
-          );
+          )
           tutorialManager.acceptInput(TutorialState.SendFleet);
         }
 
@@ -599,7 +602,6 @@ class GameUIManager extends EventEmitter {
   public toggleExplore() {
     if (this.isMining()) {
       this?.stopExplore();
-      TutorialManager.getInstance(this).acceptInput(TutorialState.MinerPause);
     } else {
       this?.startExplore();
     }
@@ -647,13 +649,10 @@ class GameUIManager extends EventEmitter {
 
   public setArtifactSending(planetId: LocationId, artifact?: Artifact) {
     this.artifactSending[planetId] = artifact;
-    this.gameManager.getGameObjects().forceTick(planetId);
-  }
-
-  public setSpaceshipSending(planetId: LocationId, spaceship?: Spaceship) {
-    this.spaceshipSending[planetId] = spaceship;
-    this.abandoning = false;
-    this.isAbandoning$.publish(false);
+    if (this.isSendingShip(planetId)) {
+      this.abandoning = false;
+      this.isAbandoning$.publish(false);
+    }
     this.gameManager.getGameObjects().forceTick(planetId);
   }
 
@@ -696,12 +695,28 @@ class GameUIManager extends EventEmitter {
     return this.gameManager.getTwitter(address);
   }
 
-  public getEndTimeSeconds(): number {
+  public getEndTimeSeconds(): number | undefined {
     return this.gameManager.getEndTimeSeconds();
+  }
+
+  public getTeamsEnabled(): boolean {
+    return this.gameManager.getTeamsEnabled();
+  }
+
+  public checkVictoryCondition() : boolean {
+    return this.gameManager.checkVictoryCondition();
   }
 
   public isRoundOver(): boolean {
     return this.gameManager.isRoundOver();
+  }
+
+  public getTargetsHeld(address?: EthAddress) : Planet[] {
+    return this.gameManager.getTargetsHeld(address);
+  }
+
+  public getTargetsRequired() : number {
+    return this.gameManager.targetsRequired;
   }
 
   public getUpgrade(branch: UpgradeBranchName, level: number): Upgrade {
@@ -760,11 +775,6 @@ class GameUIManager extends EventEmitter {
   public setSelectedPlanet(planet: LocatablePlanet | undefined): void {
     this.previousSelectedPlanetId = this.selectedPlanetId;
 
-    if (!planet) {
-      const tutorialManager = TutorialManager.getInstance(this);
-      tutorialManager.acceptInput(TutorialState.Deselect);
-    }
-
     const uiEmitter = UIEmitter.getInstance();
     this.selectedPlanetId = planet?.locationId;
     if (!planet) {
@@ -778,7 +788,7 @@ class GameUIManager extends EventEmitter {
 
         if (coordsEqual(loc.coords, this.getHomeCoords())) {
           const tutorialManager = TutorialManager.getInstance(this);
-          tutorialManager.acceptInput(TutorialState.HomePlanet);
+          tutorialManager.acceptInput(TutorialState.Welcome);
         }
       }
     }
@@ -809,7 +819,6 @@ class GameUIManager extends EventEmitter {
 
     // Set to undefined after SendComplete so it can send another one
     this.artifactSending[locationId] = undefined;
-    this.spaceshipSending[locationId] = undefined;
 
     this.sendingPlanet = undefined;
     // Done at the end so they clear the artifact
@@ -998,9 +1007,7 @@ class GameUIManager extends EventEmitter {
 
   public setHoveringOverArtifact(artifactId?: ArtifactId) {
     this.hoverArtifactId$.publish(artifactId);
-  }
-  public setHoveringOverSpaceship(spaceshipId?: SpaceshipId) {
-    this.hoverSpaceshipId$.publish(spaceshipId);
+    this.hoverArtifact$.publish(artifactId ? this.getArtifactWithId(artifactId) : undefined);
   }
 
   public getHoveringOverPlanet(): Planet | undefined {
@@ -1050,10 +1057,6 @@ class GameUIManager extends EventEmitter {
     if (!planetId) return undefined;
     return this.artifactSending[planetId];
   }
-  public getSpaceshipSending(planetId?: LocationId): Spaceship | undefined {
-    if (!planetId) return undefined;
-    return this.spaceshipSending[planetId];
-  }
 
   public getAbandonSpeedChangePercent(): number {
     const { SPACE_JUNK_ENABLED, ABANDON_SPEED_CHANGE_PERCENT } = this.contractConstants;
@@ -1075,7 +1078,7 @@ class GameUIManager extends EventEmitter {
 
   public isSendingShip(planetId?: LocationId): boolean {
     if (!planetId) return false;
-    return this.spaceshipSending[planetId] !== undefined;
+    return isSpaceShip(this.artifactSending[planetId]?.artifactType);
   }
 
   public isOverOwnPlanet(coords: WorldCoords): Planet | undefined {
@@ -1090,8 +1093,24 @@ class GameUIManager extends EventEmitter {
   public getMyArtifacts(): Artifact[] {
     return this.gameManager.getMyArtifacts();
   }
-  public getMySpaceships(): Spaceship[] {
-    return this.gameManager.getMySpaceships();
+
+  public getMyArtifactsNotOnPlanet(): Artifact[] {
+    return this.getMyArtifacts().filter((a) => !a.onPlanetId);
+  }
+
+  public getMySpaceships(): Artifact[] {
+    const ships = this.gameManager
+      .getMyArtifacts()
+      .filter(
+        (a) =>
+          a.artifactType == ArtifactType.Spaceship ||
+          a.artifactType == ArtifactType.ShipMothership ||
+          a.artifactType == ArtifactType.ShipCrescent ||
+          a.artifactType == ArtifactType.ShipWhale ||
+          a.artifactType == ArtifactType.ShipGear ||
+          a.artifactType == ArtifactType.ShipTitan
+      );
+      return ships;
   }
 
   public getPlanetWithId(planetId: LocationId | undefined): Planet | undefined {
@@ -1106,8 +1125,21 @@ class GameUIManager extends EventEmitter {
     return this.gameManager.getPlayer(address);
   }
 
+  public getArtifactWithId(artifactId: ArtifactId | undefined): Artifact | undefined {
+    return this.gameManager.getArtifactWithId(artifactId);
+  }
+
   public getPlanetWithCoords(coords: WorldCoords | undefined): Planet | undefined {
     return coords && this.gameManager.getPlanetWithCoords(coords);
+  }
+
+  public getArtifactsWithIds(artifactIds?: ArtifactId[]): Array<Artifact | undefined> {
+    return this.gameManager.getArtifactsWithIds(artifactIds);
+  }
+
+  public getArtifactPlanet(artifact: Artifact): Planet | undefined {
+    if (!artifact.onPlanetId) return undefined;
+    return this.getPlanetWithId(artifact.onPlanetId);
   }
 
   public getPlanetLevel(planetId: LocationId): PlanetLevel | undefined {
@@ -1152,7 +1184,7 @@ class GameUIManager extends EventEmitter {
     return this.gameManager.getUnconfirmedWormholeActivations();
   }
 
-  public getWormholes(): Iterable<[LocationId, LocationId]> {
+  public getWormholes(): Iterable<Wormhole> {
     return this.gameManager.getWormholes();
   }
 
@@ -1279,6 +1311,10 @@ class GameUIManager extends EventEmitter {
     return this.gameManager.getPlanetMap();
   }
 
+  public getArtifactMap(): Map<ArtifactId, Artifact> {
+    return this.gameManager.getArtifactMap();
+  }
+
   public getMyPlanetMap(): Map<LocationId, Planet> {
     return this.gameManager.getMyPlanetMap();
   }
@@ -1301,6 +1337,50 @@ class GameUIManager extends EventEmitter {
 
   public get captureZonesEnabled(): boolean {
     return this.contractConstants.CAPTURE_ZONES_ENABLED;
+  }
+
+  public get manualSpawnEnabled(): boolean {
+    return this.contractConstants.MANUAL_SPAWN;
+  }
+
+  public get targetPlanetsEnabled(): boolean {
+    return this.contractConstants.TARGET_PLANETS;
+  }
+
+  public getSpawnPlanets(): Planet[] {
+    return this.gameManager.getSpawnPlanets();
+  }
+
+  public getPlayerTargetPlanets(account? : EthAddress): Planet[] {
+    return this.gameManager.getPlayerTargetPlanets(account);
+  }
+
+  public isTargetHeld(planet: Planet) : boolean {
+    return this.gameManager.isTargetHeld(planet);
+  }
+
+  public blockMovesEnabled() :boolean {
+    return this.gameManager.blockMoves();
+  }
+
+  public playerMoveBlocked(player: EthAddress, planet: LocationId) : boolean {
+    return this.gameManager.playerMoveBlocked(player, planet);
+  }
+
+  public getAllTargetPlanets() : Planet[] {
+    return this.gameManager.getAllTargetPlanets();
+  }
+
+  public playerCaptureBlocked(player: EthAddress, planet: LocationId) : boolean {
+    return this.gameManager.playerCaptureBlocked(player, planet);
+  }
+
+  public getPlayerBlockedPlanets(account?: EthAddress) : Planet[] {
+    return this.gameManager.getPlayerBlockedPlanets(account);
+  }
+
+  public getPlayerDefensePlanets(account?: EthAddress) : Planet[] {
+    return this.gameManager.getPlayerDefensePlanets(account);
   }
 
   public potentialCaptureScore(planetLevel: number): number {
@@ -1403,12 +1483,47 @@ class GameUIManager extends EventEmitter {
     return Renderer.instance;
   }
 
+  public isCompetitive() : boolean {
+    return this.gameManager.isCompetitive();
+  }
+
   getPaused(): boolean {
     return this.gameManager.getPaused();
   }
 
   getPaused$(): Monomitter<boolean> {
     return this.gameManager.getPaused$();
+  }
+
+  get gameStarted(): boolean {
+    return this.gameManager.getGameStarted();
+  }
+
+  getGameStarted$(): Monomitter<boolean> {
+    return this.gameManager.getGameStarted$();
+  }
+
+  getGameover(): boolean {
+    return this.gameManager.getGameover();
+  }
+
+  getGameover$(): Monomitter<boolean> {
+    return this.gameManager.getGameover$();
+  }
+
+  getPlayerMoves(addr : EthAddress) {
+    return this.gameManager.getPlayerMoves(addr);
+  }
+
+  public getWinners(): EthAddress[] {
+    return this.gameManager.getWinners();
+  }
+
+  public getGameDuration(): number {
+    return this.gameManager.gameDuration();
+  }
+  public getClaimVictoryPercentage(): number {
+    return this.gameManager.claimVictoryPercentage();
   }
 
   public getSilverScoreValue(): number {
@@ -1421,6 +1536,10 @@ class GameUIManager extends EventEmitter {
 
   public getCaptureZonePointValues() {
     return this.contractConstants.CAPTURE_ZONE_PLANET_LEVEL_SCORE;
+  }
+
+  public getArtifactUpdated$() {
+    return this.gameManager.getArtifactUpdated$();
   }
 
   public getUIEmitter() {
@@ -1464,17 +1583,6 @@ class GameUIManager extends EventEmitter {
   public disableCustomRenderer(customRenderer: BaseRenderer) {
     const renderer = this.getRenderer();
     if (renderer) renderer.removeCustomRenderer(customRenderer);
-  }
-
-  public getUpgradeForArtifact(artifactId: ArtifactId) {
-    return this.gameManager.getUpgradeForArtifact(artifactId);
-  }
-
-  public getMyArtifactsUpdated$() {
-    return this.gameManager.getMyArtifactsUpdated$();
-  }
-  public getMySpaceshipsUpdated$() {
-    return this.gameManager.getMySpaceshipsUpdated$();
   }
 }
 

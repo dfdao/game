@@ -1,4 +1,4 @@
-import { TooltipName } from '@dfdao/types';
+import { TooltipName } from '@darkforest_eth/types';
 import React from 'react';
 import styled from 'styled-components';
 import { TooltipTrigger } from '../../Panes/Tooltip';

@@ -1,4 +1,4 @@
-import { ModalName } from '@dfdao/types';
+import { ModalName } from '@darkforest_eth/types';
 import React from 'react';
 import styled from 'styled-components';
 import { Hook } from '../../_types/global/GlobalTypes';
@@ -6,7 +6,7 @@ import { Spacer } from '../Components/CoreUI';
 import { Icon, IconType } from '../Components/Icons';
 import { MaybeShortcutButton } from '../Components/MaybeShortcutButton';
 
-const ModalIconText = styled.span`
+export const ModalIconText = styled.span`
   flex-grow: 1;
   display: flex;
   justify-content: center;
@@ -28,7 +28,7 @@ const icon = (modal: ModalName): React.ReactNode => {
   else if (modal === ModalName.Hats) return <Icon type={IconType.Hat} />;
   else if (modal === ModalName.Settings) return <Icon type={IconType.Settings} />;
   else if (modal === ModalName.Plugins) return <Icon type={IconType.Plugin} />;
-  else if (modal === ModalName.YourInventory) return <Icon type={IconType.Artifact} />;
+  else if (modal === ModalName.YourArtifacts) return <Icon type={IconType.Artifact} />;
   else if (modal === ModalName.WithdrawSilver) return <Icon type={IconType.Withdraw} />;
   else if (modal === ModalName.TransactionLog) return <Icon type={IconType.DoubleArrows} />;
   return <span>T</span>;

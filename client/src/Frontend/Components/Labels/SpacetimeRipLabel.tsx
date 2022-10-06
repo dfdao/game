@@ -1,4 +1,4 @@
-import { PlanetType, PlanetTypeNames } from '@dfdao/types';
+import { PlanetType, PlanetTypeNames } from '@darkforest_eth/types';
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 

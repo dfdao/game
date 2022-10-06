@@ -4,7 +4,6 @@ import { Red } from '../Components/Text';
 
 interface GenericErrorBoundaryProps {
   errorMessage: string;
-  children: unknown;
 }
 
 export class GenericErrorBoundary extends React.Component<

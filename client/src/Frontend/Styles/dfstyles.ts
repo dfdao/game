@@ -1,7 +1,7 @@
-import { RECOMMENDED_MODAL_WIDTH } from '@dfdao/constants';
-import { SpaceType } from '@dfdao/types';
+import { RECOMMENDED_MODAL_WIDTH } from '@darkforest_eth/constants';
+import { SpaceType } from '@darkforest_eth/types';
 import color from 'color';
-import { css } from 'styled-components';
+import styled, { css } from 'styled-components';
 
 export const ARTIFACT_ROW_H = 48;
 
@@ -39,6 +39,9 @@ const dfyellow = '#e8e228';
 const dfpurple = '#9189d9';
 const dfwhite = '#ffffff';
 const dforange = 'rgb(196, 101, 0)';
+const dfgold = color(dfyellow).hex();
+const dfsilver = '#c0c0c0';
+const dfbronze = '#cd7f32';
 
 const dfstyles = {
   colors: {
@@ -67,6 +70,9 @@ const dfstyles = {
     dfpurple,
     dfwhite,
     dforange,
+    dfgold,
+    dfsilver,
+    dfbronze,
 
     artifactBackground: 'rgb(21, 17, 71)',
 
@@ -156,11 +162,19 @@ export const snips = {
   pane: ``,
   // It is unclear where this should go in this file
   destroyedBackground: {
-    backgroundImage: 'url("/img/destroyedbg.png")',
+    backgroundImage: 'url("/public/img/destroyedbg.png")',
     backgroundSize: '150px',
     backgroundPosition: 'right bottom',
     backgroundRepeat: 'no-repeat',
   } as CSSStyleDeclaration & React.CSSProperties,
 };
+
+export const PortalButton = styled.button`
+background: ${dfstyles.colors.text};
+color: ${dfstyles.colors.borderDarkest};
+border: 1px solid ${dfstyles.colors.borderDarkest};
+border-radius: 3px;
+padding: 2px 5px;
+`
 
 export default dfstyles;

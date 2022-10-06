@@ -1,11 +1,11 @@
-import { EMPTY_ADDRESS } from '@dfdao/constants';
-import { formatNumber } from '@dfdao/gamelogic';
-import { getPlayerColor } from '@dfdao/procedural';
-import { Planet, PlanetType, PlanetTypeNames } from '@dfdao/types';
+import { EMPTY_ADDRESS } from '@darkforest_eth/constants';
+import { formatNumber } from '@darkforest_eth/gamelogic';
+import { getPlayerColor } from '@darkforest_eth/procedural';
+import { Planet, PlanetType, PlanetTypeNames } from '@darkforest_eth/types';
 import React from 'react';
 import { getPlanetRank } from '../../../Backend/Utils/Utils';
 import dfstyles from '../../Styles/dfstyles';
-import { useAccount, usePlayer, useUIManager } from '../../Utils/AppHooks';
+import { useAddress, usePlayer, useUIManager } from '../../Utils/AppHooks';
 import { EmSpacer } from '../CoreUI';
 import { Colored, Sub, Subber, White } from '../Text';
 import { TextPreview } from '../TextPreview';
@@ -222,20 +222,20 @@ export function PlanetOwnerLabel({
   colorWithOwnerColor?: boolean;
 }) {
   const uiManager = useUIManager();
-  const account = useAccount(uiManager);
+  const account = useAddress(uiManager);
   const owner = usePlayer(uiManager, planet?.owner);
-
+  const teamsEnabled = uiManager.getGameManager().getContractConstants().TEAMS_ENABLED;
   const defaultColor = dfstyles.colors.subtext;
 
   if (!planet) return <>/</>;
 
-  if (planet.owner === EMPTY_ADDRESS) return <Sub>Unclaimed</Sub>;
+  if (planet.owner === EMPTY_ADDRESS || !owner.value) return <Sub>Unclaimed</Sub>;
 
   if (abbreviateOwnAddress && planet.owner === account) {
     return <Colored color={dfstyles.colors.dfgreen}>yours!</Colored>;
   }
 
-  const color = colorWithOwnerColor ? defaultColor : getPlayerColor(planet.owner);
+  const color = colorWithOwnerColor ? defaultColor : getPlayerColor(owner.value, teamsEnabled);
   if (planet.owner && owner.value?.twitter) {
     return <TwitterLink color={color} twitter={owner.value.twitter} />;
   }

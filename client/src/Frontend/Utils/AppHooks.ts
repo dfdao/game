@@ -1,24 +1,48 @@
+import { getActivatedArtifact, isActivated } from '@darkforest_eth/gamelogic';
+import { address } from '@darkforest_eth/serde';
+import { EthConnection } from '@darkforest_eth/network';
 import {
   Artifact,
   ArtifactId,
+  BadgeType,
+  CleanConfigPlayer,
+  ConfigPlayer,
   EthAddress,
+  GrandPrixBadge,
+  GrandPrixMetadata,
+  GraphConfigPlayer,
   Leaderboard,
+  LiveMatch,
   LocationId,
   Planet,
   Player,
-  SpaceshipId,
   Transaction,
   TransactionId,
-} from '@dfdao/types';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+} from '@darkforest_eth/types';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import GameUIManager from '../../Backend/GameLogic/GameUIManager';
-import { loadLeaderboard } from '../../Backend/Network/LeaderboardApi';
+import { loadConfigFromHash } from '../../Backend/Network/GraphApi/ConfigApi';
+import { Account } from '../../Backend/Network/AccountManager';
+import { loadArenaLeaderboard } from '../../Backend/Network/GraphApi/GrandPrixApi';
+import { loadEloLeaderboard } from '../../Backend/Network/GraphApi/EloLeaderboardApi';
+import { loadLeaderboard } from '../../Backend/Network/GraphApi/LeaderboardApi';
+import { loadLiveMatches } from '../../Backend/Network/GraphApi/SpyApi';
 import { Wrapper } from '../../Backend/Utils/Wrapper';
 import { ContractsAPIEvent } from '../../_types/darkforest/api/ContractsAPITypes';
-import { ModalHandle } from '../Views/ModalPane';
+import { AddressTwitterMap } from '../../_types/darkforest/api/UtilityServerAPITypes';
+import { LobbyInitializers } from '../Panes/Lobby/Reducer';
+import { ModalHandle } from '../Views/Game/ModalPane';
 import { createDefinedContext } from './createDefinedContext';
 import { useEmitterSubscribe, useEmitterValue, useWrappedEmitter } from './EmitterHooks';
 import { usePoll } from './Hooks';
+import { DUMMY } from './constants';
+import { createDummyLiveMatches } from '../Views/Portal/PortalUtils';
+
+export const { useDefinedContext: useEthConnection, provider: EthConnectionProvider } =
+  createDefinedContext<EthConnection>();
+
+export const { useDefinedContext: useAccount, provider: AccountProvider } =
+  createDefinedContext<Account>();
 
 export const { useDefinedContext: useUIManager, provider: UIManagerProvider } =
   createDefinedContext<GameUIManager>();
@@ -26,15 +50,34 @@ export const { useDefinedContext: useUIManager, provider: UIManagerProvider } =
 export const { useDefinedContext: useTopLevelDiv, provider: TopLevelDivProvider } =
   createDefinedContext<HTMLDivElement>();
 
+export type TwitterContextType = {
+  twitters: AddressTwitterMap;
+  setTwitters: React.Dispatch<React.SetStateAction<AddressTwitterMap>>;
+};
+
+export const { useDefinedContext: useTwitters, provider: TwitterProvider } =
+  createDefinedContext<TwitterContextType>();
+
 export function useOverlayContainer(): HTMLDivElement | null {
   return useUIManager()?.getOverlayContainer() ?? null;
 }
+
+export type SeasonPlayerContextType = {
+  allPlayers: CleanConfigPlayer[];
+  setPlayers: React.Dispatch<React.SetStateAction<CleanConfigPlayer[]>>;
+};
+
+export const { useDefinedContext: useSeasonPlayers, provider: SeasonPlayerProvider } =
+  createDefinedContext<SeasonPlayerContextType>();
+
+export const { useDefinedContext: useSeasonData, provider: SeasonDataProvider } =
+  createDefinedContext<GrandPrixMetadata[]>();
 
 /**
  * Get the currently used account on the client.
  * @param uiManager instance of GameUIManager
  */
-export function useAccount(uiManager: GameUIManager): EthAddress | undefined {
+export function useAddress(uiManager: GameUIManager): EthAddress | undefined {
   const account = useMemo(() => uiManager.getAccount(), [uiManager]);
 
   return account;
@@ -108,80 +151,85 @@ export function useHoverPlanet(uiManager: GameUIManager): Wrapper<Planet | undef
   return useWrappedEmitter<Planet>(uiManager.hoverPlanet$, undefined);
 }
 
+export function useHoverArtifact(uiManager: GameUIManager): Wrapper<Artifact | undefined> {
+  return useWrappedEmitter<Artifact>(uiManager.hoverArtifact$, undefined);
+}
+
 export function useHoverArtifactId(uiManager: GameUIManager): Wrapper<ArtifactId | undefined> {
   return useWrappedEmitter<ArtifactId>(uiManager.hoverArtifactId$, undefined);
 }
-export function useHoverSpaceshipId(uiManager: GameUIManager): Wrapper<SpaceshipId | undefined> {
-  return useWrappedEmitter<SpaceshipId>(uiManager.hoverSpaceshipId$, undefined);
-}
 
 export function useMyArtifactsList(uiManager: GameUIManager) {
-  const [myArtifacts, setMyArtifacts] = useState(new Wrapper(uiManager.getMyArtifacts()));
+  const [myArtifacts, setMyArtifacts] = useState(uiManager.getMyArtifacts());
   useEmitterSubscribe(
-    uiManager.getMyArtifactsUpdated$(),
+    uiManager.getArtifactUpdated$(),
     () => {
-      setMyArtifacts(new Wrapper(uiManager.getMyArtifacts()));
+      setMyArtifacts(uiManager.getMyArtifacts());
     },
     [uiManager, setMyArtifacts]
   );
-  return myArtifacts.value;
-}
-export function useMySpaceshipsList(uiManager: GameUIManager) {
-  const [mySpaceships, setMySpaceships] = useState(new Wrapper(uiManager.getMySpaceships()));
-  useEmitterSubscribe(
-    uiManager.getMySpaceshipsUpdated$(),
-    () => {
-      setMySpaceships(new Wrapper(uiManager.getMySpaceships()));
-    },
-    [uiManager, setMySpaceships]
-  );
-  return mySpaceships.value;
+  return myArtifacts;
 }
 
 // note that this is going to throw an error if the pointer to `artifacts` changes but not to `planet`
-export function usePlanetArtifacts(planet: Wrapper<Planet | undefined>): Artifact[] {
-  const artifacts = useMemo(() => (planet.value ? planet.value.artifacts : []), [planet]);
+export function usePlanetArtifacts(
+  planet: Wrapper<Planet | undefined>,
+  uiManager: GameUIManager
+): Artifact[] {
+  const artifacts = useMemo(
+    () => (planet.value ? uiManager.getArtifactsWithIds(planet.value.heldArtifactIds) : []),
+    [planet, uiManager]
+  );
 
   return artifacts.filter((a) => !!a) as Artifact[];
 }
 
-export function usePlanetInactiveArtifacts(planet: Wrapper<Planet | undefined>): Artifact[] {
-  const artifacts = usePlanetArtifacts(planet);
-
-  const filtered = useMemo(
-    () => artifacts.filter(({ id }) => id !== planet.value?.activeArtifact?.id),
-    [artifacts, planet]
-  );
+export function usePlanetInactiveArtifacts(
+  planet: Wrapper<Planet | undefined>,
+  uiManager: GameUIManager
+): Artifact[] {
+  const artifacts = usePlanetArtifacts(planet, uiManager);
+  const filtered = useMemo(() => artifacts.filter((a) => !isActivated(a)), [artifacts]);
 
   return filtered;
 }
 
-export function useActiveArtifact(planet: Wrapper<Planet | undefined>): Artifact | undefined {
-  return useMemo(() => (planet.value ? planet.value.activeArtifact : undefined), [planet]);
+export function useActiveArtifact(
+  planet: Wrapper<Planet | undefined>,
+  uiManager: GameUIManager
+): Artifact | undefined {
+  const artifacts = usePlanetArtifacts(planet, uiManager);
+  return getActivatedArtifact(artifacts);
 }
 
-export function useArtifact(_uiManager: GameUIManager, _artifactId: ArtifactId) {
-  // const [artifact, setArtifact] = useState<Wrapper<Artifact | undefined>>(
-  //   new Wrapper(uiManager.getArtifactWithId(artifactId))
-  // );
+/**
+ * Create a subscription to the currently selected artifact.
+ * @param uiManager instance of GameUIManager
+ */
+export function useSelectedArtifact(uiManager: GameUIManager): Wrapper<Artifact | undefined> {
+  return useWrappedEmitter<Artifact>(uiManager.hoverArtifact$, undefined);
+}
 
-  // useEmitterSubscribe(
-  //   uiManager.getGameManager().getGameObjects().planetUpdated$,
-  //   (planetId: LocationId) => {
-  //     const planet = uiManager.getPlanetWithId(planetId);
-  //     if (id === artifactId) {
-  //       setArtifact(new Wrapper(uiManager.getArtifactWithId(artifactId)));
-  //     }
-  //   },
-  //   [uiManager, setArtifact, artifactId]
-  // );
+export function useArtifact(uiManager: GameUIManager, artifactId: ArtifactId) {
+  const [artifact, setArtifact] = useState<Wrapper<Artifact | undefined>>(
+    new Wrapper(uiManager.getArtifactWithId(artifactId))
+  );
 
-  // useEffect(() => {
-  //   setArtifact(new Wrapper(uiManager.getArtifactWithId(artifactId)));
-  // }, [uiManager, artifactId]);
+  useEmitterSubscribe(
+    uiManager.getGameManager().getGameObjects().artifactUpdated$,
+    (id: ArtifactId) => {
+      if (id === artifactId) {
+        setArtifact(new Wrapper(uiManager.getArtifactWithId(artifactId)));
+      }
+    },
+    [uiManager, setArtifact, artifactId]
+  );
 
-  // return artifact;
-  return new Wrapper(undefined) as unknown as Wrapper<Artifact>;
+  useEffect(() => {
+    setArtifact(new Wrapper(uiManager.getArtifactWithId(artifactId)));
+  }, [uiManager, artifactId]);
+
+  return artifact;
 }
 
 // TODO cache this globally
@@ -206,6 +254,110 @@ export function useLeaderboard(poll: number | undefined = undefined): {
   usePoll(load, poll, true);
 
   return { leaderboard, error };
+}
+
+export function useArenaLeaderboard(
+  isCompetitive: boolean,
+  address: string | undefined = undefined,
+  poll: number | undefined = undefined
+): {
+  arenaLeaderboard: Leaderboard | undefined;
+  arenaError: Error | undefined;
+} {
+  const [arenaLeaderboard, setArenaLeaderboard] = useState<Leaderboard | undefined>();
+  const [arenaError, setArenaError] = useState<Error | undefined>();
+
+  const loadArena = useCallback(async function loadArena() {
+    try {
+      setArenaLeaderboard((await loadArenaLeaderboard(address, isCompetitive)) as Leaderboard);
+    } catch (e) {
+      console.log('error loading leaderboard', e);
+      setArenaError(e);
+    }
+  }, []);
+
+  usePoll(loadArena, poll, true);
+
+  return { arenaLeaderboard, arenaError };
+}
+
+export function useEloLeaderboard(
+  isCompetitive: boolean,
+  address: string | undefined = undefined,
+  poll: number | undefined = undefined
+): {
+  eloLeaderboard: GraphConfigPlayer[] | undefined;
+  eloError: Error | undefined;
+} {
+  const [eloLeaderboard, setEloLeaderboard] = useState<GraphConfigPlayer[] | undefined>();
+  const [eloError, setEloError] = useState<Error | undefined>();
+
+  const loadElo = useCallback(async function loadElo() {
+    try {
+      setEloLeaderboard(await loadEloLeaderboard(address, isCompetitive));
+    } catch (e) {
+      console.log('error loading leaderboard', e);
+      setEloError(e);
+    }
+  }, []);
+
+  usePoll(loadElo, poll, true);
+
+  return { eloLeaderboard, eloError };
+}
+
+export function useConfigFromHash(configHash?: string) {
+  const [config, setConfig] = useState<LobbyInitializers | undefined>();
+  const [lobbyAddress, setLobbyAddress] = useState<EthAddress | undefined>();
+  const [error, setError] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (configHash) {
+      loadConfigFromHash(configHash)
+        .then((c) => {
+          if (!c) {
+            setConfig(undefined);
+            return;
+          }
+          setConfig(c.config);
+          setLobbyAddress(address(c.address));
+        })
+        .catch((e) => {
+          setError(true);
+          console.log(e);
+        });
+    }
+  }, [configHash]);
+
+  return { config, lobbyAddress, error };
+}
+
+export function useLiveMatches(
+  seasonData: GrandPrixMetadata[],
+  config: string | undefined = undefined,
+  poll: number | undefined = undefined
+): {
+  liveMatches: LiveMatch | undefined;
+  spyError: Error | undefined;
+} {
+  const [liveMatches, setLiveMatches] = useState<LiveMatch | undefined>();
+  const [spyError, setSpyError] = useState<Error | undefined>();
+  const loadSpy = useCallback(async function loadSpy() {
+    try {
+      if (DUMMY) {
+        setLiveMatches(createDummyLiveMatches(10));
+      } else {
+        setLiveMatches(await loadLiveMatches(seasonData, config));
+      }
+    } catch (e) {
+      console.log('error loading leaderboard', e);
+      setSpyError(e);
+    }
+  }, []);
+
+  usePoll(loadSpy, poll, true);
+
+  return { liveMatches, spyError };
 }
 
 export function usePopAllOnSelectedPlanetChanged(
@@ -277,3 +429,59 @@ export function usePaused() {
   const ui = useUIManager();
   return useEmitterValue(ui.getPaused$(), ui.getPaused());
 }
+
+export function useGameStarted() {
+  const ui = useUIManager();
+  return useEmitterValue(ui.getGameStarted$(), ui.gameStarted);
+}
+
+export function useGameover() {
+  const ui = useUIManager();
+  return useEmitterValue(ui.getGameover$(), ui.getGameover());
+}
+
+/*
+From: https://gist.github.com/reecelucas/2f510e6b8504008deaaa52732202d2da
+*/
+export const useDisableScroll = () => {
+  const safeDocument = typeof document !== 'undefined' ? document : {};
+  const scrollBlocked = useRef(null);
+  const html = (safeDocument as Document).documentElement;
+  const { body } = safeDocument as Document;
+
+  const blockScroll = () => {
+    if (!body || !body.style || scrollBlocked.current) return;
+
+    const scrollBarWidth = window.innerWidth - html.clientWidth;
+    const bodyPaddingRight =
+      parseInt(window.getComputedStyle(body).getPropertyValue('padding-right')) || 0;
+
+    /**
+     * 1. Fixes a bug in iOS and desktop Safari whereby setting
+     *    `overflow: hidden` on the html/body does not prevent scrolling.
+     * 2. Fixes a bug in desktop Safari where `overflowY` does not prevent
+     *    scroll if an `overflow-x` style is also applied to the body.
+     */
+    html.style.position = 'relative'; /* [1] */
+    html.style.overflow = 'hidden'; /* [2] */
+    body.style.position = 'relative'; /* [1] */
+    body.style.overflow = 'hidden'; /* [2] */
+    body.style.paddingRight = `${bodyPaddingRight + scrollBarWidth}px`;
+
+    (scrollBlocked as any).current = true;
+  };
+
+  const allowScroll = () => {
+    if (!body || !body.style || !scrollBlocked.current) return;
+
+    html.style.position = '';
+    html.style.overflow = '';
+    body.style.position = '';
+    body.style.overflow = '';
+    body.style.paddingRight = '';
+
+    (scrollBlocked as any).current = false;
+  };
+
+  return [blockScroll, allowScroll];
+};

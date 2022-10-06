@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export const enum Incompatibility {
   NoIDB = 'no_idb',
   NotRopsten = 'not_ropsten',
@@ -54,11 +56,7 @@ const checkFeatures = async (): Promise<FeatureList> => {
 
 export const unsupportedFeatures = async (): Promise<Incompatibility[]> => {
   const features = await checkFeatures();
-  const incompats = Object.keys(features).filter(
-    (f: Incompatibility) => features[f]
-  ) as Incompatibility[];
-
-  return incompats;
+  return _.keys(features).filter((f: Incompatibility) => features[f]) as Incompatibility[];
 };
 
 export const isFirefox = () => navigator.userAgent.indexOf('Firefox') > 0;

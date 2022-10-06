@@ -1,16 +1,18 @@
-import { CONTRACT_ADDRESS } from '@dfdao/contracts';
-import { address } from '@dfdao/serde';
-import React from 'react';
+import { CONTRACT_ADDRESS } from '@darkforest_eth/contracts';
+import { address } from '@darkforest_eth/serde';
+import { IconType } from '@darkforest_eth/ui';
+import React, { CSSProperties, useMemo, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { createGlobalStyle, CSSObject } from 'styled-components';
+import { isRoundOngoing } from '../../Backend/Utils/Utils';
 import { Btn } from '../Components/Btn';
-import { EmSpacer, Link, Spacer, Title } from '../Components/CoreUI';
+import { EmSpacer, Link, Spacer } from '../Components/CoreUI';
 import { EmailCTA, EmailCTAMode } from '../Components/Email';
+import { Icon } from '../Components/Icons';
 import { Modal } from '../Components/Modal';
-import { HideSmall, Text, White } from '../Components/Text';
+import { Red, White, Text, HideSmall } from '../Components/Text';
 import dfstyles from '../Styles/dfstyles';
-import { LandingPageRoundArt } from '../Views/LandingPageRoundArt';
-import { LeadboardDisplay } from '../Views/Leaderboard';
+import { LobbyButton } from './Lobby/LobbyMapEditor';
 
 export const enum LandingPageZIndex {
   Background = 0,
@@ -20,308 +22,175 @@ export const enum LandingPageZIndex {
 
 const links = {
   twitter: 'http://twitter.com/darkforest_eth',
-  email: 'mailto:ivan@0xparc.org',
+  email: 'mailto:zeroxhank@gmail.com',
   blog: 'https://blog.zkga.me/',
-  discord: 'https://discord.gg/2u2TN6v8r6',
+  discord: 'https://discord.gg/WzYuegCh',
   github: 'https://github.com/darkforest-eth',
   wiki: 'https://dfwiki.net/wiki/Main_Page',
   plugins: 'https://plugins.zkga.me/',
 };
 
-const defaultAddress = address(CONTRACT_ADDRESS);
-
-const ButtonWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  flex-direction: row;
-
-  @media only screen and (max-device-width: 1000px) {
-    grid-template-columns: auto;
-    flex-direction: column;
-  }
-
-  --df-button-color: ${dfstyles.colors.dfgreen};
-  --df-button-border: 1px solid ${dfstyles.colors.dfgreen};
-  --df-button-hover-background: ${dfstyles.colors.dfgreen};
-  --df-button-hover-border: 1px solid ${dfstyles.colors.dfgreen};
-`;
-
 export default function LandingPage() {
   const history = useHistory();
+  const [showWallbreakers, setShowWallbreakers] = useState<boolean>(false);
 
   return (
     <>
-      <PrettyOverlayGradient />
-      <Hiring />
-
-      <Page>
-        <OnlyMobile>
-          <Spacer height={8} />
-        </OnlyMobile>
-        <HideOnMobile>
-          <Spacer height={150} />
-        </HideOnMobile>
-
-        <MainContentContainer>
-          <Header>
-            <LinkContainer>
-              <Link to={links.email}>email</Link>
-              <Spacer width={4} />
-              <Link to={links.blog}>blog</Link>
-              <Spacer width={4} />
-
-              <a className={'link-twitter'} href={links.twitter}>
-                <span className={'icon-twitter'}></span>
-              </a>
-              <Spacer width={4} />
-              <a className={'link-discord'} href={links.discord}>
-                <span className={'icon-discord'}></span>
-              </a>
-              <Spacer width={4} />
-              <a className={'link-github'} href={links.github}>
-                <span className={'icon-github'}></span>
-              </a>
-
-              <Spacer width={4} />
-              <Link to={links.plugins}>plugins</Link>
-              <Spacer width={4} />
-              <Link to={links.wiki}>wiki</Link>
-            </LinkContainer>
-
-            <OnlyMobile>
-              <Spacer height={4} />
-            </OnlyMobile>
-            <HideOnMobile>
-              <Spacer height={16} />
-            </HideOnMobile>
-
-            <LandingPageRoundArt />
-
-            <p>
-              <White>Dark Forest</White> <Text>zkSNARK space warfare</Text>
-              <br />
-              <Text>Round 5: </Text>
-              <White>The Junk Wars</White>
-            </p>
-
-            <Spacer height={16} />
-
-            <ButtonWrapper>
-              <Btn size='large' onClick={() => history.push(`/lobby/${defaultAddress}`)}>
-                Create Lobby
-              </Btn>
-              <Btn size='large' onClick={() => history.push(`/play/${defaultAddress}`)}>
-                Enter Round 5
-              </Btn>
-              <Btn size='large' onClick={() => history.push(`/events`)}>
-                Events
-              </Btn>
-            </ButtonWrapper>
-          </Header>
-          <EmSpacer height={3} />
-          Ways to get Involved
-          <EmSpacer height={1} />
-          <Involved>
-            <InvolvedItem
-              href='https://blog.zkga.me/hosting-a-dark-forest-community-round'
-              style={{
-                backgroundImage: "url('/get_involved/community_round.png')",
-              }}
-            ></InvolvedItem>
-            <InvolvedItem
-              href='https://github.com/darkforest-eth/plugins#adding-your-plugin'
-              style={{
-                backgroundImage: "url('/get_involved/write_plugin.png')",
-              }}
-            ></InvolvedItem>
-            <InvolvedItem
-              href='https://github.com/darkforest-eth/plugins#reviewer-guidelines'
-              style={{
-                backgroundImage: "url('/get_involved/reveiw_plugin.png')",
-              }}
-            ></InvolvedItem>
-            <InvolvedItem
-              href='https://blog.zkga.me/renderer-plugin-contest'
-              style={{
-                backgroundImage: "url('/get_involved/plugin_render.png')",
-              }}
-            ></InvolvedItem>
-            <InvolvedItem
-              href='https://blog.zkga.me/introducing-dark-forest-lobbies'
-              style={{
-                backgroundImage: "url('/get_involved/lobby.png')",
-              }}
-            ></InvolvedItem>
-          </Involved>
-          <EmSpacer height={3} />
-          <HallOfFame style={{ color: dfstyles.colors.text }}>
-            <HallOfFameTitle>Space Masters</HallOfFameTitle>
-            <Spacer height={8} />
-            <table>
-              <tbody>
-                <TRow>
-                  <td>
-                    <HideSmall>v</HideSmall>0.1
-                  </td>
-                  <td>
-                    02/22/<HideSmall>20</HideSmall>20
-                  </td>
-                  <td>
-                    <a href='https://twitter.com/zoink'>Dylan Field</a>
-                  </td>
-                </TRow>
-                <TRow>
-                  <td>
-                    <HideSmall>v</HideSmall>0.2
-                  </td>
-                  <td>
-                    06/24/<HideSmall>20</HideSmall>20
-                  </td>
-                  <td>Nate Foss</td>
-                </TRow>
-                <TRow>
-                  <td>
-                    <Link to='https://blog.zkga.me/v3-rules'>
-                      <HideSmall>v</HideSmall>0.3
-                    </Link>
-                  </td>
-                  <td>
-                    08/07/<HideSmall>20</HideSmall>20
-                  </td>
-                  <td>
-                    <Link to='https://twitter.com/hideandcleanse'>@hideandcleanse</Link>
-                  </td>
-                </TRow>
-                <TRow>
-                  <td>
-                    <Link to='https://blog.zkga.me/v4-recap'>
-                      <HideSmall>v</HideSmall>0.4
-                    </Link>
-                  </td>
-                  <td>
-                    10/02/<HideSmall>20</HideSmall>20
-                  </td>
-                  <td>
-                    <Link to='https://twitter.com/jacobrosenthal'>Jacob Rosenthal</Link>
-                  </td>
-                </TRow>
-                <TRow>
-                  <td>
-                    <Link to='https://blog.zkga.me/v5-winners'>
-                      <HideSmall>v</HideSmall>0.5
-                    </Link>
-                  </td>
-                  <td>
-                    12/25/<HideSmall>20</HideSmall>20
-                  </td>
-                  <td>0xb05d9542...</td>
-                </TRow>
-                <TRow>
-                  <td>
-                    <Link to='https://blog.zkga.me/v6-r1-wrapup'>
-                      <HideSmall>v</HideSmall>0.6 round 1
-                    </Link>
-                  </td>
-                  <td>
-                    05/22/<HideSmall>20</HideSmall>21
-                  </td>
-                  <td>
-                    <Link to='https://twitter.com/adietrichs'>Ansgar Dietrichs</Link>
-                  </td>
-                </TRow>
-                <TRow>
-                  <td>
-                    <Link to='https://blog.zkga.me/v6-r2-wrapup'>
-                      <HideSmall>v</HideSmall>0.6 round 2
-                    </Link>
-                  </td>
-                  <td>
-                    07/07/<HideSmall>20</HideSmall>21
-                  </td>
-                  <td>
-                    <Link to='https://twitter.com/orden_gg'>@orden_gg</Link>
-                  </td>
-                </TRow>
-                <TRow>
-                  <td>
-                    <Link to='https://blog.zkga.me/v6-r3-wrapup'>
-                      <HideSmall>v</HideSmall>0.6 round 3
-                    </Link>
-                  </td>
-                  <td>
-                    08/22/<HideSmall>20</HideSmall>21
-                  </td>
-                  <td>
-                    <Link to='https://twitter.com/dropswap_gg'>@dropswap_gg</Link>
-                  </td>
-                </TRow>
-                <TRow>
-                  <td>
-                    <Link to='https://blog.zkga.me/v6-r4-wrapup'>
-                      <HideSmall>v</HideSmall>0.6 round 4
-                    </Link>
-                  </td>
-                  <td>
-                    10/01/<HideSmall>20</HideSmall>21
-                  </td>
-                  <td>
-                    <Link to='https://twitter.com/orden_gg'>@orden_gg</Link>
-                  </td>
-                </TRow>
-                <TRow>
-                  <td>
-                    <Link to='https://blog.zkga.me/v6-r5-wrapup'>
-                      <HideSmall>v</HideSmall>0.6 round 5
-                    </Link>
-                  </td>
-                  <td>
-                    02/18/<HideSmall>20</HideSmall>22
-                  </td>
-                  <td>
-                    <Link to='https://twitter.com/d_fdao'>@d_fdao</Link>
-                    {' + '}
-                    <Link to='https://twitter.com/orden_gg'>@orden_gg</Link>
-                  </td>
-                </TRow>
-              </tbody>
-            </table>
-          </HallOfFame>
-          <Spacer height={32} />
-          <EmailWrapper>
-            <EmailCTA mode={EmailCTAMode.SUBSCRIBE} />
-          </EmailWrapper>
-        </MainContentContainer>
-
-        <Spacer height={128} />
-
-        <LeadboardDisplay />
-
-        <Spacer height={256} />
-      </Page>
+      <Container>
+        <BackgroundImage />
+        <Nav>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <Icon
+              style={{ width: '80px', height: '80px' } as CSSStyleDeclaration & CSSProperties}
+              type={IconType.Dfdao}
+            />
+          </div>
+          <LinksContainer>
+            {Object.entries(links).map(([link, href], key) => (
+              <React.Fragment key={key}>
+                <NavLink key={key} to={href}>
+                  {link}
+                </NavLink>
+                {key !== Object.entries(links).length - 1 && <p>{` | `}</p>}
+              </React.Fragment>
+            ))}
+          </LinksContainer>
+        </Nav>
+        <Content>
+          <TextContainer>
+            <Badge>
+              <HideSmall>Dark Forest Arena</HideSmall> 🏟️
+            </Badge>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <LobbyButton primary style={{ flex: '2' }} onClick={() => history.push('/portal')}>
+                Enter
+              </LobbyButton>
+              <LobbyButton
+                style={{ flex: '1' }}
+                onClick={() =>
+                  window.open(
+                    'https://medium.com/dfdao/dark-forest-grand-prix-season-1-3cfc48a7f9a2',
+                    'blank'
+                  )
+                }
+              >
+                Learn More
+              </LobbyButton>
+            </div>
+          </TextContainer>
+        </Content>
+      </Container>
     </>
   );
 }
 
-const PrettyOverlayGradient = styled.div`
+const NavLink = styled(Link)`
+  color: #fff;
+  font-family: 'Karla', sans-serif;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  transition: color 0.2s ease;
+  &:hover {
+    color: ${dfstyles.colors.dfblue};
+  }
+`;
+
+const Badge = styled.div`
+  font-size: 3rem;
+  // border-radius: 3rem;
+  // background-color: ${dfstyles.colors.backgroundlighter};
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.5rem 1rem;
+  align-self: flex-start;
+  @media (max-width: 768px) {
+    align-self: center;
+  }
+`;
+
+const Container = styled.div`
+  justify-content: center;
+  background: #111;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  align-items: center;
+  position: relative;
+  @media (max-width: 768px) {
+    overflow-y: auto;
+    margin-bottom: 3rem;
+  }
+`;
+
+const Content = styled.div`
+  box-shadow 0px 0px 15px gray;
+  justify-content: center;
+  backdrop-filter: brightness(0.1) blur(5px);
+  align-items: center;
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: column;
+  }
+  z-index: 2;
+  border-radius: 20px;
+`;
+
+const Nav = styled.div`
+  position: fixed;
+  top: 0;
+  backdrop-filter: brightness(0.2) blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 3rem;
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+const LinksContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  @media (max-width: 768px) {
+    justify-content: center;
+  }
+`;
+
+const TextContainer = styled.div`
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+  padding: 3rem;
+  @media (max-width: 768px) {
+    align-items: center;
+    text-align: center;
+  }
+`;
+
+export const BackgroundImage = styled.img`
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(to left top, rgba(74, 74, 74, 0.628), rgba(60, 1, 255, 0.2)) fixed;
+  display: fixed;
+  background-image: url(/public/img/screenshots/deathstar.png);
+  background-size: cover;
+  filter: blur(5px) brightness(0.9);
   background-position: 50%, 50%;
-  display: inline-block;
+  // display: inline-block;
   position: fixed;
   top: 0;
   left: 0;
-  z-index: -1;
-`;
-
-const Header = styled.div`
-  text-align: center;
-`;
-
-const EmailWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
+  // z-index: -1;
 `;
 
 const TRow = styled.tr`
@@ -335,34 +204,6 @@ const TRow = styled.tr`
     text-align: right;
     padding-left: 16pt;
   }
-`;
-
-const MainContentContainer = styled.div`
-  max-width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const Page = styled.div`
-  position: absolute;
-  width: 100vw;
-  max-width: 100vw;
-  height: 100%;
-  color: white;
-  font-size: ${dfstyles.fontSize};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: ${LandingPageZIndex.BasePage};
-`;
-
-const HallOfFameTitle = styled.div`
-  color: ${dfstyles.colors.subtext};
-  display: inline-block;
-  border-bottom: 1px solid ${dfstyles.colors.subtext};
-  line-height: 1em;
 `;
 
 export const LinkContainer = styled.div`
@@ -395,87 +236,5 @@ export const LinkContainer = styled.div`
         color: ${dfstyles.colors.icons.email};
       }
     }
-  }
-`;
-
-function Hiring() {
-  return (
-    <HideOnMobile>
-      <Modal contain={['top', 'left', 'right']} initialX={50} initialY={50}>
-        <Title slot='title'>Dark Forest is Hiring!</Title>
-        <div style={{ maxWidth: '300px', textAlign: 'justify' }}>
-          We are looking for experienced full stack and solidity developers to join our team! If you
-          like what you see,{' '}
-          <Link to='https://docs.google.com/forms/d/e/1FAIpQLSdaWvjxX4TrDDLidPXtgk6UW3rC082rpvi3AIPkCPxAahg_rg/viewform?usp=sf_link'>
-            consider applying
-          </Link>
-          . If you know someone who you think would be a great fit for our team,{' '}
-          <Link to='https://docs.google.com/forms/d/e/1FAIpQLScku_bQDbkPqpHrwBzOBfQ4SV6Nw6Tgxi6zWQL8Bb0olyBE3w/viewform?usp=sf_link'>
-            please refer them here
-          </Link>
-          .
-          <br />
-          <br />
-          Learn more about the role{' '}
-          <Link to='https://ivanchub.notion.site/Dark-Forest-is-Hiring-ad1f0cbe816640fb9b4c663dacaaca04'>
-            here
-          </Link>
-          .
-        </div>
-      </Modal>
-    </HideOnMobile>
-  );
-}
-
-const HideOnMobile = styled.div`
-  @media only screen and (max-device-width: 1000px) {
-    display: none;
-  }
-`;
-
-const OnlyMobile = styled.div`
-  @media only screen and (min-device-width: 1000px) {
-    display: none;
-  }
-`;
-
-const Involved = styled.div`
-  width: 100%;
-  padding-left: 16px;
-  padding-right: 16px;
-  display: grid;
-  grid-template-columns: auto auto;
-  gap: 10px;
-  grid-auto-rows: minmax(100px, auto);
-
-  @media only screen and (max-device-width: 1000px) {
-    grid-template-columns: auto;
-  }
-`;
-
-const InvolvedItem = styled.a`
-  height: 150px;
-  display: inline-block;
-  margin: 4px;
-  padding: 4px 8px;
-
-  background-color: ${dfstyles.colors.backgroundlighter};
-  background-size: cover;
-  background-position: 50% 50%;
-  background-repeat: no-repeat;
-
-  cursor: pointer;
-  transition: transform 200ms;
-  &:hover {
-    transform: scale(1.03);
-  }
-  &:hover:active {
-    transform: scale(1.05);
-  }
-`;
-
-const HallOfFame = styled.div`
-  @media only screen and (max-device-width: 1000px) {
-    font-size: 70%;
   }
 `;
