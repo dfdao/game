@@ -13,11 +13,12 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {AdminCreateRevealPlanetArgs, DFPInitPlanetArgs, SpaceType} from "../DFTypes.sol";
+import {AdminCreateRevealPlanetArgs, DFPInitPlanetArgs, Planet, SpaceType} from "../DFTypes.sol";
 import "hardhat/console.sol";
 
 contract DFArenaFacet is WithStorage {
     event AdminPlanetCreated(uint256 loc);
+    event Gameover(address[] winners);
     event LocationRevealed(address revealer, uint256 loc, uint256 x, uint256 y);
 
     modifier onlyWhitelisted() {
@@ -34,6 +35,11 @@ contract DFArenaFacet is WithStorage {
             msg.sender == LibPermissions.contractOwner(),
             "Only Admin address can perform this action."
         );
+        _;
+    }
+
+    modifier notPaused() {
+        require(!gs().paused, "Game is paused");
         _;
     }
 
@@ -117,6 +123,55 @@ contract DFArenaFacet is WithStorage {
         }
     }
 
+    function _checkGameOver() public returns (bool) {
+        require(gameConstants().TARGETS_REQUIRED_FOR_VICTORY > 0, "target planets are disabled");
+
+        uint256[] memory targetPlanets = gs().targetPlanetIds;
+        uint256 captured = 0;
+
+        for (uint256 i = 0; i < targetPlanets.length; i++) {
+            uint256 locationId = targetPlanets[i];
+            LibPlanet.refreshPlanet(locationId);
+            Planet memory planet = gs().planets[locationId];
+
+            bool myPlanet = planet.owner == msg.sender;
+
+            // if (gameConstants().TEAMS_ENABLED) {
+            //     myPlanet =
+            //         arenaStorage().arenaPlayerInfo[planet.owner].team ==
+            //         arenaStorage().arenaPlayerInfo[msg.sender].team;
+            // }
+
+            uint256 playerHomePlanet = gs().players[msg.sender].homePlanetId;
+            // bool blocked = gs().blocklist[locationId][playerHomePlanet];
+            // Blocklist and teams are not in right now
+            if (
+                !myPlanet ||
+                (planet.population * 100) / planet.populationCap <
+                gameConstants().CLAIM_VICTORY_ENERGY_PERCENT
+            ) {
+                continue;
+            }
+
+            captured += 1;
+            if (captured >= gameConstants().TARGETS_REQUIRED_FOR_VICTORY) return true;
+        }
+
+        return false;
+    }
+
+    function claimVictory() public onlyWhitelisted notPaused {
+        require(!gs().gameOver, "cannot claim victory when game is over");
+
+        require(_checkGameOver(), "victory condition not met");
+
+        gs().winners.push(msg.sender);
+        gs().gameOver = true;
+        gs().endTime = block.timestamp;
+        gs().paused = true;
+        emit Gameover(gs().winners);
+    }
+
     /**
      * Getters
      */
@@ -134,5 +189,15 @@ contract DFArenaFacet is WithStorage {
 
     function spawnPlanetIds(uint256 idx) public view returns (uint256) {
         return gs().spawnPlanetIds[idx];
+    }
+
+    function getRoundDuration() public view returns (uint256) {
+        if (gs().startTime == 0) {
+            return 0;
+        }
+        if (gs().endTime == 0) {
+            return block.timestamp - gs().startTime;
+        }
+        return gs().endTime - gs().startTime;
     }
 }

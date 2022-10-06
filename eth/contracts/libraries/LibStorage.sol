@@ -47,6 +47,10 @@ struct GameStorage {
     uint256 nextChangeBlock;
     uint256[] targetPlanetIds;
     uint256[] spawnPlanetIds;
+    address[] winners;
+    uint256 startTime;
+    uint256 endTime;
+    bool gameOver;
 }
 
 // Game config

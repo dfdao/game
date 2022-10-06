@@ -126,10 +126,18 @@ export const target4Initializers = decodeInitializers({
   WORLD_RADIUS_MIN: 1,
 });
 
-// This builds a fake HRE-like object used to initialize the test contracts
 export const arenaInitializers = decodeInitializers({
   ...defaultInitializerValues,
   MANUAL_SPAWN: true,
+  TARGETS_REQUIRED_FOR_VICTORY: 1,
+  ADMIN_CAN_ADD_PLANETS: true,
+  INIT_PERLIN_MIN: 1,
+  INIT_PERLIN_MAX: 31,
+});
+
+export const targetPlanetInitializers = decodeInitializers({
+  ...defaultInitializerValues,
+  MANUAL_SPAWN: false,
   TARGETS_REQUIRED_FOR_VICTORY: 1,
   ADMIN_CAN_ADD_PLANETS: true,
   INIT_PERLIN_MIN: 1,

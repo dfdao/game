@@ -1,23 +1,29 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
-import { makeInitArgs, makeRevealArgs } from './utils/TestUtils';
-import { arenaWorldFixture, World } from './utils/TestWorld';
+import {
+  conquerUnownedPlanet,
+  increaseBlockchainTime,
+  makeInitArgs,
+  makeRevealArgs,
+} from './utils/TestUtils';
+import { arenaWorldFixture, targetPlanetWorldFixture, World } from './utils/TestWorld';
 import {
   ADMIN_PLANET,
   ADMIN_PLANET_CLOAKED,
+  LVL0_PLANET_DEEP_SPACE,
   LVL1_PLANET_SPACE,
   LVL2_PLANET_DEEP_SPACE,
+  SPAWN_PLANET_1,
   VALID_INIT_PERLIN,
 } from './utils/WorldConstants';
 
 describe.only('DarkForestArena', function () {
   let world: World;
 
-  beforeEach('load fixture', async function () {
-    world = await loadFixture(arenaWorldFixture);
-  });
-
   describe('Create Planets', function () {
+    beforeEach('load fixture', async function () {
+      world = await loadFixture(arenaWorldFixture);
+    });
     it('has arena constants', async function () {
       expect((await world.contract.getGameConstants()).MANUAL_SPAWN).to.equal(true);
       expect((await world.contract.getGameConstants()).ADMIN_CAN_ADD_PLANETS).to.equal(true);
@@ -214,8 +220,10 @@ describe.only('DarkForestArena', function () {
       }
     });
   });
-
   describe('Manual Spawn', function () {
+    beforeEach('load fixture', async function () {
+      world = await loadFixture(arenaWorldFixture);
+    });
     it('allows admin to create a spawn planet and player to spawn', async function () {
       const perlin = 20;
       const level = 5;
@@ -351,7 +359,70 @@ describe.only('DarkForestArena', function () {
       );
     });
   });
-  describe('Target Planets', function () {
-    it('creates a target planet', async function () {});
+  describe.only('Target Planets + Claim Victory', function () {
+    beforeEach('load fixture', async function () {
+      world = await loadFixture(targetPlanetWorldFixture);
+      const perlin = 20;
+      const level = 0;
+      const planetType = 1; // asteroid field
+      await world.contract.createArenaPlanet({
+        location: target.id,
+        x: 10,
+        y: 10,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: true,
+        isTargetPlanet: true,
+        isSpawnPlanet: false,
+        blockedPlanetIds: [],
+      });
+
+      const initArgs = makeInitArgs(SPAWN_PLANET_1);
+      await world.user1Core.initializePlayer(...initArgs);
+    });
+
+    const target = LVL0_PLANET_DEEP_SPACE;
+
+    it('confirms target planet', async function () {
+      const numTargetPlanets = await world.user1Core.getNTargetPlanets();
+      expect(numTargetPlanets).to.equal(1);
+      const targetPlanet = await world.user1Core.targetPlanetIds(0);
+      expect(targetPlanet).to.equal(target.id);
+    });
+    it('captures target and claims victory', async function () {
+      await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, target);
+      await increaseBlockchainTime(600);
+
+      await expect(world.user1Core.claimVictory())
+        .to.emit(world.contract, 'Gameover')
+        .withArgs([world.user1.address]);
+
+      expect((await world.contract.getRoundDuration()).toNumber()).to.be.greaterThan(600);
+    });
+
+    it('claim victory fails if target below energy threshold', async function () {
+      await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, target);
+
+      await world.user1Core.refreshPlanet(target.id);
+      const planet = await world.contract.planets(target.id);
+      const popCap = planet.populationCap.toNumber();
+      const pop = planet.population.toNumber();
+      console.log(
+        `Planet is ${(pop / popCap) * 100}% full, but needs ${
+          (await world.contract.getGameConstants()).CLAIM_VICTORY_ENERGY_PERCENT
+        }%`
+      );
+
+      await expect(world.user1Core.claimVictory()).to.be.revertedWith('victory condition not met');
+    });
+
+    it('get round duration 0 if round not over', async function () {
+      await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, target);
+
+      await increaseBlockchainTime(51);
+      const roundDuration = await world.user1Core.getRoundDuration();
+      expect(roundDuration.toNumber()).to.be.greaterThan(50);
+    });
   });
 });
