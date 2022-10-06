@@ -212,4 +212,20 @@ contract DFArenaFacet is WithStorage {
         }
         return gs().endTime - gs().startTime;
     }
+
+    function getWinners() public view returns (address[] memory) {
+        return gs().winners;
+    }
+
+    function getGameover() public view returns (bool) {
+        return gs().gameOver;
+    }
+
+    function getStartTime() public view returns (uint256) {
+        return gs().startTime;
+    }
+
+    function getEndTime() public view returns (uint256) {
+        return gs().endTime;
+    }
 }
