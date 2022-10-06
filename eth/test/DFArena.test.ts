@@ -17,7 +17,7 @@ import {
   VALID_INIT_PERLIN,
 } from './utils/WorldConstants';
 
-describe.only('DarkForestArena', function () {
+describe('DarkForestArena', function () {
   let world: World;
 
   describe('Create Planets', function () {
@@ -359,7 +359,7 @@ describe.only('DarkForestArena', function () {
       );
     });
   });
-  describe.only('Target Planets + Claim Victory', function () {
+  describe('Target Planets + Claim Victory', function () {
     beforeEach('load fixture', async function () {
       world = await loadFixture(targetPlanetWorldFixture);
       const perlin = 20;

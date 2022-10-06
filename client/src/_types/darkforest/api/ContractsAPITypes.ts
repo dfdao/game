@@ -364,6 +364,9 @@ export interface ContractConstants {
     number,
     number
   ];
+  MANUAL_SPAWN: boolean;
+  TARGETS_REQUIRED_FOR_VICTORY: number;
+  CLAIM_VICTORY_ENERGY_PERCENT: number;
 }
 
 export type ClientMockchainData =

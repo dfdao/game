@@ -455,6 +455,9 @@ export class ContractsAPI extends EventEmitter {
       CAPTURE_ZONES_PER_5000_WORLD_RADIUS,
       SPACESHIPS,
       ROUND_END_REWARDS_BY_RANK,
+      MANUAL_SPAWN,
+      TARGETS_REQUIRED_FOR_VICTORY,
+      CLAIM_VICTORY_ENERGY_PERCENT,
     } = await this.makeCall(this.contract.getGameConstants);
 
     const TOKEN_MINT_END_SECONDS = (
@@ -638,6 +641,9 @@ export class ContractsAPI extends EventEmitter {
         ROUND_END_REWARDS_BY_RANK[62].toNumber(),
         ROUND_END_REWARDS_BY_RANK[63].toNumber(),
       ],
+      MANUAL_SPAWN,
+      TARGETS_REQUIRED_FOR_VICTORY: TARGETS_REQUIRED_FOR_VICTORY.toNumber(),
+      CLAIM_VICTORY_ENERGY_PERCENT: CLAIM_VICTORY_ENERGY_PERCENT.toNumber(),
     };
 
     return constants;

@@ -150,6 +150,9 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
             CAPTURE_ZONES_PER_5000_WORLD_RADIUS: config.CAPTURE_ZONES_PER_5000_WORLD_RADIUS,
             SPACESHIPS: config.SPACESHIPS,
             ROUND_END_REWARDS_BY_RANK: config.ROUND_END_REWARDS_BY_RANK,
+            MANUAL_SPAWN: config.MANUAL_SPAWN,
+            TARGETS_REQUIRED_FOR_VICTORY: config.TARGETS_REQUIRED_FOR_VICTORY,
+            CLAIM_VICTORY_ENERGY_PERCENT: config.CLAIM_VICTORY_ENERGY_PERCENT,
           });
         })
         .catch((e) => {
