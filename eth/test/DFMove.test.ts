@@ -1,13 +1,11 @@
-import { ArtifactType, SpaceshipType } from '@dfdao/types';
-import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
+import { ArtifactType } from '@darkforest_eth/types';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
 import {
   conquerUnownedPlanet,
-  createArtifact,
-  getArtifactTypeOnPlanet,
-  getSpaceshipOnPlanetByType,
+  createArtifactOnPlanet,
+  fixtureLoader,
   increaseBlockchainTime,
   makeInitArgs,
   makeMoveArgs,
@@ -35,7 +33,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      const world = await loadFixture(defaultWorldFixture);
+      const world = await fixtureLoader(defaultWorldFixture);
       let initArgs = makeInitArgs(SPAWN_PLANET_1);
       await world.user1Core.initializePlayer(...initArgs);
       await world.user1Core.giveSpaceShips(SPAWN_PLANET_1.id);
@@ -49,11 +47,11 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it('allows controller to move ships to places they do not own with infinite distance', async function () {
-      const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id))[0];
+      const ship = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id))[0].artifact;
       const shipId = ship.id;
 
       await world.user1Core.move(
@@ -62,17 +60,15 @@ describe('DarkForestMove', function () {
       await increaseBlockchainTime();
 
       await world.user1Core.refreshPlanet(LVL2_PLANET_SPACE.id);
-      expect((await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id)).length).to.be.eq(4);
-      expect((await world.user1Core.getSpaceshipsOnPlanet(LVL2_PLANET_SPACE.id)).length).to.be.eq(
-        1
-      );
+      expect((await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).length).to.be.eq(4);
+      expect((await world.user1Core.getArtifactsOnPlanet(LVL2_PLANET_SPACE.id)).length).to.be.eq(1);
     });
 
     it('allows controller to move ships between their own planets', async function () {
       await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_NEBULA);
       await increaseBlockchainTime();
 
-      const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id))[0];
+      const ship = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id))[0].artifact;
       const shipId = ship.id;
       await world.user1Core.move(
         ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_NEBULA, 1000, 0, 0, shipId)
@@ -81,29 +77,29 @@ describe('DarkForestMove', function () {
       await increaseBlockchainTime();
       await world.user1Core.refreshPlanet(LVL1_ASTEROID_NEBULA.id);
 
-      expect(
-        (await world.user1Core.getSpaceshipsOnPlanet(LVL1_ASTEROID_NEBULA.id)).length
-      ).to.be.eq(1);
+      expect((await world.user1Core.getArtifactsOnPlanet(LVL1_ASTEROID_NEBULA.id)).length).to.be.eq(
+        1
+      );
     });
 
     it('should not allow you to move enemy ships on your own planet', async function () {
-      const user2shipId = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_2.id))[0].id;
+      const ship = (await world.user2Core.getArtifactsOnPlanet(SPAWN_PLANET_2.id))[0].artifact;
+      const shipId = ship.id;
 
       await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL2_PLANET_SPACE);
 
       await world.user2Core.move(
-        ...makeMoveArgs(SPAWN_PLANET_2, LVL2_PLANET_SPACE, 1000, 0, 0, user2shipId)
+        ...makeMoveArgs(SPAWN_PLANET_2, LVL2_PLANET_SPACE, 1000, 0, 0, shipId)
       );
       await increaseBlockchainTime();
+
       await expect(
-        world.user1Core.move(
-          ...makeMoveArgs(LVL2_PLANET_SPACE, SPAWN_PLANET_2, 1000, 0, 0, user2shipId)
-        )
+        world.user1Core.move(...makeMoveArgs(LVL2_PLANET_SPACE, SPAWN_PLANET_2, 1000, 0, 0, shipId))
       ).to.be.revertedWith('you can only move your own ships');
     });
 
     it('should not consume a photoid if moving a ship off a planet with one activated', async function () {
-      const artifactId = await createArtifact(
+      const artifactId = await createArtifactOnPlanet(
         world.contract,
         world.user1.address,
         SPAWN_PLANET_1,
@@ -111,27 +107,19 @@ describe('DarkForestMove', function () {
       );
 
       await world.user1Core.activateArtifact(SPAWN_PLANET_1.id, artifactId, 0);
-      expect((await world.contract.getActiveArtifactOnPlanet(SPAWN_PLANET_1.id)).id).to.equal(
-        artifactId
-      );
-
       await increaseBlockchainTime();
 
-      const gearShip = await getSpaceshipOnPlanetByType(
-        world.user1Core,
-        SPAWN_PLANET_1.id,
-        SpaceshipType.ShipGear
-      );
+      const ship = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id))[0].artifact;
+      const shipId = ship.id;
+
       await world.user1Core.move(
-        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 100, 0, 0, gearShip.id)
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 100, 0, 0, shipId)
       );
 
       await world.contract.refreshPlanet(SPAWN_PLANET_1.id);
-      const activePhotoid = await getArtifactTypeOnPlanet(
-        world,
-        SPAWN_PLANET_1.id,
-        ArtifactType.PhotoidCannon
-      );
+      const activePhotoid = (await world.contract.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).filter(
+        (a) => a.artifact.artifactType === ArtifactType.PhotoidCannon
+      )[0];
       // If the photoid is not there, it was used during ship move
       expect(activePhotoid).to.not.eq(undefined);
     });
@@ -141,7 +129,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      const world = await loadFixture(defaultWorldFixture);
+      const world = await fixtureLoader(defaultWorldFixture);
       const initArgs = makeInitArgs(SPAWN_PLANET_1);
 
       await world.user1Core.initializePlayer(...initArgs);
@@ -150,7 +138,7 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it("should add space junk to the user's total space junk", async function () {
@@ -174,7 +162,7 @@ describe('DarkForestMove', function () {
   describe('move to an enemy planet', function () {
     let world: World;
     async function worldFixture() {
-      const world = await loadFixture(defaultWorldFixture);
+      const world = await fixtureLoader(defaultWorldFixture);
 
       let initArgs = makeInitArgs(SPAWN_PLANET_1);
       await world.user1Core.initializePlayer(...initArgs);
@@ -189,7 +177,7 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it("should not add space junk to the user's total space junk", async function () {
@@ -211,7 +199,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      const world = await loadFixture(defaultWorldFixture);
+      const world = await fixtureLoader(defaultWorldFixture);
       const initArgs = makeInitArgs(SPAWN_PLANET_1);
 
       await world.user1Core.initializePlayer(...initArgs);
@@ -236,7 +224,7 @@ describe('DarkForestMove', function () {
       return world;
     }
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it("removes space junk from the user's total", async function () {
@@ -261,7 +249,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      world = await loadFixture(defaultWorldFixture);
+      world = await fixtureLoader(defaultWorldFixture);
       const initArgs = makeInitArgs(SPAWN_PLANET_1);
 
       await world.user1Core.initializePlayer(...initArgs);
@@ -275,13 +263,13 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it('reverts', async function () {
       await expect(
         world.user1Core.move(...makeMoveArgs(LVL1_ASTEROID_1, SPAWN_PLANET_2, 100, 50000, 0, 0, 1))
-      ).to.be.revertedWith('Cannot abandon a planet that has incoming voyages.');
+      ).to.be.revertedWith('Cannot abandon a planet that has incoming voyages');
     });
   });
 
@@ -289,7 +277,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      const world = await loadFixture(defaultWorldFixture);
+      const world = await fixtureLoader(defaultWorldFixture);
       let initArgs = makeInitArgs(SPAWN_PLANET_1);
       await world.user1Core.initializePlayer(...initArgs);
       initArgs = makeInitArgs(SPAWN_PLANET_2);
@@ -304,13 +292,13 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it('reverts', async function () {
       await expect(
         world.user1Core.move(...makeMoveArgs(LVL1_ASTEROID_1, SPAWN_PLANET_2, 100, 50000, 0, 0, 1))
-      ).to.be.revertedWith('Cannot abandon a planet that has incoming voyages.');
+      ).to.be.revertedWith('Cannot abandon a planet that has incoming voyages');
     });
   });
 
@@ -318,7 +306,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      const world = await loadFixture(defaultWorldFixture);
+      const world = await fixtureLoader(defaultWorldFixture);
       const initArgs = makeInitArgs(SPAWN_PLANET_1);
 
       await world.user1Core.initializePlayer(...initArgs);
@@ -335,7 +323,7 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it('should emit event', async function () {
@@ -361,8 +349,8 @@ describe('DarkForestMove', function () {
 
     it('should init new toPlanet', async function () {
       const toId = SPAWN_PLANET_2.id;
-      const planet = await world.contract.planets(toId);
-      expect(planet.isInitialized).to.equal(true);
+      const toPlanetExtended = await world.contract.planetsExtendedInfo(toId);
+      expect(toPlanetExtended.isInitialized).to.equal(true);
     });
 
     it('should create new event and arrival with correct delay', async function () {
@@ -411,8 +399,10 @@ describe('DarkForestMove', function () {
 
     it('should not apply event before arrival time', async function () {
       const toId = SPAWN_PLANET_2.id;
-      const planet = await world.contract.planets(toId);
-      expect(planet.lastUpdated).to.be.equal((await ethers.provider.getBlock('latest')).timestamp);
+      const planetExtendedInfo = await world.contract.planetsExtendedInfo(toId);
+      expect(planetExtendedInfo.lastUpdated).to.be.equal(
+        (await ethers.provider.getBlock('latest')).timestamp
+      );
 
       await increaseBlockchainTime(SMALL_INTERVAL);
       await world.contract.refreshPlanet(toId);
@@ -424,8 +414,10 @@ describe('DarkForestMove', function () {
 
     it('should apply event after arrival time', async function () {
       const toId = SPAWN_PLANET_2.id;
-      const planet = await world.contract.planets(toId);
-      expect(planet.lastUpdated).to.be.equal((await ethers.provider.getBlock('latest')).timestamp);
+      const planetExtendedInfo = await world.contract.planetsExtendedInfo(toId);
+      expect(planetExtendedInfo.lastUpdated).to.be.equal(
+        (await ethers.provider.getBlock('latest')).timestamp
+      );
 
       await increaseBlockchainTime();
       await world.contract.refreshPlanet(toId);
@@ -491,7 +483,7 @@ describe('DarkForestMove', function () {
     let world: World;
 
     async function worldFixture() {
-      const world = await loadFixture(growingWorldFixture);
+      const world = await fixtureLoader(growingWorldFixture);
       initialRadius = await world.contract.worldRadius();
       const initArgs = makeInitArgs(SPAWN_PLANET_2, initialRadius.toNumber());
 
@@ -502,7 +494,7 @@ describe('DarkForestMove', function () {
     }
 
     beforeEach(async function () {
-      world = await loadFixture(worldFixture);
+      world = await fixtureLoader(worldFixture);
     });
 
     it('should expand world radius when init high level planet', async function () {
@@ -523,7 +515,7 @@ describe('move to friendly planet', function () {
   let world: World;
 
   before(async function () {
-    world = await loadFixture(defaultWorldFixture);
+    world = await fixtureLoader(defaultWorldFixture);
 
     const dist = 10;
     const shipsSent = 40000;
@@ -647,7 +639,7 @@ describe('move to enemy planet', function () {
   let world: World;
 
   before(async function () {
-    world = await loadFixture(defaultWorldFixture);
+    world = await fixtureLoader(defaultWorldFixture);
 
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     await world.user2Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_2));
@@ -744,7 +736,7 @@ describe('reject move with insufficient resources', function () {
   let world: World;
 
   beforeEach(async function () {
-    world = await loadFixture(defaultWorldFixture);
+    world = await fixtureLoader(defaultWorldFixture);
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
   });
 
@@ -818,7 +810,7 @@ describe('move rate limits', function () {
   let world: World;
 
   beforeEach(async function () {
-    world = await loadFixture(defaultWorldFixture);
+    world = await fixtureLoader(defaultWorldFixture);
 
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     await world.user2Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_2));
@@ -848,7 +840,9 @@ describe('move rate limits', function () {
 
     await world.user1Core.move(...moveArgs);
 
-    await time.increase(from.range.toNumber() / (from.speed.toNumber() / 100) - 10);
+    await ethers.provider.send('evm_increaseTime', [
+      from.range.toNumber() / (from.speed.toNumber() / 100) - 10,
+    ]);
 
     // do 5 moves after some time
 
@@ -859,7 +853,7 @@ describe('move rate limits', function () {
 
     await expect(world.user1Core.move(...moveArgs)).to.be.revertedWith('Planet is rate-limited');
 
-    await time.increase(20);
+    await ethers.provider.send('evm_increaseTime', [20]);
 
     // first move should be done
 
@@ -930,10 +924,10 @@ describe('move rate limits', function () {
       await world.contract.adminGiveSpaceShip(
         SPAWN_PLANET_1.id,
         world.user1.address,
-        SpaceshipType.ShipMothership
+        ArtifactType.ShipMothership
       );
 
-      const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id))[0];
+      const ship = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id))[0].artifact;
 
       await world.user1Core.move(
         ...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 10, 0, 0, ship.id)
@@ -943,10 +937,10 @@ describe('move rate limits', function () {
     await world.contract.adminGiveSpaceShip(
       SPAWN_PLANET_1.id,
       world.user1.address,
-      SpaceshipType.ShipMothership
+      ArtifactType.ShipMothership
     );
 
-    const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id))[0];
+    const ship = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id))[0].artifact;
 
     await expect(
       world.user1Core.move(...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 1000, 0, 0, ship.id))
@@ -955,13 +949,13 @@ describe('move rate limits', function () {
     await increaseBlockchainTime();
     await world.user1Core.refreshPlanet(LVL2_PLANET_SPACE.id);
 
-    const numShipsOnPlanet = (await world.user1Core.getSpaceshipsOnPlanet(LVL2_PLANET_SPACE.id))
+    const numShipsOnPlanet = (await world.user1Core.getArtifactsOnPlanet(LVL2_PLANET_SPACE.id))
       .length;
 
     expect(numShipsOnPlanet).to.be.eq(6);
   });
 
-  it('when moving 6 own ships to planet, SHOULD allow an enemy attack', async function () {
+  it('when moving 6 ships to planet, should not allow an enemy attack', async function () {
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL2_PLANET_SPACE);
     await increaseBlockchainTime();
 
@@ -969,38 +963,10 @@ describe('move rate limits', function () {
       await world.contract.adminGiveSpaceShip(
         SPAWN_PLANET_1.id,
         world.user1.address,
-        SpaceshipType.ShipMothership
+        ArtifactType.ShipMothership
       );
 
-      const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id))[0];
-
-      await world.user1Core.move(
-        ...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 10, 0, 0, ship.id)
-      );
-    }
-
-    await world.user2Core.move(...makeMoveArgs(SPAWN_PLANET_2, LVL2_PLANET_SPACE, 1, 10000, 0));
-
-    await increaseBlockchainTime();
-    await world.user1Core.refreshPlanet(LVL2_PLANET_SPACE.id);
-
-    const numShipsOnPlanet = (await world.user1Core.getSpaceshipsOnPlanet(LVL2_PLANET_SPACE.id))
-      .length;
-
-    expect(numShipsOnPlanet).to.be.eq(6);
-  });
-  it('when moving 6 enemy ships to planet, should not allow an enemy attack', async function () {
-    await conquerUnownedPlanet(world, world.user2Core, SPAWN_PLANET_2, LVL2_PLANET_SPACE);
-    await increaseBlockchainTime();
-
-    for (let i = 0; i < 6; i++) {
-      await world.contract.adminGiveSpaceShip(
-        SPAWN_PLANET_1.id,
-        world.user1.address,
-        SpaceshipType.ShipMothership
-      );
-
-      const ship = (await world.user1Core.getSpaceshipsOnPlanet(SPAWN_PLANET_1.id))[0];
+      const ship = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id))[0].artifact;
 
       await world.user1Core.move(
         ...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 10, 0, 0, ship.id)
@@ -1008,13 +974,13 @@ describe('move rate limits', function () {
     }
 
     await expect(
-      world.user1Core.move(...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 1, 10000, 0))
+      world.user2Core.move(...makeMoveArgs(SPAWN_PLANET_2, LVL2_PLANET_SPACE, 1, 10000, 0))
     ).to.be.revertedWith('Planet is rate-limited');
 
     await increaseBlockchainTime();
     await world.user1Core.refreshPlanet(LVL2_PLANET_SPACE.id);
 
-    const numShipsOnPlanet = (await world.user1Core.getSpaceshipsOnPlanet(LVL2_PLANET_SPACE.id))
+    const numShipsOnPlanet = (await world.user1Core.getArtifactsOnPlanet(LVL2_PLANET_SPACE.id))
       .length;
 
     expect(numShipsOnPlanet).to.be.eq(6);

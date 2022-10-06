@@ -56,13 +56,13 @@ export function toSpaceType(spaceType: i32): string {
 
 export function toPlanetType(planetType: i32): string {
   if (planetType === 1) {
-    return 'SILVER_MINE';
+    return 'ASTEROID';
   } else if (planetType === 2) {
-    return 'RUINS';
+    return 'FOUNDRY';
   } else if (planetType === 3) {
-    return 'TRADING_POST';
+    return 'SPACETIME_RIP';
   } else if (planetType === 4) {
-    return 'SILVER_BANK';
+    return 'QUASAR';
   }
   return 'PLANET';
 }

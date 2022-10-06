@@ -4,30 +4,26 @@
 // organize-imports-ignore
 
 import '@nomiclabs/hardhat-ethers';
-import '@nomicfoundation/hardhat-chai-matchers';
+import '@nomiclabs/hardhat-waffle';
 import 'hardhat-abi-exporter';
 import 'hardhat-diamond-abi';
 // Must be registered after hardhat-diamond-abi
 import '@typechain/hardhat';
 import 'hardhat-circom';
 import 'hardhat-contract-sizer';
-import 'hardhat-settings';
 import '@solidstate/hardhat-4byte-uploader';
 import { extendEnvironment, HardhatUserConfig } from 'hardhat/config';
+import { lazyObject } from 'hardhat/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import * as diamondUtils from './utils/diamond';
-import * as subgraphUtils from './utils/subgraph';
 import * as path from 'path';
-import {
-  decodeContracts,
-  decodeInitializers,
-  decodeAdminPlanets,
-  AdminPlanets,
-  Contracts,
-  Initializers,
-} from '@dfdao/settings';
-import { workspace } from '@projectsophon/workspace';
+import * as settings from './settings';
+import { decodeContracts, decodeInitializers, decodeAdminPlanets } from '@darkforest_eth/settings';
+import './tasks/arena-deploy';
+import './tasks/arena-upgrade';
+import './tasks/artifact';
 import './tasks/circom';
+import './tasks/compile';
 import './tasks/debug';
 import './tasks/deploy';
 import './tasks/game';
@@ -37,53 +33,45 @@ import './tasks/upgrades';
 import './tasks/utils';
 import './tasks/wallet';
 import './tasks/whitelist';
-
-declare module 'hardhat/types' {
-  interface HardhatSettings {
-    contracts: Contracts;
-
-    darkforest: {
-      initializers: Initializers;
-      adminPlanets: AdminPlanets;
-    };
-  }
-}
-
-declare module 'hardhat/types/runtime' {
-  interface HardhatRuntimeEnvironment {
-    DEPLOYER_MNEMONIC: string | undefined;
-    ADMIN_PUBLIC_ADDRESS: string | undefined;
-
-    packageDirs: {
-      '@dfdao/contracts': string;
-      '@dfdao/snarks': string;
-      circuits: string;
-    };
-  }
-}
+import './tasks/faucet';
 
 require('dotenv').config();
 
 const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
 
-const contracts = workspace('@dfdao/contracts');
-if (!contracts) {
-  throw new Error('Unable to locate `@dfdao/contracts` workspace');
-}
-const snarks = workspace('@dfdao/snarks');
-if (!snarks) {
-  throw new Error('Unable to locate `@dfdao/snarks` workspace');
-}
-const circuits = workspace('circuits');
-if (!circuits) {
-  throw new Error('Unable to locate `circuits` workspace');
-}
+const AbiItemsToIgnore = [
+  {
+    facet: 'DFCoreFacet',
+    functions: ['initializePlayer', 'giveceShips'],
+    events: ['PlayerInitialized', 'LocationRevealed'],
+  },
+  {
+    facet: 'DFAdminFacet',
+    events: ['AdminPlanetCreated','PauseStateChanged'],
+  },
+  // {
+  //   facet: 'DFArenaGetterFacet',
+  //   functions: ['getArenaConstants']
+  // },
+  {
+    facet: 'DFArtifactFacet',
+    events: ['ArtifactFound'],
+  },
+  {
+    facet: 'DFMoveFacet',
+    events: ['GameStarted'],
+  }
+];
+
+// Warning: If the facet is not in the `facets` directory, getFullyQualifiedFacetName will not work.
+const getFullyQualifiedFacetName = (facet: string) => {
+  return `contracts/facets/${facet}.sol:${facet}`;
+};
 
 // Ensure we can lookup the needed workspace packages
 const packageDirs = {
-  '@dfdao/contracts': contracts,
-  '@dfdao/snarks': snarks,
-  circuits,
+  '@darkforest_eth/contracts': settings.resolvePackageDir('@darkforest_eth/contracts'),
+  '@darkforest_eth/snarks': settings.resolvePackageDir('@darkforest_eth/snarks'),
 };
 
 extendEnvironment((env: HardhatRuntimeEnvironment) => {
@@ -92,6 +80,21 @@ extendEnvironment((env: HardhatRuntimeEnvironment) => {
   env.ADMIN_PUBLIC_ADDRESS = ADMIN_PUBLIC_ADDRESS;
 
   env.packageDirs = packageDirs;
+
+  env.contracts = lazyObject(() => {
+    const contracts = require('@darkforest_eth/contracts');
+    return settings.parse(decodeContracts, contracts);
+  });
+
+  env.initializers = lazyObject(() => {
+    const { initializers = {} } = settings.load(env.network.name);
+    return settings.parse(decodeInitializers, initializers);
+  });
+
+  env.adminPlanets = lazyObject(() => {
+    const { planets = [] } = settings.load(env.network.name);
+    return settings.parse(decodeAdminPlanets, planets);
+  });
 });
 
 // The xdai config, but it isn't added to networks unless we have a DEPLOYER_MNEMONIC
@@ -113,6 +116,25 @@ const mainnet = {
   },
   chainId: 1,
 };
+const kovan_optimism = {
+  url: 'https://kovan.optimism.io',
+  accounts: {
+    mnemonic: DEPLOYER_MNEMONIC,
+  },
+  chainId: 69,
+  gasLimit: 15000000,
+  gasMultiplier: 5,
+};
+
+const gnosis_optimism = {
+  url: 'https://optimism.gnosischain.com',
+  accounts: {
+    mnemonic: DEPLOYER_MNEMONIC,
+  },
+  chainId: 300,
+  gasLimit: 15000000,
+  gasMultiplier: 5,
+};
 
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
@@ -120,6 +142,8 @@ const config: HardhatUserConfig = {
     // Check for a DEPLOYER_MNEMONIC before we add xdai/mainnet network to the list of networks
     // Ex: If you try to deploy to xdai without DEPLOYER_MNEMONIC, you'll see this error:
     // > Error HH100: Network xdai doesn't exist
+    ...(DEPLOYER_MNEMONIC ? { gnosis_optimism } : undefined),
+    ...(DEPLOYER_MNEMONIC ? { kovan_optimism } : undefined),
     ...(DEPLOYER_MNEMONIC ? { xdai } : undefined),
     ...(DEPLOYER_MNEMONIC ? { mainnet } : undefined),
     localhost: {
@@ -128,6 +152,7 @@ const config: HardhatUserConfig = {
         // Same mnemonic used in the .env.example
         mnemonic: 'change typical hire slam amateur loan grid fix drama electric seed label',
       },
+      blockGasLimit: 15000000,
       chainId: 31337,
     },
     // Used when you dont specify a network on command line, like in tests
@@ -151,11 +176,9 @@ const config: HardhatUserConfig = {
         },
       ],
       blockGasLimit: 16777215,
-      // These defaults are used for testing, subgraph, and initial deploy into localhost node.
-      // Automine is disabled and interval mining is enabled after deploy so the game runs accurately.
       mining: {
-        auto: true,
-        interval: 0,
+        auto: false,
+        interval: 1000,
       },
     },
   },
@@ -175,8 +198,8 @@ const config: HardhatUserConfig = {
   },
   circom: {
     inputBasePath: '../circuits/',
-    outputBasePath: packageDirs['@dfdao/snarks'],
-    ptau: 'powersOfTau28_hez_final_15.ptau',
+    outputBasePath: packageDirs['@darkforest_eth/snarks'],
+    ptau: 'pot15_final.ptau',
     circuits: [
       {
         name: 'init',
@@ -211,72 +234,37 @@ const config: HardhatUserConfig = {
     ],
   },
   typechain: {
-    outDir: path.join(packageDirs['@dfdao/contracts'], 'typechain'),
+    outDir: path.join(packageDirs['@darkforest_eth/contracts'], 'typechain'),
     target: 'ethers-v5',
   },
   diamondAbi: {
     // This plugin will combine all ABIs from any Smart Contract with `Facet` in the name or path and output it as `DarkForest.json`
     name: 'DarkForest',
-    include: ['Facet', 'DFDiamond'],
+    include: ['Facet'],
     // We explicitly set `strict` to `true` because we want to validate our facets don't accidentally provide overlapping functions
     strict: true,
     // We use our diamond utils to filter some functions we ignore from the combined ABI
     filter(abiElement: unknown, index: number, abi: unknown[], fullyQualifiedName: string) {
-      // Events can be defined in internal libraries or multiple facets and look like duplicates
-      if (diamondUtils.isOverlappingEvent(abiElement)) {
-        return false;
-      }
-      // Errors can be defined in internal libraries or multiple facets and look like duplicates
-      if (diamondUtils.isOverlappingError(abiElement)) {
-        return false;
-      }
+      const facetToIgnore = AbiItemsToIgnore.find(
+        (value) => getFullyQualifiedFacetName(value.facet) === fullyQualifiedName
+      );
+      // @ts-expect-error because abiElement is type unknown
+      if (facetToIgnore?.functions?.includes(abiElement.name)) return false;
+      // @ts-expect-error because abiElement is type unknown
+      if (facetToIgnore?.events?.includes(abiElement.name)) return false;
+
       const signature = diamondUtils.toSignature(abiElement);
       return diamondUtils.isIncluded(fullyQualifiedName, signature);
     },
   },
-  abiExporter: [
-    {
-      // This plugin will copy the ABI from the DarkForest artifact into our `@dfdao/contracts` package as `abis/DarkForest.json`
-      path: path.join(packageDirs['@dfdao/contracts'], 'abis'),
-      runOnCompile: true,
-      // We don't want additional directories created, so we just return the contractName
-      rename(_sourceName, contractName) {
-        return contractName;
-      },
-      // We **only** want to copy the DarkForest ABI (which is the Diamond ABI we generate) and the initializer ABI to this folder, so we limit the matched files with the `only` option
-      only: [':DarkForest$', ':DFInitialize$'],
-    },
-    {
-      path: path.join(packageDirs['@dfdao/contracts'], 'abis'),
-      runOnCompile: true,
-      // This is a "stripped" version for the subgraph, so we append `_stripped`
-      rename(_sourceName, contractName) {
-        return `${contractName}_stripped`;
-      },
-      // Subgraph doesn't need the initializer ABI
-      only: [':DarkForest$'],
-      // We need to remove some ABI functions that subgraph can't handle
-      filter(abiElement) {
-        return subgraphUtils.abiFilter(abiElement);
-      },
-    },
-  ],
-  settings: {
-    contracts: {
-      path: path.join(packageDirs['@dfdao/contracts'], 'index.js'),
-      lazy: true,
-      decode: decodeContracts,
-    },
-    darkforest: {
-      lazy: false,
-      decode(input) {
-        // TODO: We probably want initializers & adminPlanet to come from separate settings files
-        return {
-          initializers: decodeInitializers(input.initializers),
-          adminPlanets: decodeAdminPlanets(input.adminPlanets || []),
-        };
-      },
-    },
+  abiExporter: {
+    // This plugin will copy the ABI from the DarkForest artifact into our `@darkforest_eth/contracts` package as `abis/DarkForest.json`
+    path: path.join(packageDirs['@darkforest_eth/contracts'], 'abis'),
+    runOnCompile: true,
+    // We don't want additional directories created, so we explicitly set the `flat` option to `true`
+    flat: true,
+    // We **only** want to copy the DarkForest ABI (which is the Diamond ABI we generate) and the initializer ABI to this folder, so we limit the matched files with the `only` option
+    only: [':DarkForest$', ':DFArenaInitialize$', ':DFArenaFaucet$'],
   },
 };
 

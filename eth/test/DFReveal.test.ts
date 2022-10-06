@@ -1,6 +1,10 @@
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
-import { increaseBlockchainTime, makeInitArgs, makeRevealArgs } from './utils/TestUtils';
+import {
+  fixtureLoader,
+  increaseBlockchainTime,
+  makeInitArgs,
+  makeRevealArgs,
+} from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import { INVALID_PLANET, SPAWN_PLANET_1, SPAWN_PLANET_2 } from './utils/WorldConstants';
 
@@ -8,13 +12,13 @@ describe('DarkForestReveal', function () {
   let world: World;
 
   async function worldFixture() {
-    const world = await loadFixture(defaultWorldFixture);
+    const world = await fixtureLoader(defaultWorldFixture);
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     return world;
   }
 
   beforeEach('load fixture', async function () {
-    world = await loadFixture(worldFixture);
+    world = await fixtureLoader(worldFixture);
   });
 
   it("allows player to reveal location of planet that doesn't exist in contract yet", async function () {

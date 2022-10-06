@@ -6,16 +6,39 @@ import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 
 // Storage imports
 import {LibStorage, GameStorage} from "./LibStorage.sol";
+import {ArenaStorage, ArenaConstants, LibArenaStorage} from "./LibArenaStorage.sol";
 
 // Type imports
-import {Planet, PlanetType, PlanetEventMetadata, PlanetEventType, ArrivalData, ArrivalType} from "../DFTypes.sol";
+import {
+    Planet,
+    PlanetExtendedInfo,
+    PlanetExtendedInfo2,
+    PlanetType,
+    PlanetEventMetadata,
+    PlanetEventType,
+    ArrivalData,
+    ArrivalType,
+    Artifact
+} from "../DFTypes.sol";
 
 library LibLazyUpdate {
     function gs() internal pure returns (GameStorage storage) {
         return LibStorage.gameStorage();
     }
 
-    function _updateSilver(uint256 updateToTime, Planet memory planet) private pure {
+    function arenaStorage() internal pure returns (ArenaStorage storage) {
+        return LibArenaStorage.arenaStorage();
+    }
+
+    function arenaConstants() internal pure returns (ArenaConstants storage) {
+        return LibArenaStorage.arenaConstants();
+    }
+
+    function _updateSilver(
+        uint256 updateToTime,
+        Planet memory planet,
+        PlanetExtendedInfo memory planetExtendedInfo
+    ) private pure {
         // This function should never be called directly and should only be called
         // by the refresh planet function. This require is in place to make sure
         // no one tries to updateSilver on non silver producing planet.
@@ -29,7 +52,7 @@ library LibLazyUpdate {
         }
 
         if (planet.silver < planet.silverCap) {
-            uint256 _timeDiff = updateToTime - planet.lastUpdated;
+            uint256 _timeDiff = updateToTime - planetExtendedInfo.lastUpdated;
             uint256 _silverMined = planet.silverGrowth * _timeDiff;
 
             uint256 _maxSilver = planet.silverCap;
@@ -38,50 +61,58 @@ library LibLazyUpdate {
         }
     }
 
-    function _updatePopulation(uint256 updateToTime, Planet memory planet) private pure {
+    function _updatePopulation(
+        uint256 updateToTime,
+        Planet memory planet,
+        PlanetExtendedInfo memory planetExtendedInfo,
+        PlanetExtendedInfo2 memory planetExtendedInfo2
+    ) private pure {
         if (planet.owner == address(0)) {
             // unowned planet doesn't increase in population
             return;
         }
 
-        int128 _timeElapsed = ABDKMath64x64.sub(
-            ABDKMath64x64.fromUInt(updateToTime),
-            ABDKMath64x64.fromUInt(planet.lastUpdated)
-        );
+        int128 _timeElapsed =
+            ABDKMath64x64.sub(
+                ABDKMath64x64.fromUInt(updateToTime),
+                ABDKMath64x64.fromUInt(planetExtendedInfo.lastUpdated)
+            );
 
         int128 _one = ABDKMath64x64.fromUInt(1);
 
-        int128 _denominator = ABDKMath64x64.add(
-            ABDKMath64x64.mul(
-                ABDKMath64x64.exp(
-                    ABDKMath64x64.div(
-                        ABDKMath64x64.mul(
+        int128 _denominator =
+            ABDKMath64x64.add(
+                ABDKMath64x64.mul(
+                    ABDKMath64x64.exp(
+                        ABDKMath64x64.div(
                             ABDKMath64x64.mul(
-                                ABDKMath64x64.fromInt(-4),
-                                ABDKMath64x64.fromUInt(planet.populationGrowth)
+                                ABDKMath64x64.mul(
+                                    ABDKMath64x64.fromInt(-4),
+                                    ABDKMath64x64.fromUInt(planet.populationGrowth)
+                                ),
+                                _timeElapsed
                             ),
-                            _timeElapsed
+                            ABDKMath64x64.fromUInt(planet.populationCap)
+                        )
+                    ),
+                    ABDKMath64x64.sub(
+                        ABDKMath64x64.div(
+                            ABDKMath64x64.fromUInt(planet.populationCap),
+                            ABDKMath64x64.fromUInt(planet.population)
                         ),
-                        ABDKMath64x64.fromUInt(planet.populationCap)
+                        _one
                     )
                 ),
-                ABDKMath64x64.sub(
-                    ABDKMath64x64.div(
-                        ABDKMath64x64.fromUInt(planet.populationCap),
-                        ABDKMath64x64.fromUInt(planet.population)
-                    ),
-                    _one
-                )
-            ),
-            _one
-        );
+                _one
+            );
 
-        uint256 newPopulation = ABDKMath64x64.toUInt(
-            ABDKMath64x64.div(ABDKMath64x64.fromUInt(planet.populationCap), _denominator)
-        );
+        uint256 newPopulation =
+            ABDKMath64x64.toUInt(
+                ABDKMath64x64.div(ABDKMath64x64.fromUInt(planet.populationCap), _denominator)
+            );
 
         // If paused, no energy growth
-        if (planet.pausers > 0 && newPopulation > planet.population) {
+        if (planetExtendedInfo2.pausers > 0 && newPopulation > planet.population) {
             return;
         }
 
@@ -89,41 +120,48 @@ library LibLazyUpdate {
 
         // quasars have 0 energy growth, so they have 0 energy decay as well
         // so don't allow them to become overful
-        if (planet.planetType == PlanetType.SILVER_BANK || planet.pausers > 0) {
+        if (planet.planetType == PlanetType.SILVER_BANK || planetExtendedInfo2.pausers > 0) {
             if (planet.population > planet.populationCap) {
                 planet.population = planet.populationCap;
             }
         }
     }
 
-    function updatePlanet(uint256 updateToTime, Planet memory planet)
+    function updatePlanet(
+        uint256 updateToTime,
+        Planet memory planet,
+        PlanetExtendedInfo memory planetExtendedInfo,
+        PlanetExtendedInfo2 memory planetExtendedInfo2
+    )
         public
         pure
-        returns (Planet memory)
+        returns (
+            Planet memory,
+            PlanetExtendedInfo memory,
+            PlanetExtendedInfo2 memory
+        )
     {
-        _updatePopulation(updateToTime, planet);
+        _updatePopulation(updateToTime, planet, planetExtendedInfo, planetExtendedInfo2);
 
         if (planet.planetType == PlanetType.SILVER_MINE) {
-            _updateSilver(updateToTime, planet);
+            _updateSilver(updateToTime, planet, planetExtendedInfo);
         }
 
-        planet.lastUpdated = updateToTime;
+        planetExtendedInfo.lastUpdated = updateToTime;
 
-        return planet;
+        return (planet, planetExtendedInfo, planetExtendedInfo2);
     }
 
     // assumes that the planet last updated time is equal to the arrival time trigger
-    function applyArrival(Planet memory planet, ArrivalData memory arrival)
-        private
-        pure
-        returns (
-            uint256 newArtifactOnPlanet,
-            uint256 newSpaceshipOnPlanet,
-            Planet memory
-        )
-    {
+    function applyArrival(
+        Planet memory planet,
+        PlanetExtendedInfo2 memory planetExtendedInfo2,
+        ArrivalData memory arrival
+    ) private view returns (uint256 newArtifactOnPlanet, Planet memory) {
+        uint256 sendingTeam = arenaStorage().arenaPlayerInfo[arrival.player].team;
+        uint256 planetOwnerTeam = arenaStorage().arenaPlayerInfo[planet.owner].team;
         // checks whether the planet is owned by the player sending ships
-        if (arrival.player == planet.owner) {
+        if (arrival.player == planet.owner || (arenaConstants().TEAMS_ENABLED && sendingTeam == planetOwnerTeam)) {
             // simply increase the population if so
             planet.population = planet.population + arrival.popArriving;
         } else {
@@ -143,10 +181,10 @@ library LibLazyUpdate {
                 // player
 
                 /**
-                  If the move is a spaceship move, the planet owner does not change.
-                  This prevents spaceship moves capturing planets with zero energy.
+                  This is the zero address so that ships moving to an unowned planet with
+                  no barbarians don't cause the planet to be conquered by the ship's controller.
                  */
-                planet.owner = arrival.carriedSpaceshipId != 0 ? planet.owner : arrival.player;
+                planet.owner = arrival.player == address(0) ? planet.owner : arrival.player;
                 planet.population =
                     arrival.popArriving -
                     ((planet.population * planet.defense) / 100);
@@ -159,7 +197,7 @@ library LibLazyUpdate {
 
         // quasars have 0 energy growth, so they have 0 energy decay as well
         // so don't allow them to become overful
-        if (planet.planetType == PlanetType.SILVER_BANK || planet.pausers > 0) {
+        if (planet.planetType == PlanetType.SILVER_BANK || planetExtendedInfo2.pausers > 0) {
             if (planet.population > planet.populationCap) {
                 planet.population = planet.populationCap;
             }
@@ -169,14 +207,25 @@ library LibLazyUpdate {
         uint256 _nextSilver = planet.silver + arrival.silverMoved;
         planet.silver = _maxSilver < _nextSilver ? _maxSilver : _nextSilver;
 
-        return (arrival.carriedArtifactId, arrival.carriedSpaceshipId, planet);
+        return (arrival.carriedArtifactId, planet);
     }
 
     function applyPendingEvents(
         uint256 currentTimestamp,
         Planet memory planet,
+        PlanetExtendedInfo memory planetExtendedInfo,
+        PlanetExtendedInfo2 memory planetExtendedInfo2,
         PlanetEventMetadata[] memory events
-    ) public view returns (Planet memory, uint256[24] memory) {
+    )
+        public
+        view
+        returns (
+            Planet memory,
+            PlanetExtendedInfo memory,
+            PlanetExtendedInfo2 memory,
+            uint256[24] memory
+        )
+    {
         // first 12 are event ids to remove
         // last 12 are artifact ids that are new on the planet
         uint256[24] memory eventIdsAndArtifacts;
@@ -187,7 +236,7 @@ library LibLazyUpdate {
         uint256 earliestEventIndex = 0;
 
         do {
-            if (events.length == 0 || planet.destroyed) {
+            if (events.length == 0 || planetExtendedInfo.destroyed) {
                 break;
             }
 
@@ -225,29 +274,30 @@ library LibLazyUpdate {
                 earliestEventTime !=
                 115792089237316195423570985008687907853269984665640564039457584007913129639935
             ) {
-                planet = updatePlanet(events[earliestEventIndex].timeTrigger, planet);
+                (planet, planetExtendedInfo, planetExtendedInfo2) = updatePlanet(
+                    events[earliestEventIndex].timeTrigger,
+                    planet,
+                    planetExtendedInfo,
+                    planetExtendedInfo2
+                );
 
                 if (events[earliestEventIndex].eventType == PlanetEventType.ARRIVAL) {
                     eventIdsAndArtifacts[numEventsToRemove++] = events[earliestEventIndex].id;
 
                     uint256 newArtifactId;
-                    uint256 newSpaceshipId;
-                    (newArtifactId, newSpaceshipId, planet) = applyArrival(
+                    (newArtifactId, planet) = applyArrival(
                         planet,
+                        planetExtendedInfo2,
                         gs().planetArrivals[events[earliestEventIndex].id]
                     );
 
-                    // TODO: Cleanup this nastiness
                     if (newArtifactId != 0) {
                         eventIdsAndArtifacts[12 + numNewArtifactsOnPlanet++] = newArtifactId;
-                    }
-                    if (newSpaceshipId != 0) {
-                        eventIdsAndArtifacts[12 + numNewArtifactsOnPlanet++] = newSpaceshipId;
                     }
                 }
             }
         } while (earliestEventTime <= currentTimestamp);
 
-        return (planet, eventIdsAndArtifacts);
+        return (planet, planetExtendedInfo, planetExtendedInfo2, eventIdsAndArtifacts);
     }
 }

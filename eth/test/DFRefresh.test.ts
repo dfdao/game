@@ -1,7 +1,7 @@
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import {
+  fixtureLoader,
   increaseBlockchainTime,
   makeInitArgs,
   makeMoveArgs,
@@ -25,26 +25,32 @@ describe('DarkForestRefresh', function () {
   let world: World;
 
   async function worldFixture() {
-    const world = await loadFixture(defaultWorldFixture);
+    const world = await fixtureLoader(defaultWorldFixture);
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     return world;
   }
 
   beforeEach('load fixture', async function () {
-    world = await loadFixture(worldFixture);
+    world = await fixtureLoader(worldFixture);
   });
 
   it('should increase population over time', async function () {
     const planetId = SPAWN_PLANET_1.id;
 
     const startPlanet = await world.contract.planets(planetId);
-    expect(startPlanet.lastUpdated).to.equal((await ethers.provider.getBlock('latest')).timestamp);
+    const startPlanetExtendedInfo = await world.contract.planetsExtendedInfo(planetId);
+    expect(startPlanetExtendedInfo.lastUpdated).to.equal(
+      (await ethers.provider.getBlock('latest')).timestamp
+    );
 
     await increaseBlockchainTime(SMALL_INTERVAL);
 
     await world.contract.refreshPlanet(planetId);
     const midPlanet = await world.contract.planets(planetId);
-    expect(midPlanet.lastUpdated).to.equal((await ethers.provider.getBlock('latest')).timestamp);
+    const midPlanetExtendedInfo = await world.contract.planetsExtendedInfo(planetId);
+    expect(midPlanetExtendedInfo.lastUpdated).to.equal(
+      (await ethers.provider.getBlock('latest')).timestamp
+    );
     expect(midPlanet.population).to.be.above(startPlanet.population);
 
     await increaseBlockchainTime(LARGE_INTERVAL);
@@ -52,10 +58,13 @@ describe('DarkForestRefresh', function () {
     await world.contract.refreshPlanet(planetId);
 
     const endPlanet = await world.contract.planets(planetId);
+    const endPlanetExtendedInfo = await world.contract.planetsExtendedInfo(planetId);
     expect(endPlanet.population).to.be.above(midPlanet.population);
     expect(endPlanet.population).to.not.be.above(endPlanet.populationCap);
     expect(endPlanet.population).to.be.above(endPlanet.populationCap.sub(BN.from(1)));
-    expect(endPlanet.lastUpdated).to.be.equal((await ethers.provider.getBlock('latest')).timestamp);
+    expect(endPlanetExtendedInfo.lastUpdated).to.be.equal(
+      (await ethers.provider.getBlock('latest')).timestamp
+    );
   });
 
   it('should decrease population over time of overpopulated', async function () {

@@ -43,12 +43,15 @@ In order of preference, Dark Forest contracts share functionality using:
 
 1. Storing shared state inside an existing storage struct or create a new one following the Diamond Storage pattern.
 2. Organizing and refactoring the facets so they don't need cross-facet calls.
-3. Writing libraries with `internal` function calls. Only `internal` functions actually used by a contract will be added to that contract's bytecode. For example, we can have a large Solidity library with only `internal` functions and use it among many facets.
+3. Writing libraries with `internal` function calls; however, this might cause contract size issues. As documented on [ethereum.org](https://ethereum.org/en/developers/tutorials/downsizing-contracts-to-fight-the-contract-size-limit/#libraries):
+
+   > Don't declare the library functions as internal as those will be added to the contract directly during compilation
+
 4. Calling another another facet through the diamond, using the type safe calling convention `OtherFacet(address(this)).someFunction(arg1, arg2)`.
 
    **Be aware**: Care must be taken about the `msg.sender` and permissions on certain functionality.
 
-5. Writing libraries with `public` or `external` function calls. These aren't inlined and must be deployed and linked into the facets. We should **avoid** this solution at nearly all cost.
+5. Writing libraries with `public` or `external` function calls. These aren't inlined and must be deployed and linked into the facets. This is the **least** preferred solution.
 
 ## Implementation references
 

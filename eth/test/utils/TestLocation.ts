@@ -7,7 +7,7 @@ interface TestLocationConstructorParam {
 }
 
 export class TestLocation {
-  hex: string; // 64 chat 0-padded hex, not 0x-prefixed
+  hex: string; // 64 char 0-padded hex, not 0x-prefixed
   id: BigNumber;
   perlin: BigNumberish;
   distFromOrigin: number;

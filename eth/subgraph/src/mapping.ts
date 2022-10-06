@@ -1,5 +1,5 @@
 /* eslint-disable eqeqeq */
-import { CONTRACT_ADDRESS } from '@dfdao/contracts';
+import { CONTRACT_ADDRESS } from '@darkforest_eth/contracts';
 import { Address, BigInt, ethereum, log } from '@graphprotocol/graph-ts';
 import {
   AdminPlanetCreated,
@@ -21,9 +21,10 @@ import {
   PlanetTransferred,
   PlanetUpgraded,
   PlayerInitialized,
-  TransferSingle,
+  Transfer,
 } from '../generated/DarkForest/DarkForest';
 import {
+  Arena,
   Arrival,
   ArrivalQueue,
   Artifact,
@@ -48,6 +49,7 @@ import {
   refreshSpaceshipFromContractData,
   refreshVoyageFromContractData,
 } from './helpers/decoders';
+import { DarkForest as DFDiamond } from '../generated/templates'
 
 // NOTE: the timestamps within are all unix epoch in seconds NOT MILLISECONDS
 // like in all the JS code where youll see divided by contractPrecision. As a
@@ -183,7 +185,12 @@ export function handlePlayerInitialized(event: PlayerInitialized): void {
   const contract = DarkForest.bind(Address.fromString(CONTRACT_ADDRESS));
   const planetDatas = contract.bulkGetPlanetsDataByIds([event.params.loc]);
   const rawData = planetDatas[0];
-  const planet = refreshPlanetFromContractData(event.params.loc, rawData.planet);
+  const planet = refreshPlanetFromContractData(
+    event.params.loc,
+    rawData.planet,
+    rawData.info,
+    rawData.info2
+  );
   planet.save();
 
   const meta = getMeta(event.block.timestamp.toI32(), event.block.number.toI32());
@@ -321,7 +328,12 @@ export function handleLocationRevealed(event: LocationRevealed): void {
     const contract = DarkForest.bind(Address.fromString(CONTRACT_ADDRESS));
     const planetDatas = contract.bulkGetPlanetsDataByIds([event.params.loc]);
     const rawData = planetDatas[0];
-    planet = refreshPlanetFromContractData(event.params.loc, rawData.planet);
+    planet = refreshPlanetFromContractData(
+      event.params.loc,
+      rawData.planet,
+      rawData.info,
+      rawData.info2
+    );
     planet.save();
   }
 
@@ -336,9 +348,9 @@ export function handleLocationRevealed(event: LocationRevealed): void {
   planet.save();
 }
 
-export function handleTransferSingle(event: TransferSingle): void {
-  const artifact = Artifact.load(event.params.id.toHexString());
-  const spaceship = Spaceship.load(event.params.id.toHexString());
+export function handleTransfer(event: Transfer): void {
+  let artifact = Artifact.load(event.params.tokenId.toHexString());
+  let spaceship = Spaceship.load(event.params.tokenId.toHexString());
   if (artifact !== null) {
     artifact.ownerAddress = event.params.to.toHexString();
     artifact.save();
@@ -346,9 +358,9 @@ export function handleTransferSingle(event: TransferSingle): void {
     // artifact was just minted, so it's not in store yet
     // note that a _mint does emit a Transfer ERC721 event
     const contract = DarkForest.bind(Address.fromString(CONTRACT_ADDRESS));
-    const rawArtifact = contract.bulkGetArtifactsByIds([event.params.id]);
+    const rawArtifact = contract.bulkGetArtifactsByIds([event.params.tokenId]);
 
-    refreshArtifactOrSpaceship(event.params.id, rawArtifact[0]);
+    refreshArtifactOrSpaceship(event.params.tokenId, rawArtifact[0]);
   }
 }
 
@@ -357,7 +369,19 @@ export function handleLobbyCreated(event: LobbyCreated): void {
   lobby.ownerAddress = event.params.ownerAddress.toHexString();
   lobby.lobbyAddress = event.params.lobbyAddress.toHexString();
   lobby.save();
-}
+
+  /* new arena */
+  const arena = new Arena(event.params.lobbyAddress.toHexString());
+  arena.ownerAddress = event.params.ownerAddress.toHexString();
+  arena.lobbyAddress = event.params.lobbyAddress.toHexString();
+  arena.gameOver = false;
+  // arena.players = [];
+  arena.winners = new Array<string>()
+  arena.save();
+
+  // /* new data source */ 
+  DFDiamond.create(event.params.lobbyAddress)  
+} 
 
 function processScheduledArrivalsSinceLastBlock(meta: Meta, current: i32): void {
   // process last+1 up to and including current

@@ -10,14 +10,12 @@ interface CompiledOuput {
 // This provides a utility for turning a string of TypeScript into strings of JS and DTS
 // https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API#getting-the-dts-from-a-javascript-file
 export function tscompile(input: string): CompiledOuput {
-  const options: ts.CompilerOptions = {
+  const options = {
     ...ts.getDefaultCompilerOptions(),
     declaration: true,
     declarationMap: true,
     sourceMap: true,
     inlineSources: true,
-    target: ts.ScriptTarget.ES2020,
-    module: ts.ModuleKind.CommonJS,
   };
   const inputFileName = 'index.ts';
   const sourceFile = ts.createSourceFile(inputFileName, input, ts.ScriptTarget.ES2020);

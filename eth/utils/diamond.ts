@@ -41,42 +41,8 @@ export function toSignature(abiElement: unknown): string {
 const signaturesToIgnore = [
   // The SolidState contracts adds a `supportsInterface` function,
   // but we already provide that function through DiamondLoupeFacet
-  ['DFTokenFacet$', 'supportsInterface(bytes4)'],
+  ['DFArtifactFacet$', 'supportsInterface(bytes4)'],
 ] as const;
-
-const eventSignatures = new Set();
-
-export function isOverlappingEvent(abiElement: unknown): boolean {
-  const frag = utils.Fragment.fromObject(abiElement as JsonFragment);
-  if (frag.type === 'event') {
-    const signature = frag.format();
-    if (eventSignatures.has(signature)) {
-      return true;
-    } else {
-      eventSignatures.add(signature);
-      return false;
-    }
-  } else {
-    return false;
-  }
-}
-
-const errorSignatures = new Set();
-
-export function isOverlappingError(abiElement: unknown): boolean {
-  const frag = utils.Fragment.fromObject(abiElement as JsonFragment);
-  if (frag.type === 'error') {
-    const signature = frag.format();
-    if (errorSignatures.has(signature)) {
-      return true;
-    } else {
-      errorSignatures.add(signature);
-      return false;
-    }
-  } else {
-    return false;
-  }
-}
 
 export function isIncluded(contractName: string, signature: string): boolean {
   const isIgnored = signaturesToIgnore.some(([contractNameMatcher, ignoredSignature]) => {
@@ -90,16 +56,16 @@ export function isIncluded(contractName: string, signature: string): boolean {
   return !isIgnored;
 }
 
-interface FacetCut {
-  target: string;
+export interface FacetCut {
+  facetAddress: string;
   action: FacetCutAction;
-  selectors: string[];
+  functionSelectors: string[];
 }
 
 // A facet stored in the smart contract doesn't have an `action` property
 interface Facet {
-  target: string;
-  selectors: string[];
+  facetAddress: string;
+  functionSelectors: string[];
 }
 
 interface HasInterface {
@@ -171,23 +137,23 @@ export class DiamondChanges {
 
       if (diff.add.length > 0) {
         facetCuts.push({
-          target: contract.address,
+          facetAddress: contract.address,
           action: FacetCutAction.Add,
-          selectors: diff.add,
+          functionSelectors: diff.add,
         });
       }
       if (diff.replace.length > 0) {
         facetCuts.push({
-          target: contract.address,
+          facetAddress: contract.address,
           action: FacetCutAction.Replace,
-          selectors: diff.replace,
+          functionSelectors: diff.replace,
         });
       }
     } else {
       facetCuts.push({
-        target: contract.address,
+        facetAddress: contract.address,
         action: FacetCutAction.Add,
-        selectors: this.getSelectors(contractName, contract),
+        functionSelectors: this.getSelectors(contractName, contract),
       });
     }
 
@@ -208,13 +174,13 @@ export class DiamondChanges {
     if (!this.previous) {
       throw new Error('You must construct DiamondChanges with previous cuts to find removals');
     }
-    const functionSelectors = cuts.flatMap((cut) => cut.selectors);
+    const functionSelectors = cuts.flatMap((cut) => cut.functionSelectors);
 
     const seenSelectors = new Set(functionSelectors);
 
     const toRemove = [] as string[];
-    for (const { selectors } of this.previous) {
-      for (const selector of selectors) {
+    for (const { functionSelectors } of this.previous) {
+      for (const selector of functionSelectors) {
         // TODO: Do we need to check `isIncluded`? I don't want to deal with contract names
         if (!seenSelectors.has(selector) && !this.isDiamondSpecSelector(selector)) {
           toRemove.push(selector);
@@ -227,9 +193,9 @@ export class DiamondChanges {
 
     if (toRemove.length) {
       removeCuts.push({
-        target: constants.AddressZero,
+        facetAddress: constants.AddressZero,
         action: FacetCutAction.Remove,
-        selectors: toRemove,
+        functionSelectors: toRemove,
       });
     }
 
@@ -331,8 +297,8 @@ export class DiamondChanges {
     for (const signature of signatures) {
       if (isIncluded(contractName, signature)) {
         const selector = contract.interface.getSighash(signature);
-        const selectorExists = previous.some(({ selectors }) => {
-          return selectors.some((val) => selector === val);
+        const selectorExists = previous.some(({ functionSelectors }) => {
+          return functionSelectors.some((val) => selector === val);
         });
         if (selectorExists) {
           this.changes.replaced.push([contractName, signature]);

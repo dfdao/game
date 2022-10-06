@@ -6,7 +6,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DarkForest
-    network: xdai
+    network: optimism
     source:
       address: '{{{CONTRACT_ADDRESS}}}'
       abi: DarkForest
@@ -16,56 +16,53 @@ dataSources:
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - Player
-        - Planet
-        - Arrival
-        - Upgrade
-        - Hat
-        - ArrivalQueue
-        - DepartureQueue
-        - Meta
-        - Artifact
-        - Spaceship
+        - Lobby
+        - Arena
       abis:
         - name: DarkForest
           file: '{{{DARKFOREST_ABI_PATH}}}'
       eventHandlers:
-        - event: ArtifactDeposited(address,uint256,uint256)
-          handler: handleArtifactDeposited
-        - event: ArtifactWithdrawn(address,uint256,uint256)
-          handler: handleArtifactWithdrawn
-        - event: ArtifactFound(address,uint256,uint256)
-          handler: handleArtifactFound
-        - event: ArtifactActivated(address,uint256,uint256)
-          handler: handleArtifactActivated
-        - event: ArtifactDeactivated(address,uint256,uint256)
-          handler: handleArtifactDeactivated
-        - event: AdminPlanetCreated(uint256)
-          handler: handleAdminPlanetCreated
-        - event: PlanetProspected(address,uint256)
-          handler: handlePlanetProspected
-        - event: PlanetTransferred(address,uint256,address)
-          handler: handlePlanetTransferred
-        - event: PlanetUpgraded(address,uint256,uint256,uint256)
-          handler: handlePlanetUpgraded
-        - event: PlanetHatBought(address,uint256,uint256)
-          handler: handlePlanetHatBought
-        - event: ArrivalQueued(address,uint256,uint256,uint256,uint256,uint256)
-          handler: handleArrivalQueued
-        - event: PlayerInitialized(address,uint256)
-          handler: handlePlayerInitialized
-        - event: PlanetSilverWithdrawn(address,uint256,uint256)
-          handler: handlePlanetSilverWithdrawn
-        - event: LocationRevealed(address,uint256,uint256,uint256)
-          handler: handleLocationRevealed
-        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
-          handler: handleTransferSingle
         - event: LobbyCreated(address,address)
           handler: handleLobbyCreated
-        - event: PlanetInvaded(address,uint256)
-          handler: handlePlanetInvaded
-        - event: PlanetCaptured(address,uint256)
-          handler: handlePlanetCaptured
-      blockHandlers:
-        - handler: handleBlock
-      file: ./src/mapping.ts
+      file: ./src/arena.ts
+templates:
+  - kind: ethereum/contract
+    name: DarkForest
+    network: optimism
+    source:
+      abi: DarkForest
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Arena
+        - ArenaConfig
+        - ArenaPlayer
+        - ArenaPlanet
+        - ConfigPlayer
+        - ConfigTeam
+        - Player
+      abis:
+        - name: DarkForest
+          file: '{{{DARKFOREST_ABI_PATH}}}'
+      eventHandlers:
+        - event: PlayerInitialized(address,uint256)
+          handler: handlePlayerInitialized
+        - event: Gameover(address)
+          handler: handleGameover
+        - event: GameStarted(address,uint256)
+          handler: handleGameStarted
+        - event: AdminPlanetCreated(uint256)
+          handler: handleAdminPlanetCreated
+        - event: ArrivalQueued(address,uint256,uint256,uint256,uint256,uint256)
+          handler: handleArrivalQueued
+        - event: ArenaInitialized(address,address)
+          handler: handleArenaInitialized
+        - event: PlayerReady(address,uint256)
+          handler: handlePlayerReady
+        - event: PlayerNotReady(address,uint256)
+          handler: handlePlayerNotReady
+        - event: TargetCaptured(uint256,address)
+          handler: handleTargetCaptured
+      file: ./src/arena.ts
