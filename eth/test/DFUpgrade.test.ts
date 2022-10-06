@@ -1,9 +1,9 @@
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import {
   conquerUnownedPlanet,
   feedSilverToCap,
+  fixtureLoader,
   increaseBlockchainTime,
   makeInitArgs,
 } from './utils/TestUtils';
@@ -25,7 +25,7 @@ describe('DarkForestUpgrade', function () {
   let world: World;
 
   beforeEach('load fixture', async function () {
-    world = await loadFixture(defaultWorldFixture);
+    world = await fixtureLoader(defaultWorldFixture);
   });
 
   it('should reject if planet not initialized', async function () {

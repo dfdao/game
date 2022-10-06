@@ -1,12 +1,8 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["test/**/*.ts"],
   "references": [
     {
       "path": "../packages/contracts/tsconfig.ref.json"
-    },
-    {
-      "path": "../packages/whitelist/tsconfig.ref.json"
     },
     {
       "path": "../packages/hashing/tsconfig.ref.json"
@@ -19,6 +15,9 @@
     },
     {
       "path": "../packages/types/tsconfig.ref.json"
+    },
+    {
+      "path": "../packages/whitelist/tsconfig.ref.json"
     }
   ],
   "compilerOptions": {

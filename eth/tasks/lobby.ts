@@ -14,19 +14,16 @@ async function deployLobbies({}, hre: HardhatRuntimeEnvironment): Promise<void> 
 
   const baseURI = isDev ? 'http://localhost:8081' : 'https://zkga.me';
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const { abi: InitABI } = await hre.artifacts.readArtifact('DFInitialize');
   const initInterface = hre.ethers.Contract.getInterface(InitABI);
 
   const whitelistEnabled = false;
   const artifactBaseURI = '';
-  const initializers = { ...hre.settings.darkforest.initializers, DISABLE_ZK_CHECKS: true };
+  const initializers = { ...hre.initializers, DISABLE_ZK_CHECKS: true };
 
-  const initAddress = hre.settings.contracts.INIT_ADDRESS;
+  const initAddress = hre.contracts.INIT_ADDRESS;
   const initFunctionCall = initInterface.encodeFunctionData('init', [
     whitelistEnabled,
     artifactBaseURI,

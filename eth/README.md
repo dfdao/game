@@ -11,8 +11,8 @@ All of our smartcontract related code are located in the `/eth` directory.
 
 ### Installing Core Dependencies
 
-- Node (v16.x)
-- Npm (v8+)
+- Node (v14.x OR v16.x)
+- Yarn (Javascript Package Manager)
 
 #### Installing The Correct Node Version Using NVM
 
@@ -25,18 +25,20 @@ nvm install
 
 After the installation is finished, you can run `node --version` to verify that you are running v14 or v16
 
-#### Installing Dependencies
+#### Installing Yarn & Other Dev Dependencies
 
-After you have Node & Npm installed, run `npm ci` to install dev dependencies:
+Refer to [Yarn's official documentation](https://classic.yarnpkg.com/en/docs/install) for the installation guide.
+
+After you have Yarn installed, run `yarn` to install dev dependencies:
 
 ### Run Locally
 
-To run the tests run `npm test`
+To run the tests run `yarn test`
 
 To deploy contracts locally, you'll need to run 2 commands:
 
-1. Start a node by running `npm run hardhat:node`
-2. Then (in another terminal) deploy contracts by running `npm run hardhat:dev deploy -- --whitelist false`
+1. Start a node by running `yarn hardhat:node`
+2. Then (in another terminal) deploy contracts by running `yarn hardhat:dev deploy --whitelist false`
 
 You can import the private key of one of the accounts `hardhat node` created and funded, which are printed when you started the node such as:
 
@@ -47,7 +49,7 @@ Private Key: 0x67195c963ff445314e667112ab22f4a7404bad7f9746564eb409b9bb8c6aed32
 
 ## subgraph
 
-Assuming you already have your contracts deployed be it on a local node or on a mainnet, you'll have the `abi/DarkForest.json` file, the `CONTRACT_ADDRESS` address, and the block the diamond contract was initialized at (so you dont waste time syncing from the genesis block) inside the `@dfdao/contracts` packag. In development, the start block will be set at 0.
+Assuming you already have your contracts deployed be it on a local node or on a mainnet, you'll have the `abi/DarkForest.json` file, the `CONTRACT_ADDRESS` address, and the block the diamond contract was initialized at (so you dont waste time syncing from the genesis block) inside the `@darkforest_eth/contracts` packag. In development, the start block will be set at 0.
 
 ## TheGraph hosted solution
 
@@ -58,11 +60,11 @@ For TheGraph hosted service, you need to create an account on thegraph.com, and 
 in your terminal.
 
 Then put the contract addresses into the templates and codgen thegraph files
-`npm run subgraph:template:prod`
+`yarn subgraph:template:prod`
 
 Finally ask them to start the indexing
-`npm run subgraph:deploy:prod -- yourloginname/graphname`
+`yarn subgraph:deploy:prod yourloginname/graphname`
 
 ## local development
 
-To run a local copy of thegraph make sure docker is installed and then run `npm start -- --subgraph df` OR if you already have your contracts deployed and running run `npm run subgraph:deploy:dev` and find your local hosted explorer at `http://localhost:8000/subgraphs/name/df`
+To run a local copy of thegraph make sure docker is installed and then run `yarn start --subgraph df` OR if you already have your contracts deployed and running run `yarn hardhat:dev subgraph:deploy --name df` and find your local hosted explorer at `http://localhost:8000/subgraphs/name/df`

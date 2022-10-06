@@ -2,6 +2,8 @@
 import { BigInt } from '@graphprotocol/graph-ts';
 import {
   DarkForest__bulkGetArtifactsByIdsResultRetStruct,
+  DarkForest__bulkGetPlanetsDataByIdsResultRetInfo2Struct,
+  DarkForest__bulkGetPlanetsDataByIdsResultRetInfoStruct,
   DarkForest__bulkGetPlanetsDataByIdsResultRetPlanetStruct,
   DarkForest__bulkGetVoyagesByIdsResultRetStruct,
 } from '../../generated/DarkForest/DarkForest';
@@ -25,7 +27,9 @@ import {
 
 export function refreshPlanetFromContractData(
   locationDec: BigInt,
-  rawPlanet: DarkForest__bulkGetPlanetsDataByIdsResultRetPlanetStruct
+  rawPlanet: DarkForest__bulkGetPlanetsDataByIdsResultRetPlanetStruct,
+  rawInfo: DarkForest__bulkGetPlanetsDataByIdsResultRetInfoStruct,
+  rawInfo2: DarkForest__bulkGetPlanetsDataByIdsResultRetInfo2Struct
 ): Planet {
   const locationId = hexStringToPaddedUnprefixed(locationDec);
 
@@ -35,10 +39,10 @@ export function refreshPlanetFromContractData(
 
   planet.locationDec = locationDec;
   planet.owner = rawPlanet.owner.toHexString(); // addresses gets 0x prefixed and 0 padded in toHexString
-  planet.isInitialized = rawPlanet.isInitialized;
-  planet.createdAt = rawPlanet.createdAt.toI32();
-  planet.lastUpdated = rawPlanet.lastUpdated.toI32();
-  planet.perlin = rawPlanet.perlin.toI32();
+  planet.isInitialized = rawInfo.isInitialized;
+  planet.createdAt = rawInfo.createdAt.toI32();
+  planet.lastUpdated = rawInfo.lastUpdated.toI32();
+  planet.perlin = rawInfo.perlin.toI32();
   planet.range = rawPlanet.range.toI32();
   planet.speed = rawPlanet.speed.toI32();
   planet.defense = rawPlanet.defense.toI32();
@@ -49,30 +53,30 @@ export function refreshPlanetFromContractData(
   planet.milliSilverCap = rawPlanet.silverCap;
   planet.milliSilverGrowth = rawPlanet.silverGrowth;
   planet.planetLevel = rawPlanet.planetLevel.toI32();
-  planet.defenseUpgrades = rawPlanet.upgradeState0.toI32();
-  planet.rangeUpgrades = rawPlanet.upgradeState1.toI32();
-  planet.speedUpgrades = rawPlanet.upgradeState2.toI32();
+  planet.defenseUpgrades = rawInfo.upgradeState0.toI32();
+  planet.rangeUpgrades = rawInfo.upgradeState1.toI32();
+  planet.speedUpgrades = rawInfo.upgradeState2.toI32();
   planet.isEnergyCapBoosted = isEnergyCapBoosted(locationId);
   planet.isEnergyGrowthBoosted = isEnergyGrowthBoosted(locationId);
   planet.isRangeBoosted = isRangeBoosted(locationId);
   planet.isSpeedBoosted = isSpeedBoosted(locationId);
   planet.isDefenseBoosted = isDefenseBoosted(locationId);
   planet.isSpaceJunkHalved = isSpaceJunkHalved(locationId);
-  planet.hatLevel = rawPlanet.hatLevel.toI32();
+  planet.hatLevel = rawInfo.hatLevel.toI32();
   planet.planetType = toPlanetType(rawPlanet.planetType);
-  planet.spaceType = toSpaceType(rawPlanet.spaceType);
-  planet.destroyed = rawPlanet.destroyed;
+  planet.spaceType = toSpaceType(rawInfo.spaceType);
+  planet.destroyed = rawInfo.destroyed;
   planet.isHomePlanet = rawPlanet.isHomePlanet;
-  planet.spaceJunk = rawPlanet.spaceJunk.toI32();
-  planet.pausers = rawPlanet.pausers.toI32();
-  planet.invadeStartBlock = rawPlanet.invadeStartBlock;
-  planet.invader = rawPlanet.invader.toHexString();
-  planet.capturer = rawPlanet.capturer.toHexString();
+  planet.spaceJunk = rawInfo.spaceJunk.toI32();
+  planet.pausers = rawInfo2.pausers.toI32();
+  planet.invadeStartBlock = rawInfo2.invadeStartBlock;
+  planet.invader = rawInfo2.invader.toHexString();
+  planet.capturer = rawInfo2.capturer.toHexString();
 
   // artifacts
-  planet.hasTriedFindingArtifact = rawPlanet.hasTriedFindingArtifact;
-  if (rawPlanet.prospectedBlockNumber.notEqual(BigInt.fromI32(0))) {
-    planet.prospectedBlockNumber = rawPlanet.prospectedBlockNumber.toI32();
+  planet.hasTriedFindingArtifact = rawInfo.hasTriedFindingArtifact;
+  if (rawInfo.prospectedBlockNumber.notEqual(BigInt.fromI32(0))) {
+    planet.prospectedBlockNumber = rawInfo.prospectedBlockNumber.toI32();
   } // no else clause, because can't set prospectedBlockNumber to null
   // and also because once prospectedBlockNumber is set to nonnull for first time, it's never changed
 

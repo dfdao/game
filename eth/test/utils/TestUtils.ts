@@ -1,34 +1,37 @@
-import type { DarkForest } from '@dfdao/contracts/typechain';
-import { ArtifactStructOutput } from '@dfdao/contracts/typechain/hardhat-diamond-abi/HardhatDiamondABI.sol/DarkForest';
-import { modPBigInt } from '@dfdao/hashing';
+import { LOCATION_ID_UB } from '@darkforest_eth/constants';
+import type { DarkForest } from '@darkforest_eth/contracts/typechain';
+import { modPBigInt } from '@darkforest_eth/hashing';
+import { address, locationIdFromDecStr, RawRevealedCoords } from '@darkforest_eth/serde';
+import { Initializers } from '@darkforest_eth/settings';
 import {
   buildContractCallArgs,
   SnarkJSProofAndSignals,
   WhitelistSnarkContractCallArgs,
   WhitelistSnarkInput,
-} from '@dfdao/snarks';
-import { whitelistSnarkWasmPath, whitelistSnarkZkeyPath } from '@dfdao/snarks/node';
+  whitelistSnarkWasmPath,
+  whitelistSnarkZkeyPath,
+} from '@darkforest_eth/snarks';
 import {
   ArtifactRarity,
-  ArtifactRarityNames,
   ArtifactType,
-  ArtifactTypeNames,
   Biome,
-  BiomeNames,
-  SpaceshipType,
-  TokenTypeNames,
-} from '@dfdao/types';
-import { bigIntFromKey } from '@dfdao/whitelist';
-import { mine, time } from '@nomicfoundation/hardhat-network-helpers';
+  LocationId,
+  PlanetLevel,
+  RevealedCoords,
+  SpaceType,
+} from '@darkforest_eth/types';
+import { bigIntFromKey } from '@darkforest_eth/whitelist';
 import bigInt from 'big-integer';
-import { expect } from 'chai';
-import { BigNumber, BigNumberish, constants } from 'ethers';
-import hre from 'hardhat';
+import { BigNumber, BigNumberish } from 'ethers';
+import { ethers, waffle } from 'hardhat';
 // @ts-ignore
 import * as snarkjs from 'snarkjs';
 import { TestLocation } from './TestLocation';
 import { World } from './TestWorld';
-import { ARTIFACT_PLANET_1, initializers, LARGE_INTERVAL } from './WorldConstants';
+import { ARTIFACT_PLANET_1, initializers, LARGE_INTERVAL, NUM_BLOCKS } from './WorldConstants';
+
+const { constants } = ethers;
+
 const {
   PLANETHASH_KEY,
   SPACETYPE_KEY,
@@ -41,16 +44,141 @@ const {
 export const ZERO_ADDRESS = constants.AddressZero;
 export const BN_ZERO = constants.Zero;
 
+export const fixtureLoader = waffle.createFixtureLoader();
+
 export function hexToBigNumber(hex: string): BigNumber {
   return BigNumber.from(`0x${hex}`);
 }
 
-export function prettyPrintToken(token: ArtifactStructOutput) {
-  console.log(
-    `~Token~\nID: ${token.id}\nCollection: ${TokenTypeNames[token.tokenType]}\nRarity: ${
-      ArtifactRarityNames[token.rarity]
-    }\nType: ${ArtifactTypeNames[token.artifactType]}\nBiome: ${BiomeNames[token.planetBiome]}`
+export function decodeRevealedCoords(coords: { x: number; y: number }) {
+  let xBI = bigInt(coords.x.toString()); // nonnegative residue mod p
+  let yBI = bigInt(coords.y.toString()); // nonnegative residue mod p
+  let x = 0;
+  let y = 0;
+  if (xBI.gt(LOCATION_ID_UB.divide(2))) {
+    xBI = xBI.minus(LOCATION_ID_UB);
+  }
+  x = xBI.toJSNumber();
+  if (yBI.gt(LOCATION_ID_UB.divide(2))) {
+    yBI = yBI.minus(LOCATION_ID_UB);
+  }
+  y = yBI.toJSNumber();
+  return {
+    x,
+    y,
+  };
+}
+
+export function getInitPlanetHash(initPlanet: {
+  x: string;
+  y: string;
+  level: number;
+  planetType: number;
+  requireValidLocationId: boolean;
+  location: string;
+  perlin: number;
+  isTargetPlanet: boolean;
+  isSpawnPlanet: boolean;
+  blockedPlanetIds: string[];
+}): string {
+  const abiCoder = ethers.utils.defaultAbiCoder;
+  return ethers.utils.keccak256(
+    abiCoder.encode(
+      ['uint', 'uint', 'uint', 'uint', 'uint', 'bool', 'bool', 'bool', 'uint[]'],
+      [
+        BigInt(initPlanet.location),
+        BigInt(initPlanet.x),
+        BigInt(initPlanet.y),
+        initPlanet.perlin,
+        initPlanet.planetType,
+        initPlanet.requireValidLocationId,
+        initPlanet.isTargetPlanet,
+        initPlanet.isSpawnPlanet,
+        initPlanet.blockedPlanetIds.map(x => BigInt(x))
+      ]
+    )
   );
+}
+
+export function getDeterministicArtifact(planet: TestLocation, initializers: Initializers) {
+
+  const abiCoder = ethers.utils.defaultAbiCoder;
+
+  const artifactSeed = ethers.utils.keccak256(
+    abiCoder.encode(['uint'], [BigInt(planet.id.toHexString())])
+  );
+
+  const seedHash = ethers.utils.keccak256(abiCoder.encode(['uint'], [BigInt(artifactSeed)]));
+
+  const seed = BigNumber.from(artifactSeed);
+  const lastByteOfSeed = seed.mod(BigNumber.from('0xff')).toNumber();
+  const bigLastByte = BigNumber.from(lastByteOfSeed);
+
+  const secondLastByteOfSeed = ((seed.sub(bigLastByte)).div(BigNumber.from(256))).mod(BigNumber.from('0xff')).toNumber();
+
+  const perlin = BigNumber.from(planet.perlin).toNumber();
+  const biome = getBiome({ perlin, biomebase: initializers.BIOMEBASE_KEY, initializers });
+
+  console.log(`seed hash ${seed.toHexString()}`);
+  console.log(`seed string ${seed.toString()}`);
+  console.log('mod', BigNumber.from('0xff').toNumber())
+  console.log('lastByte', lastByteOfSeed);
+  console.log('secondLastByte', secondLastByteOfSeed);
+  console.log(`hex representations: last byte: ${bigLastByte.toHexString()} second last: ${BigNumber.from(secondLastByteOfSeed).toHexString()}`);
+  console.log('biome', biome);
+
+  console.log('js artifact seed hex', artifactSeed);
+  console.log('hash of artifact seed', seedHash);
+
+  let artifactType: ArtifactType = ArtifactType.Pyramid;
+
+  if (lastByteOfSeed < 39) {
+    artifactType = ArtifactType.Monolith;
+  } else if (lastByteOfSeed < 78) {
+    artifactType = ArtifactType.Colossus;
+  }
+  // else if (lastByteOfSeed < 117) {
+  //     artifactType = ArtifactType.Spaceship;
+  // }
+  else if (lastByteOfSeed < 156) {
+    artifactType = ArtifactType.Pyramid;
+  } else if (lastByteOfSeed < 171) {
+    artifactType = ArtifactType.Wormhole;
+  } else if (lastByteOfSeed < 186) {
+    artifactType = ArtifactType.PlanetaryShield;
+  } else if (lastByteOfSeed < 201) {
+    artifactType = ArtifactType.PhotoidCannon;
+  } else if (lastByteOfSeed < 216) {
+    artifactType = ArtifactType.BloomFilter;
+  } else if (lastByteOfSeed < 231) {
+    artifactType = ArtifactType.BlackDomain;
+  } else {
+    if (biome === Biome.ICE) {
+      artifactType = ArtifactType.PlanetaryShield;
+    } else if (biome === Biome.LAVA) {
+      artifactType = ArtifactType.PhotoidCannon;
+    } else if (biome === Biome.WASTELAND) {
+      artifactType = ArtifactType.BloomFilter;
+    } else if (biome === Biome.CORRUPTED) {
+      artifactType = ArtifactType.BlackDomain;
+    } else {
+      artifactType = ArtifactType.Wormhole;
+    }
+    artifactType = ArtifactType.PhotoidCannon;
+  }
+
+  let bonus = 0;
+  if (secondLastByteOfSeed < 4) {
+    bonus = 2;
+  } else if (secondLastByteOfSeed < 16) {
+    bonus = 1;
+  }
+
+  const rarity = artifactRarityFromPlanetLevel(planetLevelFromHexPerlin(planet.id.toHexString(), perlin, initializers) + bonus);
+
+  console.log('artifactType', artifactType, 'rarity', rarity);
+
+  return { type: artifactType, rarity };
 }
 
 export function makeRevealArgs(
@@ -111,7 +239,8 @@ export async function makeWhitelistArgs(key: string, recipient: string) {
 
 export function makeInitArgs(
   planetLoc: TestLocation,
-  spawnRadius: number = initializers.WORLD_RADIUS_MIN
+  spawnRadius: number = initializers.WORLD_RADIUS_MIN,
+  team: number = 0
 ): [
   [BigNumberish, BigNumberish],
   [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]],
@@ -125,7 +254,9 @@ export function makeInitArgs(
     BigNumberish,
     BigNumberish,
     BigNumberish
-  ]
+  ],
+  BigNumberish
+
 ] {
   return [
     [BN_ZERO, BN_ZERO],
@@ -144,6 +275,7 @@ export function makeInitArgs(
       PERLIN_MIRROR_X ? '1' : '0',
       PERLIN_MIRROR_Y ? '1' : '0',
     ],
+    team
   ];
 }
 
@@ -169,12 +301,12 @@ export function makeMoveArgs(
     BigNumberish,
     BigNumberish,
     BigNumberish,
+    BigNumberish,
+    BigNumberish,
+    BigNumberish,
+    BigNumberish,
     BigNumberish
-  ],
-  BigNumberish,
-  BigNumberish,
-  BigNumberish,
-  BigNumberish
+  ]
 ] {
   return [
     [0, 0],
@@ -194,11 +326,11 @@ export function makeMoveArgs(
       PERLIN_LENGTH_SCALE,
       PERLIN_MIRROR_X ? '1' : '0',
       PERLIN_MIRROR_Y ? '1' : '0',
+      popMoved,
+      silverMoved,
+      movedArtifactId,
+      abandoning,
     ],
-    popMoved,
-    silverMoved,
-    movedArtifactId,
-    abandoning,
   ];
 }
 
@@ -233,12 +365,19 @@ export function makeFindArtifactArgs(
  * interval is measured in seconds
  */
 export async function increaseBlockchainTime(interval = LARGE_INTERVAL) {
-  await time.increase(interval);
-  await mine();
+  await ethers.provider.send('evm_increaseTime', [interval]);
+  await ethers.provider.send('evm_mine', []);
+}
+
+export async function increaseBlocks(blocks = NUM_BLOCKS) {
+  // await ethers.provider.send('evm_increaseTime', [LARGE_INTERVAL]);
+  for (let i = 0; i < blocks; i++) {
+    await ethers.provider.send('evm_mine', []);
+  }
 }
 
 export async function getCurrentTime() {
-  return time.latest();
+  return (await ethers.provider.getBlock('latest')).timestamp;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -309,43 +448,30 @@ export async function user1MintArtifactPlanet(user1Core: DarkForest) {
   await increaseBlockchainTime();
   const findArtifactTx = await user1Core.findArtifact(...makeFindArtifactArgs(ARTIFACT_PLANET_1));
   const findArtifactReceipt = await findArtifactTx.wait();
-  // 0th event is erc721 transfer (i think); 1st event is UpdateArtifact, 2nd argument of this event
-  // is artifactId
-  const artifactId = findArtifactReceipt.events?.[1].args?.artifactId;
-  return artifactId as BigNumber;
+  // 0th event is erc721 transfer (i think); 1st event is UpdateArtifact, 2nd argument of this event is artifactId
+  const artifactId = findArtifactReceipt.events?.[1].args?.[1];
+  return artifactId;
 }
 
 export async function getArtifactsOwnedBy(contract: DarkForest, addr: string) {
-  return await contract.getPlayerArtifacts(addr);
-}
-
-// Gets Artifacts but not Spaceships
-export async function getArtifactsOnPlanet(world: World, locationId: BigNumberish) {
-  return await world.contract.getArtifactsOnPlanet(locationId);
-}
-
-export async function getArtifactTypeOnPlanet(
-  world: World,
-  locationId: BigNumberish,
-  artifactType: ArtifactType
-) {
-  return (await world.contract.getArtifactsOnPlanet(locationId)).filter(
-    (artifact) => artifact.artifactType === artifactType
+  const artifactsIds = await contract.getPlayerArtifactIds(addr);
+  return (await contract.bulkGetArtifactsByIds(artifactsIds)).map(
+    (artifactWithMetadata) => artifactWithMetadata[0]
   );
 }
 
-export async function createArtifact(
+export async function createArtifactOnPlanet(
   contract: DarkForest,
   owner: string,
   planet: TestLocation,
-  artifactType: ArtifactType,
-  rarity?: ArtifactRarity,
-  biome?: Biome
+  type: ArtifactType,
+  { rarity, biome }: { rarity?: ArtifactRarity; biome?: Biome } = {}
 ) {
   rarity ||= ArtifactRarity.Common;
   biome ||= Biome.FOREST;
 
-  const tokenId = await contract.createArtifactId(rarity, artifactType, biome);
+  const tokenId = hexToBigNumber(Math.floor(Math.random() * 10000000000).toString(16));
+
   await contract.adminGiveArtifact({
     tokenId,
     discoverer: owner,
@@ -353,48 +479,85 @@ export async function createArtifact(
     planetId: planet.id,
     rarity: rarity.toString(),
     biome: biome.toString(),
-    artifactType: artifactType.toString(),
+    artifactType: type.toString(),
     controller: ZERO_ADDRESS,
   });
 
   return tokenId;
 }
 
-export async function testDeactivate(world: World, locationId: BigNumberish) {
-  expect((await getArtifactsOnPlanet(world, locationId)).length).to.equal(0);
-  expect(await world.contract.hasActiveArtifact(locationId)).to.equal(false);
-  expect(await world.contract.getArtifactActivationTimeOnPlanet(locationId)).to.equal(0);
+function artifactRarityFromPlanetLevel(planetLevel: number): ArtifactRarity {
+  if (planetLevel <= 1) return ArtifactRarity.Common;
+  else if (planetLevel <= 3) return ArtifactRarity.Rare;
+  else if (planetLevel <= 5) return ArtifactRarity.Epic;
+  else if (planetLevel <= 7) return ArtifactRarity.Legendary;
+  else return ArtifactRarity.Mythic;
 }
 
-export async function activateAndConfirm(
-  contract: DarkForest,
-  locationId: BigNumber,
-  tokenId: BigNumberish,
-  wormHoleTo?: BigNumberish
-) {
-  const activateTx = await contract.activateArtifact(locationId, tokenId, wormHoleTo || 0);
-  const activateRct = await activateTx.wait();
-  const block = await hre.ethers.provider.getBlock(activateRct.blockNumber);
-  expect(await contract.getArtifactActivationTimeOnPlanet(locationId)).to.equal(block.timestamp);
-  expect((await contract.getActiveArtifactOnPlanet(locationId)).id).to.equal(tokenId);
+function getBiome({
+  perlin,
+  biomebase,
+  initializers,
+}: {
+  perlin: number;
+  biomebase: number;
+  initializers: Initializers;
+}): Biome {
+  const spaceType = spaceTypeFromPerlin(perlin, initializers);
+
+  if (spaceType === SpaceType.DEAD_SPACE) return Biome.CORRUPTED;
+
+  let biome = 3 * spaceType;
+  if (biomebase < initializers.BIOME_THRESHOLD_1) biome += 1;
+  else if (biomebase < initializers.BIOME_THRESHOLD_2) biome += 2;
+  else biome += 3;
+
+  return biome as Biome;
 }
 
-export async function getArtifactOnPlanetByType(
-  contract: DarkForest,
-  locationId: BigNumber,
-  artifactType: ArtifactType
-) {
-  return (await contract.getArtifactsOnPlanet(locationId)).filter(
-    (artifact) => (artifact.artifactType as ArtifactType) === artifactType
-  )[0];
+function spaceTypeFromPerlin(perlin: number, initializers: Initializers): SpaceType {
+  if (perlin < initializers.PERLIN_THRESHOLD_1) {
+    return SpaceType.NEBULA;
+  } else if (perlin < initializers.PERLIN_THRESHOLD_2) {
+    return SpaceType.SPACE;
+  } else if (perlin < initializers.PERLIN_THRESHOLD_3) {
+    return SpaceType.DEEP_SPACE;
+  } else {
+    return SpaceType.DEAD_SPACE;
+  }
 }
 
-export async function getSpaceshipOnPlanetByType(
-  contract: DarkForest,
-  locationId: BigNumber,
-  shipType: SpaceshipType
-) {
-  return (await contract.getSpaceshipsOnPlanet(locationId)).filter(
-    (s) => (s.spaceshipType as SpaceshipType) === shipType
-  )[0];
+function getBytesFromHex(hexStr: string, startByte: number, endByte: number) {
+  const byteString = hexStr.substring(2 * startByte, 2 * endByte);
+  return bigInt(`0x${byteString}`);
+}
+
+function planetLevelFromHexPerlin(hex: string, perlin: number, initializers: Initializers): number {
+  const spaceType = spaceTypeFromPerlin(perlin, initializers);
+
+  const levelBigInt = getBytesFromHex(hex, 4, 7);
+
+  const MIN_PLANET_LEVEL = 0;
+
+  let ret = MIN_PLANET_LEVEL;
+
+  for (let type = initializers.MAX_NATURAL_PLANET_LEVEL; type >= MIN_PLANET_LEVEL; type--) {
+    if (levelBigInt < bigInt(initializers.PLANET_LEVEL_THRESHOLDS[type])) {
+      ret = type;
+      break;
+    }
+  }
+
+  if (spaceType === SpaceType.NEBULA && ret > PlanetLevel.FOUR) {
+    ret = PlanetLevel.FOUR;
+  }
+  if (spaceType === SpaceType.SPACE && ret > PlanetLevel.FIVE) {
+    ret = PlanetLevel.FIVE;
+  }
+  if (ret > initializers.MAX_NATURAL_PLANET_LEVEL) {
+    
+    ret = initializers.MAX_NATURAL_PLANET_LEVEL as PlanetLevel;
+  }
+
+  return ret as number;
 }

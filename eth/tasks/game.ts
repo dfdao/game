@@ -1,11 +1,12 @@
-import { fakeHash, mimcHash, modPBigInt, perlin } from '@dfdao/hashing';
+import { fakeHash, mimcHash, modPBigInt, perlin } from '@darkforest_eth/hashing';
 import {
   buildContractCallArgs,
   fakeProof,
   RevealSnarkContractCallArgs,
+  revealSnarkWasmPath,
+  revealSnarkZkeyPath,
   SnarkJSProofAndSignals,
-} from '@dfdao/snarks';
-import { revealSnarkWasmPath, revealSnarkZkeyPath } from '@dfdao/snarks/node';
+} from '@darkforest_eth/snarks';
 import { BigNumber } from 'ethers';
 import { task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
@@ -17,10 +18,7 @@ task('game:pause', 'pause the game').setAction(gamePause);
 async function gamePause({}, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const pauseReceipt = await contract.pause();
   await pauseReceipt.wait();
@@ -31,10 +29,7 @@ task('game:resume', 'resume the game').setAction(gameResume);
 async function gameResume({}, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const unpauseReceipt = await contract.unpause();
   await unpauseReceipt.wait();
@@ -55,10 +50,7 @@ async function setPlanetTransferEnabled(
 ) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const setTransferEnabledReceipt = await contract.setPlanetTransferEnabled(args.enabled);
   await setTransferEnabledReceipt.wait();
@@ -71,10 +63,7 @@ task('game:setRadius', 'change the radius')
 async function gameSetRadius(args: { radius: number }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const setRadiusReceipt = await contract.adminSetWorldRadius(args.radius);
   await setRadiusReceipt.wait();
@@ -87,10 +76,7 @@ task('game:setWorldRadiusMin', 'change the WORLD_RADIUS_MIN')
 async function gameSetWorldRadiusMin(args: { radius: number }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const changeWorldRadiusMinReceipt = await contract.changeWorldRadiusMin(args.radius);
   await changeWorldRadiusMinReceipt.wait();
@@ -108,10 +94,7 @@ task('game:setTokenMintEnd', 'change the token mint end timestamp')
 async function setTokenMintEnd(args: { tokenend: number }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const setRadiusReceipt = await contract.setTokenMintEndTime(args.tokenend);
   await setRadiusReceipt.wait();
@@ -129,10 +112,7 @@ async function setPlanetOwner(
   hre: HardhatRuntimeEnvironment
 ) {
   await hre.run('utils:assertChainId');
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const setPlanetOwnerReciept = await contract.setOwner(BigNumber.from('0x' + planetId), address);
   await setPlanetOwnerReciept.wait();
@@ -150,10 +130,7 @@ task('game:findCheaters', 'finds planets that have been captured more than once'
 async function findCheaters({}, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
   const { GAME_START_BLOCK } = await contract.getGameConstants();
   const endBlock = 20743532;
 
@@ -217,19 +194,13 @@ async function findCheaters({}, hre: HardhatRuntimeEnvironment) {
 async function createPlanets({}, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
-  const contract = await hre.ethers.getContractAt(
-    'DarkForest',
-    hre.settings.contracts.CONTRACT_ADDRESS
-  );
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
-  for (const adminPlanetInfo of hre.settings.darkforest.adminPlanets) {
+  for (const adminPlanetInfo of hre.adminPlanets) {
     try {
-      const location = hre.settings.darkforest.initializers.DISABLE_ZK_CHECKS
-        ? fakeHash(hre.settings.darkforest.initializers.PLANET_RARITY)(
-            adminPlanetInfo.x,
-            adminPlanetInfo.y
-          ).toString()
-        : mimcHash(hre.settings.darkforest.initializers.PLANETHASH_KEY)(
+      const location = hre.initializers.DISABLE_ZK_CHECKS
+        ? fakeHash(hre.initializers.PLANET_RARITY)(adminPlanetInfo.x, adminPlanetInfo.y).toString()
+        : mimcHash(hre.initializers.PLANETHASH_KEY)(
             adminPlanetInfo.x,
             adminPlanetInfo.y
           ).toString();
@@ -238,10 +209,10 @@ async function createPlanets({}, hre: HardhatRuntimeEnvironment) {
         y: adminPlanetInfo.y,
       };
       const perlinValue = perlin(adminPlanetCoords, {
-        key: hre.settings.darkforest.initializers.SPACETYPE_KEY,
-        scale: hre.settings.darkforest.initializers.PERLIN_LENGTH_SCALE,
-        mirrorX: hre.settings.darkforest.initializers.PERLIN_MIRROR_X,
-        mirrorY: hre.settings.darkforest.initializers.PERLIN_MIRROR_Y,
+        key: hre.initializers.SPACETYPE_KEY,
+        scale: hre.initializers.PERLIN_LENGTH_SCALE,
+        mirrorX: hre.initializers.PERLIN_MIRROR_X,
+        mirrorY: hre.initializers.PERLIN_MIRROR_Y,
         floor: true,
       });
 
@@ -255,13 +226,13 @@ async function createPlanets({}, hre: HardhatRuntimeEnvironment) {
         const pfArgs = await makeRevealProof(
           adminPlanetInfo.x,
           adminPlanetInfo.y,
-          hre.settings.darkforest.initializers.PLANETHASH_KEY,
-          hre.settings.darkforest.initializers.SPACETYPE_KEY,
-          hre.settings.darkforest.initializers.PERLIN_LENGTH_SCALE,
-          hre.settings.darkforest.initializers.PERLIN_MIRROR_X,
-          hre.settings.darkforest.initializers.PERLIN_MIRROR_Y,
-          hre.settings.darkforest.initializers.DISABLE_ZK_CHECKS,
-          hre.settings.darkforest.initializers.PLANET_RARITY
+          hre.initializers.PLANETHASH_KEY,
+          hre.initializers.SPACETYPE_KEY,
+          hre.initializers.PERLIN_LENGTH_SCALE,
+          hre.initializers.PERLIN_MIRROR_X,
+          hre.initializers.PERLIN_MIRROR_Y,
+          hre.initializers.DISABLE_ZK_CHECKS,
+          hre.initializers.PLANET_RARITY
         );
         const revealPlanetReceipt = await contract.revealLocation(...pfArgs);
         await revealPlanetReceipt.wait();

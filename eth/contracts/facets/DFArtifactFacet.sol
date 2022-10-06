@@ -2,25 +2,26 @@
 pragma solidity ^0.8.0;
 
 // Contract imports
-import {DFVerifierFacet} from "./DFVerifierFacet.sol";
+import {ERC721} from "@solidstate/contracts/token/ERC721/ERC721.sol";
+import {ERC721BaseStorage} from "@solidstate/contracts/token/ERC721/base/ERC721BaseStorage.sol";
+import {Verifier} from "../Verifier.sol";
 import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
-import {DFTokenFacet} from "./DFTokenFacet.sol";
 
 // Library Imports
-import {LibPermissions} from "../libraries/LibPermissions.sol";
+import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
-import {LibArtifact} from "../libraries/LibArtifact.sol";
-
 import {LibPlanet} from "../libraries/LibPlanet.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {Artifact, ArtifactRarity, ArtifactType, Biome, TokenType, DFTCreateArtifactArgs, DFPFindArtifactArgs} from "../DFTypes.sol";
+import {Artifact, ArtifactType, DFTCreateArtifactArgs, DFPFindArtifactArgs} from "../DFTypes.sol";
 
-contract DFArtifactFacet is WithStorage {
+contract DFArtifactFacet is WithStorage, ERC721 {
+    using ERC721BaseStorage for ERC721BaseStorage.Layout;
+
     event PlanetProspected(address player, uint256 loc);
     event ArtifactFound(address player, uint256 artifactId, uint256 loc);
     event ArtifactDeposited(address player, uint256 artifactId, uint256 loc);
@@ -31,7 +32,7 @@ contract DFArtifactFacet is WithStorage {
     modifier onlyWhitelisted() {
         require(
             DFWhitelistFacet(address(this)).isWhitelisted(msg.sender) ||
-                msg.sender == LibPermissions.contractOwner(),
+                msg.sender == LibDiamond.contractOwner(),
             "Player is not whitelisted"
         );
         _;
@@ -47,61 +48,91 @@ contract DFArtifactFacet is WithStorage {
         _;
     }
 
-    modifier onlyAdmin() {
-        require(
-            msg.sender == LibPermissions.contractOwner(),
-            "Only Admin address can perform this action."
-        );
-        _;
-    }
-
     modifier onlyAdminOrCore() {
         require(
-            msg.sender == gs().diamondAddress || msg.sender == LibPermissions.contractOwner(),
+            msg.sender == gs().diamondAddress || msg.sender == LibDiamond.contractOwner(),
             "Only the Core or Admin addresses can fiddle with artifacts."
         );
         _;
     }
 
-    function createArtifact(uint256 tokenId, address owner)
+    modifier onlyAdmin() {
+        require(
+            msg.sender == LibDiamond.contractOwner(),
+            "Only Admin address can perform this action."
+        );
+        _;
+    }
+
+    function createArtifact(DFTCreateArtifactArgs memory args)
         public
         onlyAdminOrCore
         returns (Artifact memory)
     {
-        require(tokenId >= 1, "token id must be positive");
-        require(LibArtifact.isArtifact(tokenId), "token must be Artifact");
-        // Account, Id, Amount, Data
-        DFTokenFacet(address(this)).mint(owner, tokenId, 1);
+        require(args.tokenId >= 1, "artifact id must be positive");
 
-        return LibArtifact.decode(tokenId);
+        _mint(args.owner, args.tokenId);
+
+        Artifact memory newArtifact =
+            Artifact(
+                true,
+                args.tokenId,
+                args.planetId,
+                args.rarity,
+                args.biome,
+                block.timestamp,
+                args.discoverer,
+                args.artifactType,
+                0,
+                0,
+                0,
+                0,
+                args.controller
+            );
+
+        gs().artifacts[args.tokenId] = newArtifact;
+
+        return newArtifact;
     }
 
-    function createArtifactId(
-        ArtifactRarity rarity,
-        ArtifactType artifactType,
-        Biome biome
-    ) public pure returns (uint256) {
-        return LibArtifact.create(rarity, artifactType, biome);
+    function getArtifact(uint256 tokenId) public view returns (Artifact memory) {
+        return gs().artifacts[tokenId];
     }
 
-    function getArtifactFromId(uint256 artifactId) public pure returns (Artifact memory) {
-        return LibArtifact.decode(artifactId);
+    function getArtifactAtIndex(uint256 idx) public view returns (Artifact memory) {
+        return gs().artifacts[tokenByIndex(idx)];
     }
 
-    // This calls the low level _transfer call which doesn't check if the msg.sender actually owns
-    // the tokenId. TODO: See if this is a problem.
-    function transferArtifact(
-        uint256 tokenId,
-        address owner,
-        address newOwner
-    ) public onlyAdminOrCore {
-        if (newOwner == address(0)) {
-            // account, id, amount.
-            DFTokenFacet(address(this)).burn(owner, tokenId, 1);
-        } else {
-            // sender receiver id amount data
-            DFTokenFacet(address(this)).transfer(owner, owner, newOwner, tokenId, 1, "");
+    function getPlayerArtifactIds(address playerId) public view returns (uint256[] memory) {
+        uint256 balance = balanceOf(playerId);
+        uint256[] memory results = new uint256[](balance);
+
+        for (uint256 idx = 0; idx < balance; idx++) {
+            results[idx] = tokenOfOwnerByIndex(playerId, idx);
         }
+
+        return results;
+    }
+
+    function transferArtifact(uint256 tokenId, address newOwner) public onlyAdminOrCore {
+        if (newOwner == address(0)) {
+            _burn(tokenId);
+        } else {
+            _transfer(ownerOf(tokenId), newOwner, tokenId);
+        }
+    }
+
+    function updateArtifact(Artifact memory updatedArtifact) public onlyAdminOrCore {
+        require(
+            ERC721BaseStorage.layout().exists(updatedArtifact.id),
+            "you cannot update an artifact that doesn't exist"
+        );
+
+        gs().artifacts[updatedArtifact.id] = updatedArtifact;
+    }
+
+    function doesArtifactExist(uint256 tokenId) public view returns (bool) {
+        return ERC721BaseStorage.layout().exists(tokenId);
     }
 
     function findArtifact(
@@ -122,14 +153,13 @@ contract DFArtifactFacet is WithStorage {
 
         if (!snarkConstants().DISABLE_ZK_CHECKS) {
             require(
-                DFVerifierFacet(address(this)).verifyBiomebaseProof(_a, _b, _c, _input),
+                Verifier.verifyBiomebaseProof(_a, _b, _c, _input),
                 "biome zkSNARK failed doesn't check out"
             );
         }
 
-        uint256 foundArtifactId = LibArtifactUtils.findArtifact(
-            DFPFindArtifactArgs(planetId, biomebase, address(this))
-        );
+        uint256 foundArtifactId =
+            LibArtifactUtils.findArtifact(DFPFindArtifactArgs(planetId, biomebase, address(this)));
 
         emit ArtifactFound(msg.sender, foundArtifactId, planetId);
     }
@@ -191,5 +221,19 @@ contract DFArtifactFacet is WithStorage {
         LibPlanet.refreshPlanet(locationId);
         LibArtifactUtils.prospectPlanet(locationId);
         emit PlanetProspected(msg.sender, locationId);
+    }
+
+    /**
+      Gives players 5 spaceships on their home planet. Can only be called once
+      by a given player. This is a first pass at getting spaceships into the game.
+      Eventually ships will be able to spawn in the game naturally (construction, capturing, etc.)
+     */
+
+    function adminGiveArtifact(DFTCreateArtifactArgs memory args) public onlyAdmin {
+        Artifact memory artifact = createArtifact(args);
+        transferArtifact(artifact.id, address(this));
+        LibGameUtils._putArtifactOnPlanet(artifact.id, args.planetId);
+
+        emit ArtifactFound(args.owner, artifact.id, args.planetId);
     }
 }
