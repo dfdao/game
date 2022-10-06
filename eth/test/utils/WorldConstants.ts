@@ -131,6 +131,8 @@ export const arenaInitializers = decodeInitializers({
   ...defaultInitializerValues,
   MANUAL_SPAWN: true,
   ADMIN_CAN_ADD_PLANETS: true,
+  INIT_PERLIN_MIN: 1,
+  INIT_PERLIN_MAX: 31,
 });
 
 export const VALID_INIT_PERLIN = initializers.INIT_PERLIN_MIN;
