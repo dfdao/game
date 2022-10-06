@@ -36,6 +36,8 @@ contract DFStartFacet is WithStorage {
         }
 
         ws().drip = 0.05 ether;
+        ws().relayerRewardsEnabled = false;
+        ws().relayerReward = 0.01 ether;
 
         gs().planetLevelsCount = 10;
 
@@ -90,6 +92,9 @@ contract DFStartFacet is WithStorage {
         gameConstants().CAPTURE_ZONES_PER_5000_WORLD_RADIUS = i()
             .initArgs
             .CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
+
+        gameConstants().SPACESHIPS = i().initArgs.SPACESHIPS;
+
         // Arena Values
         gameConstants().TARGETS_REQUIRED_FOR_VICTORY = i().initArgs.TARGETS_REQUIRED_FOR_VICTORY;
         gameConstants().CLAIM_VICTORY_ENERGY_PERCENT = i().initArgs.CLAIM_VICTORY_ENERGY_PERCENT;

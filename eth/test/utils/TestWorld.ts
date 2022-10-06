@@ -4,7 +4,12 @@ import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deployAndCut, deployDiamondInit, deployLibraries } from '../../tasks/deploy';
-import { initializers, noPlanetTransferInitializers, target4Initializers } from './WorldConstants';
+import {
+  arenaInitializers,
+  initializers,
+  noPlanetTransferInitializers,
+  target4Initializers,
+} from './WorldConstants';
 
 export interface World {
   contract: DarkForest;
@@ -81,6 +86,13 @@ export function whilelistWorldFixture(): Promise<World> {
 export function noPlanetTransferFixture(): Promise<World> {
   return initializeWorld({
     initializers: noPlanetTransferInitializers,
+    whitelistEnabled: false,
+  });
+}
+
+export function arenaWorldFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: arenaInitializers,
     whitelistEnabled: false,
   });
 }

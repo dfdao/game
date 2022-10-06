@@ -12,7 +12,7 @@ const _INTERFACE_ID_IDIAMOND_READABLE = '0x48e2b093';
 const _INTERFACE_ID_IDIAMOND_WRITABLE = '0x1f931c1c';
 const _INTERFACE_ID_IERC173 = '0x7f5828d0';
 
-describe.only('DarkForestLobby', function () {
+describe('DarkForestLobby', function () {
   let world: World;
   let lobby: DarkForest;
   const initAddress = ethers.constants.AddressZero;

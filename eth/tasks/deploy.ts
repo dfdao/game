@@ -312,10 +312,17 @@ export async function deployAndCut(
 
   const initTx = await diamondCut.diamondCut(toCut, initAddress, initFunctionCall);
   const initReceipt = await initTx.wait();
+
   if (!initReceipt.status) {
     throw Error(`Diamond cut failed: ${initTx.hash}`);
   }
   console.log('Completed diamond cut');
+  const startTx = await diamondCut.start();
+  const startRct = await startTx.wait();
+  if (!startRct.status) {
+    throw Error(`Diamond start failed: ${initTx.hash}`);
+  }
+  console.log('Completed diamond start');
 
   return [diamond, diamondInit, initReceipt] as const;
 }
