@@ -165,6 +165,9 @@ struct Planet {
     uint256 activeArtifact;
     uint256 wormholeTo;
     uint256 artifactActivationTime;
+    // Arena Stuff
+    bool spawnPlanet;
+    bool targetPlanet;
 }
 
 struct RevealedCoords {
@@ -210,6 +213,8 @@ struct DFPInitPlanetArgs {
     SpaceType spaceType;
     PlanetType planetType;
     bool isHomePlanet;
+    bool isSpawnPlanet;
+    bool isTargetPlanet;
 }
 
 struct DFPMoveArgs {
@@ -374,4 +379,18 @@ struct Spaceship {
 enum SilverInfo {
     Unknown,
     TokenType
+}
+
+// Arena Stuff
+struct AdminCreateRevealPlanetArgs {
+    uint256 location;
+    uint256 x;
+    uint256 y;
+    uint256 perlin;
+    uint256 level;
+    PlanetType planetType;
+    bool requireValidLocationId;
+    bool isTargetPlanet;
+    bool isSpawnPlanet;
+    uint256[] blockedPlanetIds;
 }

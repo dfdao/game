@@ -45,6 +45,8 @@ struct GameStorage {
     mapping(uint256 => ArrivalData) planetArrivals;
     // Capture Zones
     uint256 nextChangeBlock;
+    uint256[] targetPlanetIds;
+    uint256[] spawnPlanetIds;
 }
 
 // Game config

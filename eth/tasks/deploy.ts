@@ -253,6 +253,7 @@ export async function deployAndCut(
     hre
   );
   const getterFacet = await deployGetterFacet({}, libraries, hre);
+  const arenaFacet = await deployArenaFacet({}, libraries, hre);
   const spaceshipFacet = await deploySpaceshipFacet({}, libraries, hre);
   const whitelistFacet = await deployWhitelistFacet({}, libraries, hre);
   const verifierFacet = await deployVerifierFacet({}, libraries, hre);
@@ -263,6 +264,7 @@ export async function deployAndCut(
 
   // The `cuts` to perform for Dark Forest facets
   const darkForestFacetCuts = [
+    ...changes.getFacetCuts('DFArenaFacet', arenaFacet),
     ...changes.getFacetCuts('DFCoreFacet', coreFacet),
     ...changes.getFacetCuts('DFMoveFacet', moveFacet),
     ...changes.getFacetCuts('DFCaptureFacet', captureFacet),
@@ -334,6 +336,20 @@ export async function deployGetterFacet({}, {}: Libraries, hre: HardhatRuntimeEn
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log('DFGetterFacet deployed to:', contract.address);
+  return contract;
+}
+
+export async function deployArenaFacet(
+  {},
+  { LibGameUtils, LibPlanet }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  const factory = await hre.ethers.getContractFactory('DFArenaFacet', {
+    libraries: { LibGameUtils, LibPlanet },
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log('DFArenaFacet deployed to:', contract.address);
   return contract;
 }
 

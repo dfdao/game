@@ -17,6 +17,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
 import {SpaceType, Planet, Player, ArtifactType, DFPInitPlanetArgs, DFPMoveArgs, DFPFindArtifactArgs, AdminCreatePlanetArgs} from "../DFTypes.sol";
+import "hardhat/console.sol";
 
 contract DFCoreFacet is WithStorage {
     using ABDKMath64x64 for *;
@@ -121,12 +122,26 @@ contract DFCoreFacet is WithStorage {
         uint256[2] memory _c,
         uint256[8] memory _input
     ) public onlyWhitelisted returns (uint256) {
-        LibPlanet.initializePlanet(_a, _b, _c, _input, true);
-
         uint256 _location = _input[0];
         uint256 _perlin = _input[1];
         uint256 _radius = _input[2];
 
+        if (gameConstants().MANUAL_SPAWN) {
+            Planet storage _planet = gs().planets[_location];
+
+            require(_planet.spawnPlanet, "Planet is not a spawn planet");
+
+            require(_planet.isInitialized, "Planet not initialized");
+            require(_planet.owner == address(0), "Planet is owned");
+            require(!_planet.isHomePlanet, "Planet is already a home planet");
+
+            _planet.isHomePlanet = true;
+            _planet.owner = msg.sender;
+            _planet.population = (_planet.populationCap * 99) / 100;
+            _planet.lastUpdated = block.timestamp;
+        } else {
+            LibPlanet.initializePlanet(_a, _b, _c, _input, true);
+        }
         require(LibPlanet.checkPlayerInit(_location, _perlin, _radius));
 
         // Initialize player data
