@@ -237,7 +237,7 @@ class GameManager extends EventEmitter {
   /**
    * @todo change this to the correct timestamp each round.
    */
-  private readonly endTimeSeconds: number = 1948939200; // new Date("2031-10-05T04:00:00.000Z").getTime() / 1000
+  private endTimeSeconds = 1948939200; // new Date("2031-10-05T04:00:00.000Z").getTime() / 1000
 
   /**
    * An interface to the blockchain that is a little bit lower-level than {@link ContractsAPI}. It
@@ -356,6 +356,19 @@ class GameManager extends EventEmitter {
    */
   private captureZoneGenerator: CaptureZoneGenerator | undefined;
 
+  /**
+   * Arena Stuff
+   */
+  private startTime: number | undefined;
+
+  private gameover: boolean;
+
+  public gameover$: Monomitter<boolean>;
+
+  private winners: EthAddress[];
+
+  private spectator: boolean;
+
   private constructor(
     terminal: React.MutableRefObject<TerminalHandle | undefined>,
     account: EthAddress | undefined,
@@ -377,7 +390,9 @@ class GameManager extends EventEmitter {
     ethConnection: EthConnection,
     paused: boolean,
     myArtifacts: Map<ArtifactId, Artifact>,
-    mySpaceships: Map<SpaceshipId, Spaceship>
+    mySpaceships: Map<SpaceshipId, Spaceship>,
+    gameover: boolean,
+    winners: EthAddress[]
   ) {
     super();
 
@@ -403,6 +418,9 @@ class GameManager extends EventEmitter {
     this.networkHealth$ = monomitter(true);
     this.paused$ = monomitter(true);
     this.playersUpdated$ = monomitter();
+    this.gameover = gameover;
+    this.winners = winners;
+    this.gameover$ = monomitter(true);
 
     if (contractConstants.CAPTURE_ZONES_ENABLED) {
       this.captureZoneGenerator = new CaptureZoneGenerator(
@@ -673,7 +691,9 @@ class GameManager extends EventEmitter {
       connection,
       initialState.paused,
       myArtifacts,
-      mySpaceships
+      mySpaceships,
+      initialState.gameover,
+      initialState.winners
     );
 
     gameManager.setPlayerTwitters(initialState.twitters);
@@ -839,6 +859,10 @@ class GameManager extends EventEmitter {
       .on(ContractsAPIEvent.RadiusUpdated, async () => {
         const newRadius = await gameManager.contractsAPI.getWorldRadius();
         gameManager.setRadius(newRadius);
+      })
+      .on(ContractsAPIEvent.Gameover, async () => {
+        gameManager.setGameover(true);
+        gameManager.gameover$.publish(true);
       });
 
     const unconfirmedTxs = await otherStore.getUnconfirmedSubmittedEthTxs();
@@ -1596,6 +1620,12 @@ class GameManager extends EventEmitter {
       this.minerManager.stopExplore();
     }
   }
+  private async setGameover(gameover: boolean) {
+    this.gameover = gameover;
+    this.winners = await this.contractsAPI.getWinners();
+    this.startTime = await this.contractsAPI.getStartTime();
+    this.endTimeSeconds = await this.contractsAPI.getEndTime();
+  }
 
   private setRadius(worldRadius: number) {
     this.worldRadius = worldRadius;
@@ -1856,12 +1886,6 @@ class GameManager extends EventEmitter {
       throw e;
     }
   }
-  private async setGameover(gameover: boolean) {
-    this.gameover = gameover;
-    this.winners = await this.contractsAPI.getWinners();
-    this.startTime = await this.contractsAPI.getStartTime();
-    this.endTimeSeconds = await this.contractsAPI.getEndTime();
-  }
 
   public gameDuration() {
     if (!this.startTime) {
@@ -1884,7 +1908,8 @@ class GameManager extends EventEmitter {
     //   const owner = this.getPlayer(planet.owner);
     //   const me = this.getPlayer();
     //   if (!owner || !me || owner.team !== me.team) return false;
-    // } else if (planet.owner != this.account) return false;
+    // }
+    else if (planet.owner !== this.account) return false;
     if (
       (planet.energy * 100) / planet.energyCap <
       this.contractConstants.CLAIM_VICTORY_ENERGY_PERCENT
@@ -1919,9 +1944,11 @@ class GameManager extends EventEmitter {
     let captured = 0;
 
     for (const planet of targetPlanets) {
-      if (!this.isTargetHeld(planet)) continue;
+      console.log(`is`, planet, `held?`);
+      if (this.isTargetHeld(planet)) {
+        console.log(`held`), captured++;
+      }
 
-      captured++;
       if (captured >= this.contractConstants.TARGETS_REQUIRED_FOR_VICTORY) return true;
     }
     return false;
@@ -3628,6 +3655,18 @@ class GameManager extends EventEmitter {
 
   public getPaused$(): Monomitter<boolean> {
     return this.paused$;
+  }
+
+  public getGameover(): boolean {
+    return this.gameover;
+  }
+
+  public getWinners(): EthAddress[] {
+    return this.winners;
+  }
+
+  public getGameover$(): Monomitter<boolean> {
+    return this.gameover$;
   }
 
   public getUpgradeForArtifact(artifactId: ArtifactId) {

@@ -226,6 +226,7 @@ export class ContractsAPI extends EventEmitter {
           contract.filters.PauseStateChanged(null).topics,
           contract.filters.LobbyCreated(null, null).topics,
           contract.filters.SpaceshipFound(null, null, null).topics,
+          contract.filters.Gameover(null).topics,
         ].map((topicsOrUndefined) => (topicsOrUndefined || [])[0]),
       ] as Array<string | Array<string>>,
     };
@@ -382,6 +383,10 @@ export class ContractsAPI extends EventEmitter {
       [ContractEvent.LobbyCreated]: (ownerAddr: string, lobbyAddr: string) => {
         this.emit(ContractsAPIEvent.LobbyCreated, address(ownerAddr), address(lobbyAddr));
       },
+      [ContractEvent.Gameover]: (players: string[]) => {
+        players.map((p) => this.emit(ContractsAPIEvent.PlayerUpdate, address(p)));
+        this.emit(ContractsAPIEvent.Gameover);
+      },
     };
 
     this.ethConnection.subscribeToContractEvents(contract, eventHandlers, filter);
@@ -404,6 +409,7 @@ export class ContractsAPI extends EventEmitter {
     contract.removeAllListeners(ContractEvent.PlanetSilverWithdrawn);
     contract.removeAllListeners(ContractEvent.PlanetInvaded);
     contract.removeAllListeners(ContractEvent.PlanetCaptured);
+    contract.removeAllListeners(ContractEvent.Gameover);
   }
 
   public getContractAddress(): EthAddress {
@@ -753,6 +759,25 @@ export class ContractsAPI extends EventEmitter {
 
   public async getIsPaused(): Promise<boolean> {
     return this.makeCall(this.contract.paused);
+  }
+
+  public async getGameover(): Promise<boolean> {
+    return this.makeCall(this.contract.getGameover);
+  }
+
+  public async getWinners(): Promise<EthAddress[]> {
+    const winnerString = await this.makeCall(this.contract.getWinners);
+    return winnerString.map((w) => address(w));
+  }
+
+  public async getStartTime(): Promise<number | undefined> {
+    const startTime = (await this.makeCall(this.contract.getStartTime)).toNumber();
+    return startTime === 0 ? undefined : startTime;
+  }
+
+  public async getEndTime(): Promise<number> {
+    const endTime = (await this.makeCall(this.contract.getEndTime)).toNumber();
+    return endTime;
   }
 
   public async getRevealedPlanetsCoords(
