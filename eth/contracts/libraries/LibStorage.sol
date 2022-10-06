@@ -104,6 +104,11 @@ struct GameConstants {
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
     SpaceshipConstants SPACESHIPS;
     uint256[64] ROUND_END_REWARDS_BY_RANK;
+    // Arena constants
+    uint256 TARGETS_REQUIRED_FOR_VICTORY;
+    uint256 CLAIM_VICTORY_ENERGY_PERCENT;
+    // Manual Spawn
+    bool MANUAL_SPAWN;
 }
 
 // Initializers
@@ -177,8 +182,6 @@ library LibStorage {
         keccak256("darkforest.constants.planetDefaultStats");
     bytes32 constant UPGRADE_POSITION = keccak256("darkforest.constants.upgrades");
     bytes32 constant ARENA_INITIALIZERS_POSITION = keccak256("darkforest.initializers.arena");
-    bytes32 constant ARENA_CONSTANTS_POSITION = keccak256("darkforest.constants.arena");
-    bytes32 constant ARENA_STORAGE_POSITION = keccak256("darkforest.storage.arena");
 
     function gameStorage() internal pure returns (GameStorage storage gs) {
         bytes32 position = GAME_STORAGE_POSITION;
@@ -221,20 +224,6 @@ library LibStorage {
             upgrades.slot := position
         }
     }
-
-    // function arenaStorage() internal pure returns (ArenaStorage storage gs) {
-    //     bytes32 position = ARENA_STORAGE_POSITION;
-    //     assembly {
-    //         gs.slot := position
-    //     }
-    // }
-
-    // function arenaConstants() internal pure returns (ArenaConstants storage gs) {
-    //     bytes32 position = ARENA_CONSTANTS_POSITION;
-    //     assembly {
-    //         gs.slot := position
-    //     }
-    // }
 
     function initializers() internal pure returns (Initializers storage i) {
         bytes32 position = ARENA_INITIALIZERS_POSITION;

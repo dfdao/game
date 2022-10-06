@@ -105,10 +105,10 @@ struct InitArgs {
     uint256[64] ROUND_END_REWARDS_BY_RANK;
     // Arena additions
     // Target Planet
-    // uint256 TARGETS_REQUIRED_FOR_VICTORY;
-    // uint256 CLAIM_VICTORY_ENERGY_PERCENT;
-    // // Manual Spawn
-    // bool MANUAL_SPAWN;
+    uint256 TARGETS_REQUIRED_FOR_VICTORY;
+    uint256 CLAIM_VICTORY_ENERGY_PERCENT;
+    // Manual Spawn
+    bool MANUAL_SPAWN;
 }
 
 struct Player {

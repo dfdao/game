@@ -90,6 +90,10 @@ contract DFStartFacet is WithStorage {
         gameConstants().CAPTURE_ZONES_PER_5000_WORLD_RADIUS = i()
             .initArgs
             .CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
+        // Arena Values
+        gameConstants().TARGETS_REQUIRED_FOR_VICTORY = i().initArgs.TARGETS_REQUIRED_FOR_VICTORY;
+        gameConstants().CLAIM_VICTORY_ENERGY_PERCENT = i().initArgs.CLAIM_VICTORY_ENERGY_PERCENT;
+        gameConstants().MANUAL_SPAWN = i().initArgs.MANUAL_SPAWN;
 
         gs().nextChangeBlock = block.number + i().initArgs.CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
 

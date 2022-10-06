@@ -105,6 +105,9 @@ const defaultInitializerValues = {
     5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   ],
+  TARGETS_REQUIRED_FOR_VICTORY: 0,
+  CLAIM_VICTORY_ENERGY_PERCENT: 50,
+  MANUAL_SPAWN: false,
 };
 
 // This builds a fake HRE-like object used to initialize the test contracts
@@ -121,6 +124,12 @@ export const target4Initializers = decodeInitializers({
   ...defaultInitializerValues,
   WORLD_RADIUS_LOCKED: false,
   WORLD_RADIUS_MIN: 1,
+});
+
+// This builds a fake HRE-like object used to initialize the test contracts
+export const arenaInitializers = decodeInitializers({
+  ...defaultInitializerValues,
+  MANUAL_SPAWN: true,
 });
 
 export const VALID_INIT_PERLIN = initializers.INIT_PERLIN_MIN;
