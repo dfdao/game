@@ -244,6 +244,46 @@ export class Overlay2DRenderer {
     });
   }
 
+  drawEmoji(
+    centerWorld: WorldCoords,
+    radiusWorld: number,
+    renderInfo: PlanetRenderInfo,
+    textAlpha: number,
+    emoji: string
+  ) {
+    const viewport = this.renderer.getViewport();
+    const pixelCoords = viewport.worldToCanvasCoords(centerWorld);
+    const radiusPixels = viewport.worldToCanvasDist(radiusWorld);
+
+    let size = radiusPixels;
+    let offsetY = -2;
+
+    if (renderInfo.planet.emojiZoopAnimation !== undefined) {
+      size *= renderInfo.planet.emojiZoopAnimation.value();
+    }
+
+    if (size < 2) {
+      return;
+    }
+
+    if (renderInfo.planet.emojiBobAnimation !== undefined) {
+      offsetY += renderInfo.planet.emojiBobAnimation.value() * (radiusPixels * 0.1);
+    }
+
+    // don't want to obscure the silver text
+    if (renderInfo.planet.silver !== 0) {
+      offsetY -= 15;
+    }
+
+    this.ctx.font = `${size}px Arial`;
+    this.ctx.fillStyle = `rgba(0, 0, 0, ${textAlpha})`;
+    const textSize = this.ctx.measureText(emoji);
+    this.ctx.fillText(
+      emoji,
+      pixelCoords.x - textSize.width / 2,
+      pixelCoords.y - radiusPixels * 1.3 + offsetY
+    );
+  }
   drawEmojiMessage(
     centerWorld: WorldCoords,
     radiusWorld: number,

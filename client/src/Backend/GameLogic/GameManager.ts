@@ -74,6 +74,7 @@ import {
   UnconfirmedBuyHat,
   UnconfirmedCapturePlanet,
   UnconfirmedClaimReward,
+  UnconfirmedClaimVictory,
   UnconfirmedDeactivateArtifact,
   UnconfirmedDepositArtifact,
   UnconfirmedFindArtifact,
@@ -1855,6 +1856,104 @@ class GameManager extends EventEmitter {
       throw e;
     }
   }
+  private async setGameover(gameover: boolean) {
+    this.gameover = gameover;
+    this.winners = await this.contractsAPI.getWinners();
+    this.startTime = await this.contractsAPI.getStartTime();
+    this.endTimeSeconds = await this.contractsAPI.getEndTime();
+  }
+
+  public gameDuration() {
+    if (!this.startTime) {
+      return 0;
+    }
+    if (this.endTimeSeconds) {
+      return this.endTimeSeconds - this.startTime;
+    }
+    return Date.now() / 1000 - this.startTime;
+  }
+  /**
+   * Attempts to claim victory
+   */
+
+  public isTargetHeld(planet: Planet): boolean {
+    if (!this.account) return false;
+    if (!planet.isTargetPlanet) return false;
+    // TODO: Add back teams.
+    // if (constants.TEAMS_ENABLED) {
+    //   const owner = this.getPlayer(planet.owner);
+    //   const me = this.getPlayer();
+    //   if (!owner || !me || owner.team !== me.team) return false;
+    // } else if (planet.owner != this.account) return false;
+    if (
+      (planet.energy * 100) / planet.energyCap <
+      this.contractConstants.CLAIM_VICTORY_ENERGY_PERCENT
+    )
+      return false;
+    // TODO: Add back blocklist
+    // if (this.playerCaptureBlocked(this.account, planet.locationId)) return false;
+    return true;
+  }
+
+  public getTargetsHeld(address?: EthAddress): Planet[] {
+    address = address || this.account;
+    return this.getPlayerTargetPlanets(address).filter((planet) => this.isTargetHeld(planet));
+  }
+
+  public getPlayerTargetPlanets(account?: EthAddress): Planet[] {
+    const player = this.getPlayer(account);
+    if (!player) return [];
+    return [...this.getPlanetMap()].reduce(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      (total, [location, planet]) =>
+        // TODO: Add back l
+        // planet.targetPlanet && !this.isMoveBlocked(location, player.homePlanetId)
+        planet.isTargetPlanet ? [...total, planet] : total,
+      []
+    );
+  }
+
+  public checkVictoryCondition(): boolean {
+    const targetPlanets = this.getPlayerTargetPlanets();
+
+    let captured = 0;
+
+    for (const planet of targetPlanets) {
+      if (!this.isTargetHeld(planet)) continue;
+
+      captured++;
+      if (captured >= this.contractConstants.TARGETS_REQUIRED_FOR_VICTORY) return true;
+    }
+    return false;
+  }
+
+  public async claimVictory() {
+    try {
+      if (this.gameover) {
+        throw new Error('game is over');
+      }
+
+      if (this.paused) {
+        throw new Error('game is paused');
+      }
+
+      if (!this.checkVictoryCondition()) {
+        throw new Error('victory condition not met');
+      }
+
+      const txIntent: UnconfirmedClaimVictory = {
+        methodName: 'claimVictory',
+        contract: this.contractsAPI.contract,
+        args: Promise.resolve([]),
+      };
+
+      const tx = await this.contractsAPI.submitTransaction(txIntent);
+      return tx;
+    } catch (e) {
+      this.getNotificationsManager().txInitError('claimVictory', e.message);
+      throw e;
+    }
+  }
 
   /**
    * Attempts to join the game. Should not be called once you've already joined.
@@ -3533,6 +3632,10 @@ class GameManager extends EventEmitter {
 
   public getUpgradeForArtifact(artifactId: ArtifactId) {
     return this.contractsAPI.getUpgradeForArtifact(artifactId);
+  }
+
+  public claimVictoryPercentage() {
+    return this.contractConstants.CLAIM_VICTORY_ENERGY_PERCENT;
   }
 }
 

@@ -51,6 +51,8 @@ export const IconType = {
   Invadable: 'Invadable' as IconType,
   Capturable: 'Capturable' as IconType,
   Destroyed: 'Destroyed' as IconType,
+  TargetPlanet: 'TargetPlanet' as IconType,
+  SpawnPlanet: 'SpawnPlanet' as IconType,
 } as const;
 
 export class DarkForestIcon extends LitElement {
@@ -92,6 +94,10 @@ export class DarkForestIcon extends LitElement {
 
   render() {
     switch (this.type) {
+      case IconType.TargetPlanet:
+        return TargetPlanet();
+      case IconType.TargetPlanet:
+        return SpawnPlanet();
       case IconType.Energy:
         return EnergyIcon();
       case IconType.EnergyGrowth:
@@ -197,6 +203,22 @@ export class DarkForestIcon extends LitElement {
 
   For example: The WithdrawIcon needs `viewBox="0 0 16 16"`
 */
+
+function TargetPlanet() {
+  return svg`
+    <svg height="512" viewBox="0 0 512 512" width="512" xmlns="http://www.w3.org/2000/svg">
+      <path d="M247 32v23.21C143.25 59.8 59.798 143.25 55.21 247H32v18h23.21C59.8 368.75 143.25 452.202 247 456.79V480h18v-23.21C368.75 452.2 452.202 368.75 456.79 265H480v-18h-23.21C452.2 143.25 368.75 59.798 265 55.21V32h-18zm0 41.223V128h18V73.223C359 77.76 434.24 153 438.777 247H384v18h54.777C434.24 359 359 434.24 265 438.777V384h-18v54.777C153 434.24 77.76 359 73.223 265H128v-18H73.223C77.76 153 153 77.76 247 73.223zM247 224v23h-23v18h23v23h18v-23h23v-18h-23v-23h-18z"/>
+    </svg>
+  `;
+}
+
+function SpawnPlanet() {
+  return svg`
+    <svg height="512" viewBox="0 0 512 512" width="512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M458.5 26.53c-8.8.12-18.1 2.88-25.1 6.84-12.5 7.02-23 28.72-29 43.11a64 48 45 0 0-54.3-3.36L438.9 162a64 48 45 0 0-3.4-54.4c14.4-5.9 36.1-16.52 43.1-28.97 7.5-13.11 10.7-34.58 0-45.26-5-5-12.3-6.95-20.1-6.84zM331.6 80.05L299 112.6 399.4 213l32.6-32.5zm-61 42.55c-13.5-.3-32.9 6-57.1 30.3L32.42 334c-3.54 3.5-5.85 9.7-5.85 16.2s2.31 12.7 5.85 16.2L145.6 479.6c3.5 3.6 9.7 5.9 16.3 5.9 6.5 0 12.7-2.3 16.2-5.9l4.9-5-27.5-27.5 12.8-12.8 27.5 27.5 21.1-21.1-27.5-27.5 12.8-12.8 27.5 27.5 21.2-21.1-50.2-50.2 12.8-12.8 50.2 50.2 21.1-21.2-27.5-27.5 12.8-12.8 27.5 27.5 21.2-21.1-27.6-27.6 12.8-12.8 27.6 27.6 21.1-21.2-50.2-50.1 12.8-12.8 50 49.9c35.6-39.2 23.1-64.5 16.4-71.1l-90.5-90.5c-3.1-3.1-10.1-7.4-20.6-7.7z"></path>
+    </svg>
+  `;
+}
 
 function EnergyIcon() {
   return svg`

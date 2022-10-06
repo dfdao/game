@@ -38,6 +38,8 @@ export const ModalName = {
   ManageAccount: 'ManageAccount' as ModalName,
   Onboarding: 'Onboarding' as ModalName,
   Private: 'Private' as ModalName,
+  TargetPlanet: 'TargetPlanet' as TooltipName,
+  SpawnPlanet: 'SpawnPlanet' as TooltipName,
 };
 
 export type CursorState = Abstract<string, 'CursorState'>;
