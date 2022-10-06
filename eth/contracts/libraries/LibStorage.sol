@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Type imports
-import {Planet, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData} from "../DFTypes.sol";
+import {ArrivalData, AuxiliaryArgs, InitArgs, Planet, PlanetEventMetadata, PlanetDefaultStats, RevealedCoords, Player, SpaceshipConstants, Upgrade} from "../DFTypes.sol";
 
 struct WhitelistStorage {
     bool enabled;
@@ -106,12 +106,10 @@ struct GameConstants {
     uint256[64] ROUND_END_REWARDS_BY_RANK;
 }
 
-struct SpaceshipConstants {
-    bool GEAR;
-    bool MOTHERSHIP;
-    bool TITAN;
-    bool CRESCENT;
-    bool WHALE;
+// Initializers
+struct Initializers {
+    InitArgs initArgs;
+    AuxiliaryArgs auxArgs;
 }
 
 // SNARK keys and perlin params
@@ -178,6 +176,9 @@ library LibStorage {
     bytes32 constant PLANET_DEFAULT_STATS_POSITION =
         keccak256("darkforest.constants.planetDefaultStats");
     bytes32 constant UPGRADE_POSITION = keccak256("darkforest.constants.upgrades");
+    bytes32 constant ARENA_INITIALIZERS_POSITION = keccak256("darkforest.initializers.arena");
+    bytes32 constant ARENA_CONSTANTS_POSITION = keccak256("darkforest.constants.arena");
+    bytes32 constant ARENA_STORAGE_POSITION = keccak256("darkforest.storage.arena");
 
     function gameStorage() internal pure returns (GameStorage storage gs) {
         bytes32 position = GAME_STORAGE_POSITION;
@@ -220,6 +221,27 @@ library LibStorage {
             upgrades.slot := position
         }
     }
+
+    // function arenaStorage() internal pure returns (ArenaStorage storage gs) {
+    //     bytes32 position = ARENA_STORAGE_POSITION;
+    //     assembly {
+    //         gs.slot := position
+    //     }
+    // }
+
+    // function arenaConstants() internal pure returns (ArenaConstants storage gs) {
+    //     bytes32 position = ARENA_CONSTANTS_POSITION;
+    //     assembly {
+    //         gs.slot := position
+    //     }
+    // }
+
+    function initializers() internal pure returns (Initializers storage i) {
+        bytes32 position = ARENA_INITIALIZERS_POSITION;
+        assembly {
+            i.slot := position
+        }
+    }
 }
 
 /**
@@ -254,5 +276,9 @@ contract WithStorage {
 
     function upgrades() internal pure returns (Upgrade[4][3] storage) {
         return LibStorage.upgrades();
+    }
+
+    function initializers() internal pure returns (Initializers storage) {
+        return LibStorage.initializers();
     }
 }

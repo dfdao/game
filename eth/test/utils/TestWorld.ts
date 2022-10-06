@@ -36,9 +36,12 @@ export async function createArena(
   const { LibGameUtils } = await deployLibraries({}, hre);
   const DFInitialize = await deployDiamondInit({}, { LibGameUtils }, hre);
   const initFunctionCall = DFInitialize.interface.encodeFunctionData('init', [
-    false,
-    '',
     initializers,
+    {
+      allowListEnabled: false,
+      baseURI: '',
+      allowedAddresses: [],
+    },
   ]);
 
   const newLobbyTx = await contract.createLobby(DFInitialize.address, initFunctionCall);
@@ -47,6 +50,9 @@ export async function createArena(
   const events = await contract.queryFilter(eventFilter, 'latest');
   const { lobbyAddress } = events[0].args;
   const lobby = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
+  // initialize
+  const startTx = await lobby.start();
+  await startTx.wait();
 
   return lobby;
 }
