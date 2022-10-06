@@ -130,6 +130,7 @@ export const target4Initializers = decodeInitializers({
 export const arenaInitializers = decodeInitializers({
   ...defaultInitializerValues,
   MANUAL_SPAWN: true,
+  TARGETS_REQUIRED_FOR_VICTORY: 1,
   ADMIN_CAN_ADD_PLANETS: true,
   INIT_PERLIN_MIN: 1,
   INIT_PERLIN_MAX: 31,
