@@ -3,12 +3,11 @@ import commonjs from '@rollup/plugin-commonjs';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import react from '@vitejs/plugin-react';
 import esbuild from 'esbuild';
-import fs from 'fs/promises';
+import { basename, dirname } from 'path';
 import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const tsconfigRaw = await fs.readFile('./tsconfig.json', 'utf-8');
   const privateWorkspaces = ['circuits', 'client', 'eth'];
 
   return {
@@ -26,10 +25,24 @@ export default defineConfig(async ({ mode }) => {
             return null;
           }
 
-          const result = await esbuild.transform(code, { loader: 'ts', tsconfigRaw });
+          const result = await esbuild.build({
+            stdin: {
+              contents: code,
+              resolveDir: dirname(id),
+              sourcefile: basename(id),
+              loader: 'ts',
+            },
+            bundle: true,
+            format: 'esm',
+            write: false,
+          });
+
+          if (result.outputFiles.length > 1) {
+            throw new Error(`Embedded plugin (${basename(id)}) generated multiple bundles`);
+          }
 
           return {
-            code: `export default ${JSON.stringify(result.code.trim())};`,
+            code: `export default ${JSON.stringify(result.outputFiles[0].text.trim())}`,
           };
         },
       },

@@ -1,14 +1,7 @@
-// organize-imports-ignore
+import { locationIdFromDecStr } from '@dfdao/serde';
 import type { Chunk, WorldCoords } from '@dfdao/types';
-//@ts-ignore
-import { locationIdFromDecStr } from 'https://cdn.skypack.dev/@dfdao/serde';
-import {
-  html,
-  render,
-  useEffect,
-  useState,
-  //@ts-ignore
-} from 'https://unpkg.com/htm/preact/standalone.module.js';
+import { html, render } from 'htm/preact';
+import { useEffect, useState } from 'preact/hooks';
 import type MinerManager from '../src/Backend/Miner/MinerManager';
 import type { MinerWorkerMessage } from '../src/_types/global/GlobalTypes';
 
