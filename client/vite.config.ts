@@ -1,9 +1,11 @@
 import { all } from '@projectsophon/workspace';
 import commonjs from '@rollup/plugin-commonjs';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 import react from '@vitejs/plugin-react';
 import esbuild from 'esbuild';
 import fs from 'fs/promises';
+import sveltePreprocess from 'svelte-preprocess';
 import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(async ({ mode }) => {
@@ -17,6 +19,7 @@ export default defineConfig(async ({ mode }) => {
     assetsInclude: ['**/*.zkey'],
     plugins: [
       react(),
+      svelte({ hot: !env.VITEST, preprocess: sveltePreprocess() }),
       // Custom plugin for transpiling files in `embedded_plugins` and converting them to strings of source code
       {
         name: 'embedded-plugins',
@@ -43,11 +46,18 @@ export default defineConfig(async ({ mode }) => {
         plugins: [commonjs(), nodeResolve()],
       },
     },
+    test: {
+      globals: true,
+      environment: 'jsdom',
+    },
     envPrefix: 'DF_',
     clearScreen: false,
     optimizeDeps: {
       force: true,
       include: Array.from(all().keys()).filter((name) => !privateWorkspaces.includes(name)),
+      esbuildOptions: {
+        target: 'es2021',
+      },
     },
   };
 });
