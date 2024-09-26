@@ -4,7 +4,7 @@ import { conquerUnownedPlanet, feedSilverToCap, makeInitArgs } from './utils/Tes
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import { LVL1_ASTEROID_1, LVL3_SPACETIME_1, SPAWN_PLANET_1 } from './utils/WorldConstants';
 
-describe('DFScoringRound2', async function () {
+describe('DFSilver', async function () {
   // Bump the time out so that the test doesn't timeout during
   // initial fixture creation
   this.timeout(1000 * 60);
@@ -42,7 +42,7 @@ describe('DFScoringRound2', async function () {
     // FIXME(blaine): This should have been done client-side because this type of
     // division isn't supposed to be done in the contract. That's the whole point of
     // `CONTRACT_PRECISION`
-    expect((await world.contract.players(world.user1.address)).score).to.equal(
+    expect(await world.contract.getSilverBalance(world.user1.address)).to.equal(
       withdrawnAmount.div(1000)
     );
   });
@@ -54,7 +54,7 @@ describe('DFScoringRound2', async function () {
       world.user1Core.withdrawSilver(LVL3_SPACETIME_1.id, withdrawnAmount)
     ).to.be.revertedWith('tried to withdraw more silver than exists on planet');
 
-    expect((await world.contract.players(world.user1.address)).score).to.equal(0);
+    expect(await world.contract.getSilverBalance(world.user1.address)).to.equal(0);
   });
 
   it("doesn't allow player to withdraw silver from non-trading post", async function () {
@@ -64,7 +64,7 @@ describe('DFScoringRound2', async function () {
       world.user1Core.withdrawSilver(LVL1_ASTEROID_1.id, withdrawnAmount)
     ).to.be.revertedWith('can only withdraw silver from trading posts');
 
-    expect((await world.contract.players(world.user1.address)).score).to.equal(0);
+    expect(await world.contract.getSilverBalance(world.user1.address)).to.equal(0);
   });
 
   it("doesn't allow player to withdraw silver from planet that is not theirs", async function () {
@@ -74,7 +74,7 @@ describe('DFScoringRound2', async function () {
       world.user2Core.withdrawSilver(LVL3_SPACETIME_1.id, withdrawnAmount)
     ).to.be.revertedWith('you must own this planet');
 
-    expect((await world.contract.players(world.user1.address)).score).to.equal(0);
-    expect((await world.contract.players(world.user2.address)).score).to.equal(0);
+    expect(await world.contract.getSilverBalance(world.user1.address)).to.equal(0);
+    expect(await world.contract.getSilverBalance(world.user2.address)).to.equal(0);
   });
 });

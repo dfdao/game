@@ -253,15 +253,18 @@ export async function deployAndCut(
     hre
   );
   const getterFacet = await deployGetterFacet({}, libraries, hre);
+  const arenaFacet = await deployArenaFacet({}, libraries, hre);
   const spaceshipFacet = await deploySpaceshipFacet({}, libraries, hre);
   const whitelistFacet = await deployWhitelistFacet({}, libraries, hre);
   const verifierFacet = await deployVerifierFacet({}, libraries, hre);
   const adminFacet = await deployAdminFacet({}, libraries, hre);
   const lobbyFacet = await deployLobbyFacet({}, {}, hre);
   const rewardFacet = await deployRewardFacet({}, {}, hre);
+  const startFacet = await deployStartFacet({}, libraries, hre);
 
   // The `cuts` to perform for Dark Forest facets
   const darkForestFacetCuts = [
+    ...changes.getFacetCuts('DFArenaFacet', arenaFacet),
     ...changes.getFacetCuts('DFCoreFacet', coreFacet),
     ...changes.getFacetCuts('DFMoveFacet', moveFacet),
     ...changes.getFacetCuts('DFCaptureFacet', captureFacet),
@@ -273,6 +276,7 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
     ...changes.getFacetCuts('DFRewardFacet', rewardFacet),
     ...changes.getFacetCuts('DFSpaceshipFacet', spaceshipFacet),
+    ...changes.getFacetCuts('DFStartFacet', startFacet),
     ...changes.getFacetCuts('DFTokenFacet', tokenFacet),
   ];
 
@@ -298,17 +302,27 @@ export async function deployAndCut(
   // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface
   const initAddress = diamondInit.address;
   const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
-    whitelistEnabled,
-    tokenBaseUri,
     initializers,
+    {
+      allowListEnabled: whitelistEnabled,
+      baseURI: tokenBaseUri,
+      allowedAddresses: [],
+    },
   ]);
 
   const initTx = await diamondCut.diamondCut(toCut, initAddress, initFunctionCall);
   const initReceipt = await initTx.wait();
+
   if (!initReceipt.status) {
     throw Error(`Diamond cut failed: ${initTx.hash}`);
   }
   console.log('Completed diamond cut');
+  const startTx = await diamondCut.start();
+  const startRct = await startTx.wait();
+  if (!startRct.status) {
+    throw Error(`Diamond start failed: ${initTx.hash}`);
+  }
+  console.log('Completed diamond start');
 
   return [diamond, diamondInit, initReceipt] as const;
 }
@@ -329,6 +343,20 @@ export async function deployGetterFacet({}, {}: Libraries, hre: HardhatRuntimeEn
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log('DFGetterFacet deployed to:', contract.address);
+  return contract;
+}
+
+export async function deployArenaFacet(
+  {},
+  { LibGameUtils, LibPlanet }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  const factory = await hre.ethers.getContractFactory('DFArenaFacet', {
+    libraries: { LibGameUtils, LibPlanet },
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log('DFArenaFacet deployed to:', contract.address);
   return contract;
 }
 
@@ -502,19 +530,29 @@ async function deployDiamond({}, hre: HardhatRuntimeEnvironment) {
   return contract;
 }
 
-export async function deployDiamondInit(
-  {},
-  { LibGameUtils }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
+export async function deployDiamondInit({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
   // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
   // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
   const factory = await hre.ethers.getContractFactory('DFInitialize', {
-    libraries: { LibGameUtils },
+    libraries: {},
   });
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log(`DFInitialize deployed to: ${contract.address}`);
+  return contract;
+}
+
+export async function deployStartFacet(
+  {},
+  { LibGameUtils }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  const factory = await hre.ethers.getContractFactory('DFStartFacet', {
+    libraries: { LibGameUtils },
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFStartFacet deployed to: ${contract.address}`);
   return contract;
 }
 

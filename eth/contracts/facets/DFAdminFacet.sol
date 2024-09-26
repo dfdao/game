@@ -124,15 +124,17 @@ contract DFAdminFacet is WithStorage {
         }
         SpaceType spaceType = LibGameUtils.spaceTypeFromPerlin(args.perlin);
         LibPlanet._initializePlanet(
-            DFPInitPlanetArgs(
-                args.location,
-                args.perlin,
-                args.level,
-                gameConstants().TIME_FACTOR_HUNDREDTHS,
-                spaceType,
-                args.planetType,
-                false
-            )
+            DFPInitPlanetArgs({
+                location: args.location,
+                perlin: args.perlin,
+                level: args.level,
+                TIME_FACTOR_HUNDREDTHS: gameConstants().TIME_FACTOR_HUNDREDTHS,
+                spaceType: spaceType,
+                planetType: args.planetType,
+                isHomePlanet: false,
+                isSpawnPlanet: false,
+                isTargetPlanet: false
+            })
         );
         gs().planetIds.push(args.location);
         gs().initializedPlanetCountByLevel[args.level] += 1;

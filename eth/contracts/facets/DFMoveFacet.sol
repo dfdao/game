@@ -44,6 +44,9 @@ contract DFMoveFacet is WithStorage {
         uint256 movedArtifactId,
         uint256 isAbandoning
     ) public notPaused returns (uint256) {
+        // Start Game if not started.
+        if (gs().startTime == 0) gs().startTime = block.timestamp;
+
         LibGameUtils.revertIfBadSnarkPerlinFlags(
             [_input[5], _input[6], _input[7], _input[8], _input[9]],
             false

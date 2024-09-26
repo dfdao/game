@@ -1263,6 +1263,8 @@ export class GameObjects {
 
       invader: EMPTY_ADDRESS,
       capturer: EMPTY_ADDRESS,
+      isSpawnPlanet: false,
+      isTargetPlanet: false,
     };
   }
 

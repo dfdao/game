@@ -56,6 +56,7 @@ import {
   PlanetLevel,
   PlanetMessageType,
   PlanetType,
+  PlanetTypeNames,
   Player,
   QueuedArrival,
   Radii,
@@ -73,6 +74,7 @@ import {
   UnconfirmedBuyHat,
   UnconfirmedCapturePlanet,
   UnconfirmedClaimReward,
+  UnconfirmedClaimVictory,
   UnconfirmedDeactivateArtifact,
   UnconfirmedDepositArtifact,
   UnconfirmedFindArtifact,
@@ -92,7 +94,7 @@ import {
 } from '@dfdao/types';
 import bigInt, { BigInteger } from 'big-integer';
 import delay from 'delay';
-import { BigNumber, Contract, ContractInterface, providers } from 'ethers';
+import { BigNumber, constants, Contract, ContractInterface, providers } from 'ethers';
 import { EventEmitter } from 'events';
 import NotificationManager from '../../Frontend/Game/NotificationManager';
 import { MIN_CHUNK_SIZE } from '../../Frontend/Utils/constants';
@@ -235,7 +237,7 @@ class GameManager extends EventEmitter {
   /**
    * @todo change this to the correct timestamp each round.
    */
-  private readonly endTimeSeconds: number = 1948939200; // new Date("2031-10-05T04:00:00.000Z").getTime() / 1000
+  private endTimeSeconds = 1948939200; // new Date("2031-10-05T04:00:00.000Z").getTime() / 1000
 
   /**
    * An interface to the blockchain that is a little bit lower-level than {@link ContractsAPI}. It
@@ -354,6 +356,19 @@ class GameManager extends EventEmitter {
    */
   private captureZoneGenerator: CaptureZoneGenerator | undefined;
 
+  /**
+   * Arena Stuff
+   */
+  private startTime: number | undefined;
+
+  private gameover: boolean;
+
+  public gameover$: Monomitter<boolean>;
+
+  private winners: EthAddress[];
+
+  private spectator: boolean;
+
   private constructor(
     terminal: React.MutableRefObject<TerminalHandle | undefined>,
     account: EthAddress | undefined,
@@ -375,7 +390,9 @@ class GameManager extends EventEmitter {
     ethConnection: EthConnection,
     paused: boolean,
     myArtifacts: Map<ArtifactId, Artifact>,
-    mySpaceships: Map<SpaceshipId, Spaceship>
+    mySpaceships: Map<SpaceshipId, Spaceship>,
+    gameover: boolean,
+    winners: EthAddress[]
   ) {
     super();
 
@@ -401,6 +418,9 @@ class GameManager extends EventEmitter {
     this.networkHealth$ = monomitter(true);
     this.paused$ = monomitter(true);
     this.playersUpdated$ = monomitter();
+    this.gameover = gameover;
+    this.winners = winners;
+    this.gameover$ = monomitter(true);
 
     if (contractConstants.CAPTURE_ZONES_ENABLED) {
       this.captureZoneGenerator = new CaptureZoneGenerator(
@@ -671,7 +691,9 @@ class GameManager extends EventEmitter {
       connection,
       initialState.paused,
       myArtifacts,
-      mySpaceships
+      mySpaceships,
+      initialState.gameover,
+      initialState.winners
     );
 
     gameManager.setPlayerTwitters(initialState.twitters);
@@ -837,6 +859,10 @@ class GameManager extends EventEmitter {
       .on(ContractsAPIEvent.RadiusUpdated, async () => {
         const newRadius = await gameManager.contractsAPI.getWorldRadius();
         gameManager.setRadius(newRadius);
+      })
+      .on(ContractsAPIEvent.Gameover, async () => {
+        gameManager.setGameover(true);
+        gameManager.gameover$.publish(true);
       });
 
     const unconfirmedTxs = await otherStore.getUnconfirmedSubmittedEthTxs();
@@ -1594,6 +1620,12 @@ class GameManager extends EventEmitter {
       this.minerManager.stopExplore();
     }
   }
+  private async setGameover(gameover: boolean) {
+    this.gameover = gameover;
+    this.winners = await this.contractsAPI.getWinners();
+    this.startTime = await this.contractsAPI.getStartTime();
+    this.endTimeSeconds = await this.contractsAPI.getEndTime();
+  }
 
   private setRadius(worldRadius: number) {
     this.worldRadius = worldRadius;
@@ -1855,6 +1887,101 @@ class GameManager extends EventEmitter {
     }
   }
 
+  public gameDuration() {
+    if (!this.startTime) {
+      return 0;
+    }
+    if (this.endTimeSeconds) {
+      return this.endTimeSeconds - this.startTime;
+    }
+    return Date.now() / 1000 - this.startTime;
+  }
+  /**
+   * Attempts to claim victory
+   */
+
+  public isTargetHeld(planet: Planet): boolean {
+    if (!this.account) return false;
+    if (!planet.isTargetPlanet) return false;
+    // TODO: Add back teams.
+    // if (constants.TEAMS_ENABLED) {
+    //   const owner = this.getPlayer(planet.owner);
+    //   const me = this.getPlayer();
+    //   if (!owner || !me || owner.team !== me.team) return false;
+    // }
+    else if (planet.owner !== this.account) return false;
+    if (
+      (planet.energy * 100) / planet.energyCap <
+      this.contractConstants.CLAIM_VICTORY_ENERGY_PERCENT
+    )
+      return false;
+    // TODO: Add back blocklist
+    // if (this.playerCaptureBlocked(this.account, planet.locationId)) return false;
+    return true;
+  }
+
+  public getTargetsHeld(address?: EthAddress): Planet[] {
+    address = address || this.account;
+    return this.getPlayerTargetPlanets(address).filter((planet) => this.isTargetHeld(planet));
+  }
+
+  public getPlayerTargetPlanets(account?: EthAddress): Planet[] {
+    const player = this.getPlayer(account);
+    if (!player) return [];
+    return [...this.getPlanetMap()].reduce(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      (total, [location, planet]) =>
+        // TODO: Add back l
+        // planet.targetPlanet && !this.isMoveBlocked(location, player.homePlanetId)
+        planet.isTargetPlanet ? [...total, planet] : total,
+      []
+    );
+  }
+
+  public checkVictoryCondition(): boolean {
+    const targetPlanets = this.getPlayerTargetPlanets();
+
+    let captured = 0;
+
+    for (const planet of targetPlanets) {
+      console.log(`is`, planet, `held?`);
+      if (this.isTargetHeld(planet)) {
+        console.log(`held`), captured++;
+      }
+
+      if (captured >= this.contractConstants.TARGETS_REQUIRED_FOR_VICTORY) return true;
+    }
+    return false;
+  }
+
+  public async claimVictory() {
+    try {
+      if (this.gameover) {
+        throw new Error('game is over');
+      }
+
+      if (this.paused) {
+        throw new Error('game is paused');
+      }
+
+      if (!this.checkVictoryCondition()) {
+        throw new Error('victory condition not met');
+      }
+
+      const txIntent: UnconfirmedClaimVictory = {
+        methodName: 'claimVictory',
+        contract: this.contractsAPI.contract,
+        args: Promise.resolve([]),
+      };
+
+      const tx = await this.contractsAPI.submitTransaction(txIntent);
+      return tx;
+    } catch (e) {
+      this.getNotificationsManager().txInitError('claimVictory', e.message);
+      throw e;
+    }
+  }
+
   /**
    * Attempts to join the game. Should not be called once you've already joined.
    */
@@ -1864,7 +1991,74 @@ class GameManager extends EventEmitter {
         throw new Error('game has ended');
       }
 
-      const planet = await this.findRandomHomePlanet();
+      let planet: LocatablePlanet;
+      if (this.contractConstants.MANUAL_SPAWN) {
+        this.terminal.current?.println(``);
+        this.terminal.current?.println(`Retrieving available manual planets`);
+        this.terminal.current?.println(``);
+
+        const spawnPlanets = await this.contractsAPI.getSpawnPlanetIds(0);
+        console.log(`spawnPlanets`, spawnPlanets);
+        // console.log(`all manually created spawn planets: ${spawnPlanets}`);
+        const potentialHomeIds = spawnPlanets.filter((planetId) => {
+          const planet = this.getGameObjects().getPlanetWithId(planetId);
+          if (!planet) {
+            // console.log('not a planet');
+            return false;
+          }
+          // console.log(`planet's owner: ${planet.owner}`);
+          if (planet.owner !== constants.AddressZero) {
+            return false;
+          }
+          if (!isLocatable(planet)) {
+            // console.log('planet not locatable');
+            return false;
+          }
+          return true;
+        });
+
+        if (potentialHomeIds.length === 0) {
+          throw new Error('no spawn locations available');
+        }
+        const potentialHomePlanets = potentialHomeIds.map((planetId) => {
+          return this.getGameObjects().getPlanetWithId(planetId) as LocatablePlanet;
+        });
+        let selected = false;
+        let selection;
+
+        // If only one spawn planet, don't let player choose.
+        if (potentialHomePlanets.length === 1) {
+          planet = potentialHomePlanets[0];
+        } else {
+          do {
+            for (let i = 0; i < potentialHomePlanets.length; i++) {
+              const x = potentialHomePlanets[i].location.coords.x;
+              const y = potentialHomePlanets[i].location.coords.y;
+              const type = potentialHomePlanets[i].planetType;
+
+              const level = potentialHomePlanets[i].planetLevel;
+              this.terminal.current?.print(`(${i + 1}): `, TerminalTextStyle.Sub);
+              this.terminal.current?.println(
+                `Level ${level} ${PlanetTypeNames[type]} at (${x},${y})`
+              );
+            }
+
+            this.terminal.current?.println('');
+            this.terminal.current?.println(`Choose a spawn planet:`, TerminalTextStyle.White);
+            selection = +((await this.terminal.current?.getInput()) || '');
+            if (isNaN(selection) || selection > potentialHomePlanets.length) {
+              this.terminal.current?.println('Unrecognized input. Please try again.');
+              this.terminal.current?.println('');
+            } else {
+              selected = true;
+            }
+          } while (!selected);
+          planet = potentialHomePlanets[selection - 1];
+        }
+      } else {
+        planet = await this.findRandomHomePlanet();
+      }
+
       this.homeLocation = planet.location;
       this.terminal.current?.println('');
       this.terminal.current?.println(`Found Suitable Home Planet: ${getPlanetName(planet)} `);
@@ -2030,6 +2224,12 @@ class GameManager extends EventEmitter {
           x = parseInt(parts[0], 10);
           y = parseInt(parts[1], 10);
         }
+      }
+
+      // In Development mode start search at 0,0 so map is pre-mined.
+      if (!import.meta.env.PROD) {
+        x = 0;
+        y = 0;
       }
 
       const pattern: MiningPattern = new SpiralPattern({ x, y }, MIN_CHUNK_SIZE);
@@ -3457,8 +3657,24 @@ class GameManager extends EventEmitter {
     return this.paused$;
   }
 
+  public getGameover(): boolean {
+    return this.gameover;
+  }
+
+  public getWinners(): EthAddress[] {
+    return this.winners;
+  }
+
+  public getGameover$(): Monomitter<boolean> {
+    return this.gameover$;
+  }
+
   public getUpgradeForArtifact(artifactId: ArtifactId) {
     return this.contractsAPI.getUpgradeForArtifact(artifactId);
+  }
+
+  public claimVictoryPercentage() {
+    return this.contractConstants.CLAIM_VICTORY_ENERGY_PERCENT;
   }
 }
 

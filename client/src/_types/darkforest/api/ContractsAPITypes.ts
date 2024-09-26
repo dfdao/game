@@ -62,6 +62,7 @@ export const enum ContractEvent {
   AdminGiveSpaceship = 'AdminGiveSpaceship',
   PauseStateChanged = 'PauseStateChanged',
   LobbyCreated = 'LobbyCreated',
+  Gameover = 'Gameover',
 }
 
 export const enum ContractsAPIEvent {
@@ -74,6 +75,8 @@ export const enum ContractsAPIEvent {
   ArrivalQueued = 'ArrivalQueued',
   RadiusUpdated = 'RadiusUpdated',
   LocationRevealed = 'LocationRevealed',
+  Gameover = 'Gameover',
+
   /**
    * The transaction has been queued for future execution.
    */
@@ -364,6 +367,9 @@ export interface ContractConstants {
     number,
     number
   ];
+  MANUAL_SPAWN: boolean;
+  TARGETS_REQUIRED_FOR_VICTORY: number;
+  CLAIM_VICTORY_ENERGY_PERCENT: number;
 }
 
 export type ClientMockchainData =

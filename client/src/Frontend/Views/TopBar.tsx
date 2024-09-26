@@ -12,9 +12,11 @@ import { TooltipTrigger } from '../Panes/Tooltip';
 import { usePlayer, useUIManager } from '../Utils/AppHooks';
 import { DFZIndex } from '../Utils/constants';
 import { useEmitterSubscribe, useEmitterValue } from '../Utils/EmitterHooks';
+import { Gameover } from './Gameover';
 import { ModalToggleButton } from './ModalIcon';
 import { NetworkHealth } from './NetworkHealth';
 import { Paused } from './Paused';
+import { TargetPlanetVictory } from './TargetPlanetVictory';
 
 const TopBarContainer = styled.div`
   z-index: ${DFZIndex.MenuBar};
@@ -232,6 +234,8 @@ export function TopBar({ twitterVerifyHook }: { twitterVerifyHook: Hook<boolean>
       </AlignCenterHorizontally>
       <NetworkHealth />
       <Paused />
+      <Gameover />
+      <TargetPlanetVictory />
     </TopBarContainer>
   );
 }

@@ -101,6 +101,8 @@ export function decodePlanet(rawLocationId: string, rawPlanet: RawPlanet): Plane
     invadeStartBlock: rawPlanet.invadeStartBlock.eq(0)
       ? undefined
       : rawPlanet.invadeStartBlock.toNumber(),
+    isSpawnPlanet: rawPlanet.spawnPlanet,
+    isTargetPlanet: rawPlanet.targetPlanet,
   };
 
   return planet;

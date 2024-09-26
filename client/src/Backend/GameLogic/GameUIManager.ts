@@ -1411,6 +1411,17 @@ class GameUIManager extends EventEmitter {
     return this.gameManager.getPaused$();
   }
 
+  getGameover(): boolean {
+    return this.gameManager.getGameover();
+  }
+
+  getWinners(): EthAddress[] {
+    return this.gameManager.getWinners();
+  }
+  getGameover$(): Monomitter<boolean> {
+    return this.gameManager.getGameover$();
+  }
+
   public getSilverScoreValue(): number {
     return this.contractConstants.SILVER_SCORE_VALUE;
   }

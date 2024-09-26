@@ -78,6 +78,10 @@ export const decodeInitializers = decoders.guard(
       WHALE: decoders.boolean,
     }),
     ROUND_END_REWARDS_BY_RANK: exactArray64(decoders.number),
+    // Arena
+    TARGETS_REQUIRED_FOR_VICTORY: decoders.number,
+    CLAIM_VICTORY_ENERGY_PERCENT: decoders.number,
+    MANUAL_SPAWN: decoders.boolean,
   }),
   { style: 'simple' }
 );

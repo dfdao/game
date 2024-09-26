@@ -10,6 +10,7 @@ import {LibArtifact} from "./LibArtifact.sol";
 import {LibArtifactUtils} from "./LibArtifactUtils.sol";
 import {LibGameUtils} from "./LibGameUtils.sol";
 import {LibLazyUpdate} from "./LibLazyUpdate.sol";
+import {LibSilver} from "./LibSilver.sol";
 import {LibSpaceship} from "./LibSpaceship.sol";
 
 // Storage imports
@@ -73,15 +74,17 @@ library LibPlanet {
         }
 
         return
-            DFPInitPlanetArgs(
-                _location,
-                _perlin,
-                level,
-                gameConstants().TIME_FACTOR_HUNDREDTHS,
-                spaceType,
-                planetType,
-                _isHomePlanet
-            );
+            DFPInitPlanetArgs({
+                location: _location,
+                perlin: _perlin,
+                level: level,
+                TIME_FACTOR_HUNDREDTHS: gameConstants().TIME_FACTOR_HUNDREDTHS,
+                spaceType: spaceType,
+                planetType: planetType,
+                isHomePlanet: _isHomePlanet,
+                isSpawnPlanet: false,
+                isTargetPlanet: false
+            });
     }
 
     /**
@@ -179,6 +182,9 @@ library LibPlanet {
         _planet.pausers = 0;
         _planet.energyGroDoublers = 0;
         _planet.silverGroDoublers = 0;
+
+        _planet.spawnPlanet = args.isSpawnPlanet;
+        _planet.targetPlanet = args.isTargetPlanet;
 
         if (args.isHomePlanet) {
             _planet.isHomePlanet = true;
@@ -383,6 +389,10 @@ library LibPlanet {
         // so any of those values coming from the contracts need to be divided by
         // `CONTRACT_PRECISION` to get their true integer value.
         uint256 scoreGained = silverToWithdraw / 1000;
+        // increase silver token count;
+        uint256 silverId = LibSilver.create();
+        DFTokenFacet(address(this)).mint(msg.sender, silverId, scoreGained);
+
         scoreGained = (scoreGained * gameConstants().SILVER_SCORE_VALUE) / 100;
         gs().players[msg.sender].score += scoreGained;
     }

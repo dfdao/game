@@ -226,6 +226,7 @@ export class ContractsAPI extends EventEmitter {
           contract.filters.PauseStateChanged(null).topics,
           contract.filters.LobbyCreated(null, null).topics,
           contract.filters.SpaceshipFound(null, null, null).topics,
+          contract.filters.Gameover(null).topics,
         ].map((topicsOrUndefined) => (topicsOrUndefined || [])[0]),
       ] as Array<string | Array<string>>,
     };
@@ -382,6 +383,10 @@ export class ContractsAPI extends EventEmitter {
       [ContractEvent.LobbyCreated]: (ownerAddr: string, lobbyAddr: string) => {
         this.emit(ContractsAPIEvent.LobbyCreated, address(ownerAddr), address(lobbyAddr));
       },
+      [ContractEvent.Gameover]: (players: string[]) => {
+        players.map((p) => this.emit(ContractsAPIEvent.PlayerUpdate, address(p)));
+        this.emit(ContractsAPIEvent.Gameover);
+      },
     };
 
     this.ethConnection.subscribeToContractEvents(contract, eventHandlers, filter);
@@ -404,6 +409,7 @@ export class ContractsAPI extends EventEmitter {
     contract.removeAllListeners(ContractEvent.PlanetSilverWithdrawn);
     contract.removeAllListeners(ContractEvent.PlanetInvaded);
     contract.removeAllListeners(ContractEvent.PlanetCaptured);
+    contract.removeAllListeners(ContractEvent.Gameover);
   }
 
   public getContractAddress(): EthAddress {
@@ -455,6 +461,9 @@ export class ContractsAPI extends EventEmitter {
       CAPTURE_ZONES_PER_5000_WORLD_RADIUS,
       SPACESHIPS,
       ROUND_END_REWARDS_BY_RANK,
+      MANUAL_SPAWN,
+      TARGETS_REQUIRED_FOR_VICTORY,
+      CLAIM_VICTORY_ENERGY_PERCENT,
     } = await this.makeCall(this.contract.getGameConstants);
 
     const TOKEN_MINT_END_SECONDS = (
@@ -638,6 +647,9 @@ export class ContractsAPI extends EventEmitter {
         ROUND_END_REWARDS_BY_RANK[62].toNumber(),
         ROUND_END_REWARDS_BY_RANK[63].toNumber(),
       ],
+      MANUAL_SPAWN,
+      TARGETS_REQUIRED_FOR_VICTORY: TARGETS_REQUIRED_FOR_VICTORY.toNumber(),
+      CLAIM_VICTORY_ENERGY_PERCENT: CLAIM_VICTORY_ENERGY_PERCENT.toNumber(),
     };
 
     return constants;
@@ -749,6 +761,25 @@ export class ContractsAPI extends EventEmitter {
     return this.makeCall(this.contract.paused);
   }
 
+  public async getGameover(): Promise<boolean> {
+    return this.makeCall(this.contract.getGameover);
+  }
+
+  public async getWinners(): Promise<EthAddress[]> {
+    const winnerString = await this.makeCall(this.contract.getWinners);
+    return winnerString.map((w) => address(w));
+  }
+
+  public async getStartTime(): Promise<number | undefined> {
+    const startTime = (await this.makeCall(this.contract.getStartTime)).toNumber();
+    return startTime === 0 ? undefined : startTime;
+  }
+
+  public async getEndTime(): Promise<number> {
+    const endTime = (await this.makeCall(this.contract.getEndTime)).toNumber();
+    return endTime;
+  }
+
   public async getRevealedPlanetsCoords(
     startingAt: number,
     onProgressIds?: (fractionCompleted: number) => void,
@@ -846,6 +877,27 @@ export class ContractsAPI extends EventEmitter {
       onProgress(1);
     }
     return spaceships;
+  }
+
+  public async getSpawnPlanetIds(
+    startingAt: number,
+    onProgress?: (fractionCompleted: number) => void
+  ): Promise<LocationId[]> {
+    const nPlanets: number = (
+      await this.makeCall<EthersBN>(this.contract.getNSpawnPlanets)
+    ).toNumber();
+
+    const planetIds = await aggregateBulkGetter<EthersBN>(
+      nPlanets - startingAt,
+      1000,
+      async (start, end) =>
+        await this.makeCall(this.contract.bulkGetSpawnPlanetIds, [
+          start + startingAt,
+          end + startingAt,
+        ]),
+      onProgress
+    );
+    return planetIds.map(locationIdFromEthersBN);
   }
 
   public async getUpgradeForArtifact(artifactId: ArtifactId): Promise<Upgrade> {

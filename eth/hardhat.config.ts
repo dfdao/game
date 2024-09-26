@@ -41,7 +41,6 @@ import './tasks/whitelist';
 declare module 'hardhat/types' {
   interface HardhatSettings {
     contracts: Contracts;
-
     darkforest: {
       initializers: Initializers;
       adminPlanets: AdminPlanets;

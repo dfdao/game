@@ -4,6 +4,7 @@ import {
   UnconfirmedActivateArtifact,
   UnconfirmedBuyHat,
   UnconfirmedCapturePlanet,
+  UnconfirmedClaimVictory,
   UnconfirmedDeactivateArtifact,
   UnconfirmedDepositArtifact,
   UnconfirmedFindArtifact,
@@ -23,6 +24,10 @@ import {
 // - these `isUnconfirmedX` should be named something that matches the naming convention of the
 //   `TxIntent` subtypes - `isXIntent`
 // - these `isUnconfirmedX` should check something more than the method name
+
+export function isUnconfirmedClaimVictory(txIntent: TxIntent): txIntent is UnconfirmedClaimVictory {
+  return txIntent.methodName === 'claimVictory';
+}
 
 export function isUnconfirmedReveal(txIntent: TxIntent): txIntent is UnconfirmedReveal {
   return txIntent.methodName === 'revealLocation';
@@ -104,6 +109,12 @@ export function isUnconfirmedCapturePlanet(
 
 export function isUnconfirmedInvadePlanet(txIntent: TxIntent): txIntent is UnconfirmedInvadePlanet {
   return txIntent.methodName === 'invadePlanet';
+}
+
+export function isUnconfirmedClaimVictoryTx(
+  tx: Transaction
+): tx is Transaction<UnconfirmedClaimVictory> {
+  return isUnconfirmedClaimVictory(tx.intent);
 }
 
 export function isUnconfirmedRevealTx(tx: Transaction): tx is Transaction<UnconfirmedReveal> {

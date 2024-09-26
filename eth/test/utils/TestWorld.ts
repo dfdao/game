@@ -4,7 +4,13 @@ import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deployAndCut, deployDiamondInit, deployLibraries } from '../../tasks/deploy';
-import { initializers, noPlanetTransferInitializers, target4Initializers } from './WorldConstants';
+import {
+  arenaInitializers,
+  initializers,
+  noPlanetTransferInitializers,
+  target4Initializers,
+  targetPlanetInitializers,
+} from './WorldConstants';
 
 export interface World {
   contract: DarkForest;
@@ -36,9 +42,12 @@ export async function createArena(
   const { LibGameUtils } = await deployLibraries({}, hre);
   const DFInitialize = await deployDiamondInit({}, { LibGameUtils }, hre);
   const initFunctionCall = DFInitialize.interface.encodeFunctionData('init', [
-    false,
-    '',
     initializers,
+    {
+      allowListEnabled: false,
+      baseURI: '',
+      allowedAddresses: [],
+    },
   ]);
 
   const newLobbyTx = await contract.createLobby(DFInitialize.address, initFunctionCall);
@@ -47,6 +56,9 @@ export async function createArena(
   const events = await contract.queryFilter(eventFilter, 'latest');
   const { lobbyAddress } = events[0].args;
   const lobby = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
+  // initialize
+  const startTx = await lobby.start();
+  await startTx.wait();
 
   return lobby;
 }
@@ -75,6 +87,20 @@ export function whilelistWorldFixture(): Promise<World> {
 export function noPlanetTransferFixture(): Promise<World> {
   return initializeWorld({
     initializers: noPlanetTransferInitializers,
+    whitelistEnabled: false,
+  });
+}
+
+export function arenaWorldFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: arenaInitializers,
+    whitelistEnabled: false,
+  });
+}
+
+export function targetPlanetWorldFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: targetPlanetInitializers,
     whitelistEnabled: false,
   });
 }

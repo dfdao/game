@@ -1,14 +1,18 @@
 import { INIT_ADDRESS } from '@dfdao/contracts';
 import initContractAbiUrl from '@dfdao/contracts/abis/DFInitialize.json?url';
+import { DarkForest } from '@dfdao/contracts/typechain';
+import { fakeHash, mimcHash } from '@dfdao/hashing';
 import { EthConnection } from '@dfdao/network';
-import { address } from '@dfdao/serde';
-import { ArtifactRarity, EthAddress, UnconfirmedCreateLobby } from '@dfdao/types';
-import { Contract } from 'ethers';
+import { address, locationIdFromBigInt } from '@dfdao/serde';
+import { decodeArenaAdminPlanets } from '@dfdao/settings';
+import { ArtifactRarity, EthAddress, PlanetType, UnconfirmedCreateLobby } from '@dfdao/types';
+import { Contract, providers } from 'ethers';
+import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { ContractsAPI, makeContractsAPI } from '../../Backend/GameLogic/ContractsAPI';
-import { ContractsAPIEvent } from '../../_types/darkforest/api/ContractsAPITypes';
+import { loadDiamondContract } from '../../Backend/Network/Blockchain';
 import { InitRenderState, Wrapper } from '../Components/GameLandingPageComponents';
 import { ConfigurationPane } from '../Panes/Lobbies/ConfigurationPane';
 import { Minimap } from '../Panes/Lobbies/MinimapPane';
@@ -18,6 +22,24 @@ import { listenForKeyboardEvents, unlinkKeyboardEvents } from '../Utils/KeyEmitt
 import { CadetWormhole } from '../Views/CadetWormhole';
 import { LobbyLandingPage } from './LobbyLandingPage';
 
+// TODO: Infer this from Dark Forest interface
+function getLobbyCreatedEvent(
+  lobbyReceipt: providers.TransactionReceipt,
+  contract: DarkForest
+): { owner: EthAddress; lobby: EthAddress } {
+  const lobbyCreatedHash = keccak256(toUtf8Bytes('LobbyCreated(address,address)'));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const log = lobbyReceipt.logs.find((log: any) => log.topics[0] === lobbyCreatedHash);
+  if (log) {
+    return {
+      owner: address(contract.interface.parseLog(log).args.ownerAddress),
+      lobby: address(contract.interface.parseLog(log).args.lobbyAddress),
+    };
+  } else {
+    throw new Error('Lobby Created event not found');
+  }
+}
+
 type ErrorState =
   | { type: 'invalidAddress' }
   | { type: 'contractLoad' }
@@ -26,7 +48,6 @@ type ErrorState =
 
 export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>) {
   const [connection, setConnection] = useState<EthConnection | undefined>();
-  const [ownerAddress, setOwnerAddress] = useState<EthAddress | undefined>();
   const [contract, setContract] = useState<ContractsAPI | undefined>();
   const [startingConfig, setStartingConfig] = useState<LobbyInitializers | undefined>();
   const [lobbyAddress, setLobbyAddress] = useState<EthAddress | undefined>();
@@ -56,7 +77,6 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
   const onReady = useCallback(
     (connection: EthConnection) => {
       setConnection(connection);
-      setOwnerAddress(connection.getAddress());
     },
     [setConnection]
   );
@@ -78,40 +98,13 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
         .getConstants()
         .then((config) => {
           setStartingConfig({
+            ...config,
             // Explicitly defaulting this to false
             WHITELIST_ENABLED: false,
             // TODO: Figure out if we should expose this from contract
             START_PAUSED: false,
-            ADMIN_CAN_ADD_PLANETS: config.ADMIN_CAN_ADD_PLANETS,
-            WORLD_RADIUS_LOCKED: config.WORLD_RADIUS_LOCKED,
-            WORLD_RADIUS_MIN: config.WORLD_RADIUS_MIN,
-            DISABLE_ZK_CHECKS: config.DISABLE_ZK_CHECKS,
-            PLANETHASH_KEY: config.PLANETHASH_KEY,
-            SPACETYPE_KEY: config.SPACETYPE_KEY,
-            BIOMEBASE_KEY: config.BIOMEBASE_KEY,
-            PERLIN_MIRROR_X: config.PERLIN_MIRROR_X,
-            PERLIN_MIRROR_Y: config.PERLIN_MIRROR_Y,
-            PERLIN_LENGTH_SCALE: config.PERLIN_LENGTH_SCALE,
-            MAX_NATURAL_PLANET_LEVEL: config.MAX_NATURAL_PLANET_LEVEL,
-            TIME_FACTOR_HUNDREDTHS: config.TIME_FACTOR_HUNDREDTHS,
-            PERLIN_THRESHOLD_1: config.PERLIN_THRESHOLD_1,
-            PERLIN_THRESHOLD_2: config.PERLIN_THRESHOLD_2,
-            PERLIN_THRESHOLD_3: config.PERLIN_THRESHOLD_3,
-            INIT_PERLIN_MIN: config.INIT_PERLIN_MIN,
-            INIT_PERLIN_MAX: config.INIT_PERLIN_MAX,
-            SPAWN_RIM_AREA: config.SPAWN_RIM_AREA,
-            BIOME_THRESHOLD_1: config.BIOME_THRESHOLD_1,
-            BIOME_THRESHOLD_2: config.BIOME_THRESHOLD_2,
-            PLANET_LEVEL_THRESHOLDS: config.PLANET_LEVEL_THRESHOLDS,
-            PLANET_RARITY: config.PLANET_RARITY,
-            LOCATION_REVEAL_COOLDOWN: config.LOCATION_REVEAL_COOLDOWN,
-            // TODO: Need to think through this implementation a bit more, even if only toggling planet types
-            PLANET_TYPE_WEIGHTS: config.PLANET_TYPE_WEIGHTS,
-            // TODO: Rename in one of the places
             // TODO: Implement... Needs a datetime input component (WIP)
             TOKEN_MINT_END_TIMESTAMP: 1948939200, // new Date("2031-10-05T04:00:00.000Z").getTime() / 1000,
-            PHOTOID_ACTIVATION_DELAY: config.PHOTOID_ACTIVATION_DELAY,
-            SILVER_SCORE_VALUE: config.SILVER_SCORE_VALUE,
             ARTIFACT_POINT_VALUES: [
               config.ARTIFACT_POINT_VALUES[ArtifactRarity.Unknown],
               config.ARTIFACT_POINT_VALUES[ArtifactRarity.Common],
@@ -120,20 +113,9 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
               config.ARTIFACT_POINT_VALUES[ArtifactRarity.Legendary],
               config.ARTIFACT_POINT_VALUES[ArtifactRarity.Mythic],
             ],
-            PLANET_TRANSFER_ENABLED: config.PLANET_TRANSFER_ENABLED,
-            SPACE_JUNK_ENABLED: config.SPACE_JUNK_ENABLED,
-            SPACE_JUNK_LIMIT: config.SPACE_JUNK_LIMIT,
-            PLANET_LEVEL_JUNK: config.PLANET_LEVEL_JUNK,
-            ABANDON_SPEED_CHANGE_PERCENT: config.ABANDON_SPEED_CHANGE_PERCENT,
-            ABANDON_RANGE_CHANGE_PERCENT: config.ABANDON_RANGE_CHANGE_PERCENT,
-            CAPTURE_ZONES_ENABLED: config.CAPTURE_ZONES_ENABLED,
-            CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL: config.CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL,
-            CAPTURE_ZONE_PLANET_LEVEL_SCORE: config.CAPTURE_ZONE_PLANET_LEVEL_SCORE,
-            CAPTURE_ZONE_RADIUS: config.CAPTURE_ZONE_RADIUS,
-            CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED: config.CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED,
-            CAPTURE_ZONES_PER_5000_WORLD_RADIUS: config.CAPTURE_ZONES_PER_5000_WORLD_RADIUS,
-            SPACESHIPS: config.SPACESHIPS,
-            ROUND_END_REWARDS_BY_RANK: config.ROUND_END_REWARDS_BY_RANK,
+            MANUAL_SPAWN: true,
+            TARGETS_REQUIRED_FOR_VICTORY: 1,
+            CLAIM_VICTORY_ENERGY_PERCENT: 20,
           });
         })
         .catch((e) => {
@@ -157,9 +139,12 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
     const initInterface = Contract.getInterface(InitABI);
     const initAddress = INIT_ADDRESS;
     const initFunctionCall = initInterface.encodeFunctionData('init', [
-      initializers.WHITELIST_ENABLED,
-      artifactBaseURI,
       initializers,
+      {
+        allowListEnabled: initializers.WHITELIST_ENABLED,
+        baseURI: artifactBaseURI,
+        allowedAddresses: [],
+      },
     ]);
     const txIntent: UnconfirmedCreateLobby = {
       methodName: 'createLobby',
@@ -167,17 +152,58 @@ export function CreateLobby({ match }: RouteComponentProps<{ contract: string }>
       args: Promise.resolve([initAddress, initFunctionCall]),
     };
 
-    contract.once(ContractsAPIEvent.LobbyCreated, (owner: EthAddress, lobby: EthAddress) => {
-      if (owner === ownerAddress) {
-        setLobbyAddress(lobby);
-      }
-    });
-
     const tx = await contract.submitTransaction(txIntent, {
       // The createLobby function costs somewhere around 12mil gas
-      gasLimit: '16777215',
+      gasLimit: '15000000',
     });
-    await tx.confirmedPromise;
+    const rct = await tx.confirmedPromise;
+    const { lobby } = getLobbyCreatedEvent(rct, contract.contract);
+    // Call Start
+    const newLobby = await contract.ethConnection.loadContract<DarkForest>(
+      lobby,
+      loadDiamondContract
+    );
+    const startTx = await newLobby.start();
+    console.log(`start submitted`);
+    const startRct = await startTx.wait();
+    console.log(`start confirmed with ${startRct.gasUsed} gas`);
+    const planetHashMimc = config.DISABLE_ZK_CHECKS
+      ? fakeHash(config.PLANET_RARITY)
+      : mimcHash(config.PLANETHASH_KEY);
+
+    console.log(`creating planets...`);
+    const coords = { x: 0, y: 0 };
+    const planets = [
+      {
+        location: `0x` + locationIdFromBigInt(planetHashMimc(coords.x, coords.y)),
+        x: coords.x,
+        y: coords.y,
+        perlin: 20,
+        level: 5,
+        planetType: PlanetType.SILVER_MINE,
+        requireValidLocationId: false,
+        isTargetPlanet: false,
+        isSpawnPlanet: true,
+        blockedPlanetIds: [],
+      },
+      {
+        location: `0x` + locationIdFromBigInt(planetHashMimc(100, 100)),
+        x: 100,
+        y: 100,
+        perlin: 20,
+        level: 3,
+        planetType: PlanetType.SILVER_BANK,
+        requireValidLocationId: false,
+        isTargetPlanet: true,
+        isSpawnPlanet: false,
+        blockedPlanetIds: [],
+      },
+    ];
+    const createTx = await newLobby.bulkCreateAndReveal(decodeArenaAdminPlanets(planets));
+    const createRct = await createTx.wait();
+    console.log(`create planets confirmed with ${createRct.gasUsed} gas`);
+
+    setLobbyAddress(lobby);
   }
 
   if (errorState) {

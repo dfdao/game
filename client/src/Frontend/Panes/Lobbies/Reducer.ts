@@ -773,6 +773,15 @@ export function lobbyConfigInit(startingConfig: LobbyInitializers) {
         };
         break;
       }
+      case 'MANUAL_SPAWN': {
+        break;
+      }
+      case 'TARGETS_REQUIRED_FOR_VICTORY': {
+        break;
+      }
+      case 'CLAIM_VICTORY_ENERGY_PERCENT': {
+        break;
+      }
       default: {
         // https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking
         const _exhaustive: never = key;

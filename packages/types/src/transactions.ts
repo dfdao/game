@@ -24,6 +24,7 @@ export type ContractMethodName =
   | 'createLobby'
   | 'invadePlanet'
   | 'capturePlanet'
+  | 'claimVictory'
   | 'claimReward';
 
 export type EthTxStatus =
@@ -67,6 +68,13 @@ export type UnconfirmedMove = TxIntent & {
   abandoning: boolean;
   // TODO: Make this less shit
   artifact?: ArtifactId | SpaceshipId;
+};
+
+/**
+ * @hidden
+ */
+export declare type UnconfirmedClaimVictory = TxIntent & {
+  methodName: 'claimVictory';
 };
 
 /**

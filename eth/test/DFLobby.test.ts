@@ -17,10 +17,14 @@ describe('DarkForestLobby', function () {
   let lobby: DarkForest;
   const initAddress = ethers.constants.AddressZero;
   const initFunctionCall = '0x';
+  const NEW_RADIUS = 69;
 
   async function worldFixture() {
     const _world = await loadFixture(defaultWorldFixture);
-    const _lobby = await createArena(_world.user1Core, hre.settings.darkforest.initializers);
+    const _lobby = await createArena(_world.user1Core, {
+      ...hre.settings.darkforest.initializers,
+      WORLD_RADIUS_MIN: NEW_RADIUS,
+    });
     return { _world, _lobby };
   }
 
@@ -35,6 +39,9 @@ describe('DarkForestLobby', function () {
       world.contract,
       'LobbyCreated'
     );
+  });
+  it('New lobby has initializer value', async function () {
+    expect((await lobby.getGameConstants()).WORLD_RADIUS_MIN).to.equal(NEW_RADIUS);
   });
   it('Transfers Ownership', async function () {
     await expect(world.contract.transferOwnership(world.user1.address)).to.emit(

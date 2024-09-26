@@ -219,11 +219,16 @@ export class PlanetRenderManager implements PlanetRenderManagerType {
     radiusW: number,
     textAlpha: number
   ) {
-    if (!renderInfo.planet.messages) return;
+    // TODO: Put back block
+    // else if () renderInfo.blocked
     const { overlay2dRenderer: cM } = this.renderer;
-    cM.drawPlanetMessages(coords, radiusW, renderInfo, textAlpha);
+    if (renderInfo.planet.isTargetPlanet)
+      cM.drawEmoji(coords, radiusW, renderInfo, textAlpha, `🎯`);
+    else if (renderInfo.planet.isSpawnPlanet)
+      cM.drawEmoji(coords, radiusW, renderInfo, textAlpha, `🍼`);
+    else if (renderInfo.planet.messages)
+      cM.drawPlanetMessages(coords, radiusW, renderInfo, textAlpha);
   }
-
   private queueArtifactIcon(planet: Planet, { x, y }: WorldCoords, radius: number) {
     const { overlay2dRenderer: cM } = this.renderer;
 

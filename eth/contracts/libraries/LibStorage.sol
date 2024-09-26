@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Type imports
-import {Planet, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData} from "../DFTypes.sol";
+import {ArrivalData, AuxiliaryArgs, InitArgs, Planet, PlanetEventMetadata, PlanetDefaultStats, RevealedCoords, Player, SpaceshipConstants, Upgrade} from "../DFTypes.sol";
 
 struct WhitelistStorage {
     bool enabled;
@@ -45,6 +45,12 @@ struct GameStorage {
     mapping(uint256 => ArrivalData) planetArrivals;
     // Capture Zones
     uint256 nextChangeBlock;
+    uint256[] targetPlanetIds;
+    uint256[] spawnPlanetIds;
+    address[] winners;
+    uint256 startTime;
+    uint256 endTime;
+    bool gameOver;
 }
 
 // Game config
@@ -104,14 +110,17 @@ struct GameConstants {
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
     SpaceshipConstants SPACESHIPS;
     uint256[64] ROUND_END_REWARDS_BY_RANK;
+    // Arena constants
+    uint256 TARGETS_REQUIRED_FOR_VICTORY;
+    uint256 CLAIM_VICTORY_ENERGY_PERCENT;
+    // Manual Spawn
+    bool MANUAL_SPAWN;
 }
 
-struct SpaceshipConstants {
-    bool GEAR;
-    bool MOTHERSHIP;
-    bool TITAN;
-    bool CRESCENT;
-    bool WHALE;
+// Initializers
+struct Initializers {
+    InitArgs initArgs;
+    AuxiliaryArgs auxArgs;
 }
 
 // SNARK keys and perlin params
@@ -178,6 +187,7 @@ library LibStorage {
     bytes32 constant PLANET_DEFAULT_STATS_POSITION =
         keccak256("darkforest.constants.planetDefaultStats");
     bytes32 constant UPGRADE_POSITION = keccak256("darkforest.constants.upgrades");
+    bytes32 constant ARENA_INITIALIZERS_POSITION = keccak256("darkforest.initializers.arena");
 
     function gameStorage() internal pure returns (GameStorage storage gs) {
         bytes32 position = GAME_STORAGE_POSITION;
@@ -220,6 +230,13 @@ library LibStorage {
             upgrades.slot := position
         }
     }
+
+    function initializers() internal pure returns (Initializers storage i) {
+        bytes32 position = ARENA_INITIALIZERS_POSITION;
+        assembly {
+            i.slot := position
+        }
+    }
 }
 
 /**
@@ -254,5 +271,9 @@ contract WithStorage {
 
     function upgrades() internal pure returns (Upgrade[4][3] storage) {
         return LibStorage.upgrades();
+    }
+
+    function initializers() internal pure returns (Initializers storage) {
+        return LibStorage.initializers();
     }
 }
