@@ -9,6 +9,7 @@ import {
   ArtifactTypeNames,
   Biome,
   BiomeNames,
+  Planet,
   PlanetLevel,
   RenderedArtifact,
 } from '@dfdao/types';
@@ -103,6 +104,10 @@ export function isAncient(artifact: RenderedArtifact): boolean {
 
 export function setForceAncient(force: boolean): void {
   forceAncient = force;
+}
+
+export function isActivated(artifact: Artifact | undefined, planet: Planet | undefined) {
+  return !!planet && !!artifact && planet.activeArtifact === artifact;
 }
 
 export function artifactFileName(

@@ -2448,9 +2448,6 @@ class GameManager extends EventEmitter {
         if (!planet) {
           throw new Error('tried to withdraw silver from an unknown planet');
         }
-        if (planet.planetType !== PlanetType.TRADING_POST) {
-          throw new Error('can only withdraw silver from spacetime rips');
-        }
         if (planet.owner !== this.account) {
           throw new Error('can only withdraw silver from a planet you own');
         }

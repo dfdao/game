@@ -117,68 +117,67 @@ export function CapturePlanetButton({
     gameManager.capturePlanet(planetWrapper.value.locationId);
   }, [gameManager, planetWrapper]);
 
+  if (!shouldShow) return <></>;
   return (
-    <StyledRow>
-      {shouldShow && (
-        <>
-          {shouldShowInvade && (
-            <MaybeShortcutButton
-              className='button'
-              size='stretch'
-              active={invading}
-              disabled={!invadable || invading}
-              onClick={invade}
-              onShortcutPressed={invade}
-              shortcutKey={INVADE}
-              shortcutText={INVADE}
+    shouldShow && (
+      <StyledRow>
+        {shouldShowInvade && (
+          <MaybeShortcutButton
+            className='button'
+            size='stretch'
+            active={invading}
+            disabled={!invadable || invading}
+            onClick={invade}
+            onShortcutPressed={invade}
+            shortcutKey={INVADE}
+            shortcutText={INVADE}
+          >
+            <TooltipTrigger
+              style={{ width: '100%', textAlign: 'center' }}
+              name={TooltipName.Empty}
+              extraContent={<>Invade this planet. </>}
             >
-              <TooltipTrigger
-                style={{ width: '100%', textAlign: 'center' }}
-                name={TooltipName.Empty}
-                extraContent={<>Invade this planet. </>}
-              >
-                {invading ? <LoadingSpinner initialText={'Invading...'} /> : 'Invade'}
-              </TooltipTrigger>
-            </MaybeShortcutButton>
-          )}
+              {invading ? <LoadingSpinner initialText={'Invading...'} /> : 'Invade'}
+            </TooltipTrigger>
+          </MaybeShortcutButton>
+        )}
 
-          {shouldShowCapture && (
-            <ShortcutBtn
-              className='button'
-              size='stretch'
-              active={capturing}
-              disabled={!capturable || capturing}
-              onClick={capture}
-              onShortcutPressed={capture}
-              shortcutKey={INVADE}
-              shortcutText={INVADE}
+        {shouldShowCapture && (
+          <ShortcutBtn
+            className='button'
+            size='stretch'
+            active={capturing}
+            disabled={!capturable || capturing}
+            onClick={capture}
+            onShortcutPressed={capture}
+            shortcutKey={INVADE}
+            shortcutText={INVADE}
+          >
+            <TooltipTrigger
+              style={{ width: '100%', textAlign: 'center' }}
+              name={TooltipName.Empty}
+              extraContent={
+                <>
+                  <Green>
+                    Capture this planet for score!{' '}
+                    {!!blocksLeft && blocksLeft >= 0 && (
+                      <>
+                        You must wait <White>{blocksLeft}</White> blocks until you can capture this
+                        planet.
+                      </>
+                    )}
+                    {!planetHasEnoughEnergy && (
+                      <Red>The planet requires above 80% energy before you can capture it.</Red>
+                    )}
+                  </Green>
+                </>
+              }
             >
-              <TooltipTrigger
-                style={{ width: '100%', textAlign: 'center' }}
-                name={TooltipName.Empty}
-                extraContent={
-                  <>
-                    <Green>
-                      Capture this planet for score!{' '}
-                      {!!blocksLeft && blocksLeft >= 0 && (
-                        <>
-                          You must wait <White>{blocksLeft}</White> blocks until you can capture
-                          this planet.
-                        </>
-                      )}
-                      {!planetHasEnoughEnergy && (
-                        <Red>The planet requires above 80% energy before you can capture it.</Red>
-                      )}
-                    </Green>
-                  </>
-                }
-              >
-                {capturing ? <LoadingSpinner initialText={'Capturing...'} /> : 'Capture!'}
-              </TooltipTrigger>
-            </ShortcutBtn>
-          )}
-        </>
-      )}
-    </StyledRow>
+              {capturing ? <LoadingSpinner initialText={'Capturing...'} /> : 'Capture!'}
+            </TooltipTrigger>
+          </ShortcutBtn>
+        )}
+      </StyledRow>
+    )
   );
 }
